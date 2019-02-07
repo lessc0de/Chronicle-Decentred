@@ -22,7 +22,7 @@ public class KeyPair {
 <span class="fc" id="L22">    public KeyPair(long id) {</span>
 <span class="fc" id="L23">        Bytes&lt;Void&gt; privateKey = Bytes.allocateDirect(Ed25519.PRIVATE_KEY_LENGTH);</span>
 <span class="fc" id="L24">        privateKey.zeroOut(0, Ed25519.PRIVATE_KEY_LENGTH);</span>
-<span class="fc" id="L25">        privateKey.writeLong(Ed25519.PRIVATE_KEY_LENGTH - Long.BYTES, id);</span>
+<span class="fc" id="L25">        privateKey.writeLong(Ed25519.PRIVATE_KEY_LENGTH - (long) Long.BYTES, id);</span>
 <span class="fc" id="L26">        privateKey.writeSkip(Ed25519.PRIVATE_KEY_LENGTH);</span>
 <span class="fc" id="L27">        Ed25519.privateToPublicAndSecret(publicKey, secretKey, privateKey);</span>
 <span class="fc" id="L28">        privateKey.release();</span>

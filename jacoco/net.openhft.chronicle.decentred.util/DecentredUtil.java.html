@@ -68,7 +68,7 @@ import java.net.UnknownHostException;
     public static BytesStore testPrivateKey(long seed) {
 <span class="fc" id="L69">        Bytes privateKey = Bytes.allocateDirect(Ed25519.PRIVATE_KEY_LENGTH);</span>
 <span class="fc" id="L70">        privateKey.zeroOut(0, Ed25519.PRIVATE_KEY_LENGTH);</span>
-<span class="fc" id="L71">        privateKey.writeSkip(Ed25519.PRIVATE_KEY_LENGTH - Long.BYTES);</span>
+<span class="fc" id="L71">        privateKey.writeSkip(Ed25519.PRIVATE_KEY_LENGTH - (long) Long.BYTES);</span>
 <span class="fc" id="L72">        privateKey.writeLong(seed);</span>
 <span class="fc" id="L73">        return privateKey;</span>
     }

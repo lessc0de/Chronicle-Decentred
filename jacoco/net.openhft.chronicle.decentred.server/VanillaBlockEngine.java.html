@@ -142,9 +142,10 @@ import java.util.stream.LongStream;
 <span class="nc" id="L142">            doProcessOneBlock();</span>
 <span class="nc" id="L143">            blockReplayer.replayBlocks();</span>
 <span class="nc" id="L144">        } catch (InterruptedException e) {</span>
-<span class="nc" id="L145">            throw new AssertionError(e);</span>
-<span class="nc" id="L146">        }</span>
-<span class="nc" id="L147">    }</span>
+<span class="nc" id="L145">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L146">            throw new AssertionError(e);</span>
+<span class="nc" id="L147">        }</span>
+<span class="nc" id="L148">    }</span>
 
     void runVoter() {
         try {
@@ -153,17 +154,17 @@ import java.util.stream.LongStream;
 //            Histogram three = new Histogram();
 //            Histogram four = new Histogram();
 //            int count = 0;
-<span class="pc bpc" id="L156" title="1 of 2 branches missed.">            while (!Thread.currentThread().isInterrupted()) {</span>
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">            while (!Thread.currentThread().isInterrupted()) {</span>
 //                long start = System.nanoTime();
-<span class="fc" id="L158">                doProcessOneBlock();</span>
+<span class="fc" id="L159">                doProcessOneBlock();</span>
 
-<span class="fc" id="L160">                processingSes.submit(blockReplayer::replayBlocks);</span>
-<span class="fc" id="L161">                nextSendUS += periodUS;</span>
-<span class="fc" id="L162">                long delay = nextSendUS - SystemTimeProvider.INSTANCE.currentTimeMicros();</span>
+<span class="fc" id="L161">                processingSes.submit(blockReplayer::replayBlocks);</span>
+<span class="fc" id="L162">                nextSendUS += periodUS;</span>
+<span class="fc" id="L163">                long delay = nextSendUS - SystemTimeProvider.INSTANCE.currentTimeMicros();</span>
 //                four.sample(System.nanoTime() - start);
 
-<span class="pc bpc" id="L165" title="1 of 2 branches missed.">                if (delay &gt; 999)</span>
-<span class="fc" id="L166">                    Thread.sleep(delay / 1000);</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">                if (delay &gt; 999)</span>
+<span class="fc" id="L167">                    Thread.sleep(delay / 1000);</span>
 //                if (delay &gt; 10) // minimum delay
 //                    LockSupport.parkNanos(delay * 1000);
 
@@ -176,61 +177,61 @@ import java.util.stream.LongStream;
                 }
 */
 
-<span class="fc" id="L179">            }</span>
+<span class="fc" id="L180">            }</span>
 
-<span class="nc" id="L181">        } catch (Throwable t) {</span>
-<span class="nc" id="L182">            t.printStackTrace();</span>
-<span class="nc" id="L183">        }</span>
-<span class="nc" id="L184">    }</span>
+<span class="nc" id="L182">        } catch (Throwable t) {</span>
+<span class="nc" id="L183">            t.printStackTrace();</span>
+<span class="nc" id="L184">        }</span>
+<span class="nc" id="L185">    }</span>
 
     private void doProcessOneBlock() throws InterruptedException {
-<span class="fc" id="L187">        TransactionBlockEvent tbe = chainer.nextTransactionBlockEvent();</span>
+<span class="fc" id="L188">        TransactionBlockEvent tbe = chainer.nextTransactionBlockEvent();</span>
 //                sample.sample(System.nanoTime() - start);
 //                start = System.nanoTime();
         // tg System.out.println(&quot;TBE &quot;+tbe);
-<span class="fc bfc" id="L191" title="All 2 branches covered.">        if (tbe != null) {</span>
-<span class="fc" id="L192">            tbe.address(address);</span>
-<span class="fc" id="L193">            tbe.blockNumber(blockNumber);</span>
-<span class="fc bfc" id="L194" title="All 2 branches covered.">            for (long clusterAddress : clusterAddresses) {</span>
-<span class="pc bpc" id="L195" title="1 of 2 branches missed.">                if (clusterAddress == address) {</span>
-<span class="fc" id="L196">                    transactionBlockEvent(tbe);</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">        if (tbe != null) {</span>
+<span class="fc" id="L193">            tbe.address(address);</span>
+<span class="fc" id="L194">            tbe.blockNumber(blockNumber);</span>
+<span class="fc bfc" id="L195" title="All 2 branches covered.">            for (long clusterAddress : clusterAddresses) {</span>
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">                if (clusterAddress == address) {</span>
+<span class="fc" id="L197">                    transactionBlockEvent(tbe);</span>
                 } else {
-<span class="nc" id="L198">                    tcpMessageListener.onMessageTo(clusterAddress, tbe);</span>
+<span class="nc" id="L199">                    tcpMessageListener.onMessageTo(clusterAddress, tbe);</span>
                 }
             }
-<span class="fc" id="L201">            blockNumber++;</span>
+<span class="fc" id="L202">            blockNumber++;</span>
         }
 
 //                int subRound = Math.max(100_000, periodUS * 100);
 //                two.sample(System.nanoTime() - start);
-<span class="fc" id="L206">        Thread.sleep(1);</span>
+<span class="fc" id="L207">        Thread.sleep(1);</span>
 //                LockSupport.parkNanos(subRound);
-<span class="fc" id="L208">        gossiper.sendGossip(blockNumber);</span>
-<span class="fc" id="L209">        Thread.sleep(1);</span>
+<span class="fc" id="L209">        gossiper.sendGossip(blockNumber);</span>
+<span class="fc" id="L210">        Thread.sleep(1);</span>
 //                LockSupport.parkNanos(subRound);
 
 //                start = System.nanoTime();
-<span class="fc" id="L213">        voter.sendVote(blockNumber);</span>
+<span class="fc" id="L214">        voter.sendVote(blockNumber);</span>
 //                three.sample(System.nanoTime() - start);
 
-<span class="fc" id="L216">        Thread.sleep(1);</span>
+<span class="fc" id="L217">        Thread.sleep(1);</span>
 //                LockSupport.parkNanos(subRound);
 //                start = System.nanoTime();
         //System.out.println(address + &quot; &quot; + blockNumber);
-<span class="pc bpc" id="L220" title="1 of 2 branches missed.">        if (voteTaker.hasMajority()) {</span>
-<span class="fc bfc" id="L221" title="All 2 branches covered.">            if (voteTaker.sendEndOfRoundBlock(blockNumber))</span>
-<span class="fc" id="L222">                blockNumber++;</span>
+<span class="pc bpc" id="L221" title="1 of 2 branches missed.">        if (voteTaker.hasMajority()) {</span>
+<span class="fc bfc" id="L222" title="All 2 branches covered.">            if (voteTaker.sendEndOfRoundBlock(blockNumber))</span>
+<span class="fc" id="L223">                blockNumber++;</span>
         }
-<span class="fc" id="L224">    }</span>
+<span class="fc" id="L225">    }</span>
 
     @Override
     public void close() {
-<span class="nc" id="L228">        votingSes.shutdownNow();</span>
-<span class="nc" id="L229">    }</span>
+<span class="nc" id="L229">        votingSes.shutdownNow();</span>
+<span class="nc" id="L230">    }</span>
 
     @Override
     public void onMessage(SignedMessage message) {
-<span class="fc" id="L233">        chainer.onMessage(message);</span>
-<span class="fc" id="L234">    }</span>
+<span class="fc" id="L234">        chainer.onMessage(message);</span>
+<span class="fc" id="L235">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>
