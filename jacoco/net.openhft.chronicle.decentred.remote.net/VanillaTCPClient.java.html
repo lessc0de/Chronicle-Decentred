@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VanillaTCPClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.remote.net</a> &gt; <span class="el_source">VanillaTCPClient.java</span></div><h1>VanillaTCPClient.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.remote.net;
+
+import net.openhft.chronicle.bytes.Bytes;
+import net.openhft.chronicle.core.Jvm;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.List;
+
+public class VanillaTCPClient extends AbstractTCPConnection {
+<span class="fc" id="L15">    private final List&lt;InetSocketAddress&gt; socketAddresses = new ArrayList&lt;&gt;();</span>
+    private final Thread thread;
+    private final TCPClientListener clientListener;
+<span class="fc" id="L18">    private int nextChannel = -1;</span>
+
+<span class="fc" id="L20">    public VanillaTCPClient(String name, List&lt;InetSocketAddress&gt; socketAddresses, TCPClientListener clientListener) {</span>
+<span class="fc" id="L21">        this.clientListener = clientListener;</span>
+<span class="fc" id="L22">        this.socketAddresses.addAll(socketAddresses);</span>
+<span class="fc" id="L23">        thread = new Thread(this::run, name);</span>
+<span class="fc" id="L24">        thread.start();</span>
+<span class="fc" id="L25">    }</span>
+
+    @Override
+    protected void close2() {
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">        if (thread != null) {</span>
+<span class="fc" id="L30">            thread.interrupt();</span>
+<span class="fc" id="L31">            Thread.yield();</span>
+        }
+<span class="fc" id="L33">    }</span>
+
+    @Override
+    protected void waitForReconnect() throws IOException {
+<span class="fc" id="L37">        int count = 0;</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        while (channel == null) {</span>
+<span class="nc" id="L39">            Jvm.pause(1);</span>
+<span class="nc bnc" id="L40" title="All 2 branches missed.">            if (++count &gt; 1000)</span>
+<span class="nc" id="L41">                throw new IOException(&quot;not open yet&quot;);</span>
+        }
+<span class="fc" id="L43">    }</span>
+
+    @Override
+    protected void onMessage(Bytes&lt;ByteBuffer&gt; bytes) throws IOException {
+<span class="fc" id="L47">        clientListener.onMessage(this, bytes);</span>
+<span class="fc" id="L48">    }</span>
+
+    void run() {
+<span class="fc" id="L51">        Bytes&lt;ByteBuffer&gt; readBytes = Bytes.elasticByteBuffer(MAX_MESSAGE_SIZE);</span>
+        try {
+<span class="fc bfc" id="L53" title="All 2 branches covered.">            while (running) {</span>
+<span class="pc bpc" id="L54" title="1 of 4 branches missed.">                if (channel == null || !channel.isOpen()) {</span>
+<span class="fc" id="L55">                    readBytes.clear();</span>
+<span class="fc" id="L56">                    openChannel();</span>
+<span class="fc" id="L57">                    clientListener.onNewConnection(this, channel);</span>
+                } else {
+                    try {
+<span class="fc" id="L60">                        readChannel(readBytes);</span>
+
+<span class="fc" id="L62">                    } catch (IOException ioe) {</span>
+<span class="fc" id="L63">                        Jvm.pause(1);</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">                        if (running)</span>
+<span class="nc" id="L65">                            ioe.printStackTrace();</span>
+<span class="fc" id="L66">                        channel.close();</span>
+<span class="fc" id="L67">                        clientListener.onClosedChannel(this);</span>
+<span class="fc" id="L68">                    }</span>
+                }
+            }
+
+<span class="nc" id="L72">        } catch (Throwable t) {</span>
+<span class="nc" id="L73">            t.printStackTrace();</span>
+        } finally {
+<span class="fc" id="L75">            readBytes.release();</span>
+        }
+<span class="fc" id="L77">    }</span>
+
+    private void openChannel() {
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (++nextChannel &gt;= socketAddresses.size())</span>
+<span class="nc" id="L81">            nextChannel = 0;</span>
+<span class="fc" id="L82">        InetSocketAddress socketAddress = socketAddresses.get(nextChannel);</span>
+        try {
+<span class="fc" id="L84">            channel(SocketChannel.open(socketAddress));</span>
+<span class="fc" id="L85">            Socket socket = channel.socket();</span>
+<span class="fc" id="L86">            socket.setReceiveBufferSize(1 &lt;&lt; 20);</span>
+//            socket.setTcpNoDelay(true);
+
+<span class="nc" id="L89">        } catch (IOException ioe) {</span>
+<span class="nc" id="L90">            ioe.printStackTrace();</span>
+<span class="nc" id="L91">            channel(null);</span>
+<span class="nc" id="L92">            Jvm.pause(500);</span>
+<span class="fc" id="L93">        }</span>
+<span class="fc" id="L94">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

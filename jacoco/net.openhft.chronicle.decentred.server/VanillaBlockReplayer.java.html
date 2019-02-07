@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VanillaBlockReplayer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.server</a> &gt; <span class="el_source">VanillaBlockReplayer.java</span></div><h1>VanillaBlockReplayer.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.server;
+
+import net.openhft.chronicle.core.Jvm;
+import net.openhft.chronicle.decentred.dto.EndOfRoundBlockEvent;
+import net.openhft.chronicle.decentred.dto.SignedMessage;
+import net.openhft.chronicle.decentred.dto.TransactionBlockEvent;
+import net.openhft.chronicle.decentred.util.DtoParser;
+import net.openhft.chronicle.decentred.util.DtoRegistry;
+import net.openhft.chronicle.decentred.util.LongLongMap;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class VanillaBlockReplayer&lt;T&gt; implements BlockReplayer {
+    private final long address;
+    private final T postBlockChainProcessor;
+
+<span class="fc" id="L20">    private Map&lt;Long, TransactionLog&gt; transactionLogMap = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L21">    private EndOfRoundBlockEvent lastEndOfRoundBlockEvent = null;</span>
+<span class="fc" id="L22">    private LongLongMap replayedMap = LongLongMap.withExpectedSize(16);</span>
+    private DtoParser dtoParser;
+
+<span class="fc" id="L25">    public VanillaBlockReplayer(long address, DtoRegistry&lt;T&gt; dtoRegistry, T postBlockChainProcessor) {</span>
+<span class="fc" id="L26">        this.address = address;</span>
+<span class="fc" id="L27">        dtoParser = dtoRegistry.get();</span>
+<span class="fc" id="L28">        this.postBlockChainProcessor = postBlockChainProcessor;</span>
+<span class="fc" id="L29">    }</span>
+
+    @Override
+    public synchronized void transactionBlockEvent(TransactionBlockEvent transactionBlockEvent) {
+<span class="fc" id="L33">        transactionLogMap.computeIfAbsent(transactionBlockEvent.address(), k -&gt; new TransactionLog())</span>
+<span class="fc" id="L34">                .add(transactionBlockEvent);</span>
+<span class="fc" id="L35">        notifyAll();</span>
+<span class="fc" id="L36">    }</span>
+
+    @Override
+    public synchronized void endOfRoundBlockEvent(EndOfRoundBlockEvent endOfRoundBlockEvent) {
+<span class="pc" id="L40">        transactionLogMap.computeIfAbsent(endOfRoundBlockEvent.address(), k -&gt; new TransactionLog())</span>
+<span class="fc" id="L41">                .add(endOfRoundBlockEvent);</span>
+<span class="fc" id="L42">        lastEndOfRoundBlockEvent = endOfRoundBlockEvent;</span>
+<span class="fc" id="L43">        notifyAll();</span>
+<span class="fc" id="L44">    }</span>
+
+    // TODO Ideally blocks should be replayed in order, though it doesn't matter much esp if they are all up to date.
+    @Override
+    public void replayBlocks() {
+<span class="fc" id="L49">        List&lt;Runnable&gt; replayActions = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L50">        synchronized (this) {</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">            if (lastEndOfRoundBlockEvent == null) {</span>
+//                Jvm.warn().on(getClass(), &quot;No EndOfRoundBlockEvent to process&quot;);
+<span class="fc" id="L53">                return;</span>
+            }
+            try {
+<span class="fc bfc" id="L56" title="All 2 branches covered.">                for (Map.Entry&lt;Long, TransactionLog&gt; entry : transactionLogMap.entrySet()) {</span>
+<span class="fc" id="L57">                    long upto = lastEndOfRoundBlockEvent.addressToBlockNumberMap()</span>
+<span class="fc" id="L58">                            .getOrDefault(entry.getKey(), -1L);</span>
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">                    if (upto == -1L) {</span>
+<span class="nc" id="L60">                        continue;</span>
+                    }
+
+<span class="fc" id="L63">                    long last = replayedMap.getOrDefault(entry.getKey(), -1L);</span>
+
+                    int size;
+                    while (true) {
+<span class="fc" id="L67">                        size = entry.getValue().messages.size();</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">                        if (size &gt;= upto) {</span>
+<span class="fc" id="L69">                            break;</span>
+                        }
+<span class="nc" id="L71">                        System.out.println(address + &quot; Waiting ... &quot; + size + &quot; &lt; &quot; + upto);</span>
+<span class="nc" id="L72">                        wait(100);</span>
+                    }
+
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">                    if (last &lt; size) {</span>
+<span class="fc" id="L76">                        replayActions.add(() -&gt; replay(entry.getValue(), last + 1, upto));</span>
+<span class="fc" id="L77">                        replayedMap.justPut(entry.getKey(), upto);</span>
+                    }
+<span class="fc" id="L79">                }</span>
+<span class="nc" id="L80">            } catch (InterruptedException ie) {</span>
+<span class="nc" id="L81">                Jvm.warn().on(getClass(), &quot;Giving up waiting - interrupted&quot;);</span>
+<span class="nc" id="L82">                Thread.currentThread().interrupt();</span>
+<span class="fc" id="L83">            }</span>
+<span class="fc" id="L84">            lastEndOfRoundBlockEvent = null;</span>
+<span class="fc" id="L85">        }</span>
+//        postBlockChainProcessor.replayStarted();
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        for (Runnable replayAction : replayActions) {</span>
+<span class="fc" id="L88">            replayAction.run();</span>
+<span class="fc" id="L89">        }</span>
+//        postBlockChainProcessor.replayFinished();
+<span class="fc" id="L91">    }</span>
+
+    private void replay(TransactionLog messages, long fromIndex, long toIndex) {
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        for (long i = fromIndex; i &lt;= toIndex; i++) {</span>
+<span class="fc" id="L95">            SignedMessage message = messages.get((int) i);</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">            if (message instanceof TransactionBlockEvent) {</span>
+<span class="fc" id="L97">                TransactionBlockEvent tbe = (TransactionBlockEvent) message;</span>
+<span class="fc" id="L98">                tbe.dtoParser(dtoParser);</span>
+<span class="fc" id="L99">                tbe.replay(postBlockChainProcessor);</span>
+            }
+        }
+
+<span class="fc" id="L103">    }</span>
+
+<span class="fc" id="L105">    static class TransactionLog {</span>
+<span class="fc" id="L106">        private final List&lt;SignedMessage&gt; messages = new ArrayList&lt;&gt;();</span>
+
+        public void add(TransactionBlockEvent transactionBlockEvent) {
+<span class="fc" id="L109">            add(transactionBlockEvent, (int) transactionBlockEvent.blockNumber());</span>
+<span class="fc" id="L110">        }</span>
+
+        public void add(EndOfRoundBlockEvent endOfRoundBlockEvent) {
+<span class="fc" id="L113">            add(endOfRoundBlockEvent, (int) endOfRoundBlockEvent.blockNumber());</span>
+<span class="fc" id="L114">        }</span>
+
+        synchronized void add(SignedMessage msg, int blockNumber) {
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">            if (blockNumber &lt; messages.size()) {</span>
+<span class="nc" id="L118">                System.out.println(&quot;Duplicate message id: &quot; + blockNumber + &quot; size: &quot; + messages.size() + &quot; was &quot; + msg.getClass());</span>
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">            } else if (blockNumber &gt; messages.size()) {</span>
+<span class="nc" id="L120">                System.out.println(&quot;Missing message id: &quot; + blockNumber);</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">            } else if (msg instanceof TransactionBlockEvent) {</span>
+<span class="fc" id="L122">                messages.add(((TransactionBlockEvent&lt;?&gt;) msg).deepCopy());</span>
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">            } else if (msg instanceof EndOfRoundBlockEvent) {</span>
+<span class="fc" id="L124">                messages.add(((EndOfRoundBlockEvent) msg).deepCopy());</span>
+            } else {
+<span class="nc" id="L126">                Jvm.warn().on(getClass(), &quot;Unknown &quot; + msg.getClass());</span>
+            }
+<span class="fc" id="L128">        }</span>
+
+        synchronized SignedMessage get(int index) {
+<span class="fc" id="L131">            return messages.get(index);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

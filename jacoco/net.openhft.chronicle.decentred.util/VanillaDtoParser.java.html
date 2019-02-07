@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VanillaDtoParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.util</a> &gt; <span class="el_source">VanillaDtoParser.java</span></div><h1>VanillaDtoParser.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.util;
+
+import net.openhft.chronicle.bytes.Bytes;
+import net.openhft.chronicle.core.Jvm;
+import net.openhft.chronicle.decentred.dto.VanillaSignedMessage;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
+
+public class VanillaDtoParser&lt;T&gt; implements DtoParser&lt;T&gt; {
+    private final Class&lt;T&gt; clazz;
+
+    private final IntObjMap&lt;DtoParselet&gt; parseletMap;
+    private final Map&lt;Class, Method&gt; classConsumerMap;
+
+<span class="fc" id="L17">    public VanillaDtoParser(Class&lt;T&gt; clazz, IntObjMap&lt;DtoParselet&gt; parseletMap, Map&lt;Class, Method&gt; classConsumerMap) {</span>
+<span class="fc" id="L18">        this.clazz = clazz;</span>
+<span class="fc" id="L19">        this.parseletMap = parseletMap;</span>
+<span class="fc" id="L20">        this.classConsumerMap = classConsumerMap;</span>
+<span class="fc" id="L21">    }</span>
+
+    @Override
+    public void parseOne(Bytes bytes, T listener) {
+<span class="fc" id="L25">        int protocolMessageType = bytes.readInt(bytes.readPosition() + VanillaSignedMessage.MESSAGE_TYPE);</span>
+<span class="fc" id="L26">        DtoParselet parselet = parseletMap.get(protocolMessageType);</span>
+<span class="pc bpc" id="L27" title="1 of 2 branches missed.">        if (parselet == null)</span>
+<span class="nc" id="L28">            Jvm.warn().on(getClass(), &quot;Unable to find a parselet for protocol &quot; + (protocolMessageType &gt;&gt;&gt; 16) + &quot; messageType &quot; + (protocolMessageType &amp; 0xFFFF));</span>
+        else
+<span class="fc" id="L30">            parselet.parse(bytes, listener);</span>
+<span class="fc" id="L31">    }</span>
+
+    @Override
+    public void onMessage(T component, Object message) {
+<span class="nc" id="L35">        Method consumer = classConsumerMap.get(message.getClass());</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">        if (consumer == null)</span>
+<span class="nc" id="L37">            Jvm.warn().on(getClass(), &quot;Unable to find a consumer for &quot; + message.getClass());</span>
+        else
+            try {
+<span class="nc" id="L40">                consumer.invoke(component, message);</span>
+<span class="nc" id="L41">            } catch (IllegalAccessException | InvocationTargetException e) {</span>
+<span class="nc" id="L42">                Jvm.warn().on(getClass(), &quot;Unable to invoke &quot; + consumer + &quot; &quot; + message, e);</span>
+<span class="nc" id="L43">            }</span>
+<span class="nc" id="L44">    }</span>
+
+    @Override
+    public Class&lt;T&gt; superInterface() {
+<span class="fc" id="L48">        return clazz;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

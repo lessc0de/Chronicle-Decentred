@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SmallIntObjMap.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.util</a> &gt; <span class="el_source">SmallIntObjMap.java</span></div><h1>SmallIntObjMap.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.util;
+
+import com.koloboke.function.IntObjConsumer;
+
+public class SmallIntObjMap&lt;V&gt; extends IntObjMap&lt;V&gt; {
+    private final int[] keys;
+    private final V[] values;
+<span class="nc" id="L8">    private int size = 0;</span>
+
+<span class="nc" id="L10">    public SmallIntObjMap(int capacity) {</span>
+<span class="nc" id="L11">        keys = new int[capacity];</span>
+<span class="nc" id="L12">        values = (V[]) new Object[capacity];</span>
+<span class="nc" id="L13">    }</span>
+
+    @Override
+    public void justPut(int key, V value) {
+<span class="nc bnc" id="L17" title="All 2 branches missed.">        for (int i = 0; i &lt; size; i++) {</span>
+<span class="nc bnc" id="L18" title="All 2 branches missed.">            if (keys[i] == key) {</span>
+<span class="nc" id="L19">                values[i] = value;</span>
+<span class="nc" id="L20">                return;</span>
+            }
+        }
+<span class="nc" id="L23">        keys[size] = key;</span>
+<span class="nc" id="L24">        values[size] = value;</span>
+<span class="nc" id="L25">        size++;</span>
+<span class="nc" id="L26">    }</span>
+
+    @Override
+    public V get(int key) {
+<span class="nc bnc" id="L30" title="All 2 branches missed.">        for (int i = 0; i &lt; size; i++) {</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">            if (keys[i] == key) {</span>
+<span class="nc" id="L32">                return values[i];</span>
+            }
+        }
+<span class="nc" id="L35">        return null;</span>
+    }
+
+    @Override
+    public int size() {
+<span class="nc" id="L40">        return size;</span>
+    }
+
+    @Override
+    public boolean containsKey(int key) {
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        for (int i = 0; i &lt; size; i++) {</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">            if (keys[i] == key) {</span>
+<span class="nc" id="L47">                return true;</span>
+            }
+        }
+<span class="nc" id="L50">        return false;</span>
+    }
+
+    @Override
+    public void clear() {
+<span class="nc" id="L55">        size = 0;</span>
+<span class="nc" id="L56">    }</span>
+
+    @Override
+    public void forEach(IntObjConsumer&lt;? super V&gt; longObjConsumer) {
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        for (int i = 0; i &lt; size; i++) {</span>
+<span class="nc" id="L61">            longObjConsumer.accept(keys[i], values[i]);</span>
+        }
+<span class="nc" id="L63">    }</span>
+
+    @Override
+    public String toString() {
+<span class="nc" id="L67">        StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L68">        sb.append(&quot;{ &quot;);</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        for (int i = 0; i &lt; size; i++) {</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">            if (i &gt; 0)</span>
+<span class="nc" id="L71">                sb.append(&quot;, &quot;);</span>
+<span class="nc" id="L72">            sb.append(keys[i]).append(&quot;=&quot;).append(values[i]);</span>
+        }
+<span class="nc" id="L74">        sb.append(&quot;}&quot;);</span>
+<span class="nc" id="L75">        return sb.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

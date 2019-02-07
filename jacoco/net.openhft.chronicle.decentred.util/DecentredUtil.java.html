@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DecentredUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.util</a> &gt; <span class="el_source">DecentredUtil.java</span></div><h1>DecentredUtil.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.util;
+
+import net.openhft.chronicle.bytes.AppendableUtil;
+import net.openhft.chronicle.bytes.Bytes;
+import net.openhft.chronicle.bytes.BytesStore;
+import net.openhft.chronicle.salt.Ed25519;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+
+<span class="fc" id="L12">public enum DecentredUtil {</span>
+    ;
+    public static final long MASK_32 = 0x0000_0000_FFFF_FFFFL;
+    public static final int MASK_16 = 0xFFFF;
+    static final long ADDRESS_MASK = 0x1FFF_FFFF_FFFF_FFFFL;
+    static final long TOP_3 = 0xE000_0000_0000_0000L;
+    private static final int MASK_8 = 0xFF;
+
+
+    public static long parseAddress(CharSequence text) {
+<span class="pc bpc" id="L22" title="1 of 4 branches missed.">        switch (count(text, ':')) {</span>
+            case 0:
+<span class="fc" id="L24">                return parseBase32(text);</span>
+            case 1:
+<span class="fc" id="L26">                return parseIpPort(text.toString());</span>
+            case 2:
+<span class="fc" id="L28">                return parseIpPortKey(text.toString());</span>
+            default:
+<span class="nc" id="L30">                throw new IllegalArgumentException(&quot;Not an address format '&quot; + text + &quot;'&quot;);</span>
+        }
+    }
+
+    private static int count(CharSequence cs, char ch) {
+<span class="fc" id="L35">        int n = 0;</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        for (int i = 0; i &lt; cs.length(); i++)</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">            if (ch == cs.charAt(i))</span>
+<span class="fc" id="L38">                n++;</span>
+<span class="fc" id="L39">        return n;</span>
+    }
+
+    private static long parseBase32(CharSequence cs) {
+<span class="fc" id="L43">        return LetterBase32.decode(cs) | ~ADDRESS_MASK;</span>
+    }
+
+    private static long parseIpPortKey(String text) {
+<span class="fc" id="L47">        int last = text.lastIndexOf(':');</span>
+<span class="fc" id="L48">        return parseIpPort(text.substring(0, last))</span>
+<span class="fc" id="L49">                + Integer.parseInt(text.substring(last + 1), 16);</span>
+    }
+
+    private static long parseIpPort(String text) {
+        try {
+<span class="fc" id="L54">            int last = text.lastIndexOf(':');</span>
+<span class="fc" id="L55">            InetAddress address = InetAddress.getByName(text.substring(0, last));</span>
+<span class="fc" id="L56">            int port = Integer.parseInt(text.substring(last + 1));</span>
+<span class="fc" id="L57">            return ((long) address.hashCode() &lt;&lt; 32) + ((port &amp; MASK_16) &lt;&lt; 16);</span>
+<span class="nc" id="L58">        } catch (UnknownHostException e) {</span>
+<span class="nc" id="L59">            throw new IllegalArgumentException(&quot;Not an address format '&quot; + text + &quot;'&quot;, e);</span>
+        }
+    }
+
+
+    public static long toAddress(BytesStore publicKey) {
+<span class="fc" id="L65">        return publicKey.readLong(publicKey.readLimit() - Long.BYTES);</span>
+    }
+
+    public static BytesStore testPrivateKey(long seed) {
+<span class="fc" id="L69">        Bytes privateKey = Bytes.allocateDirect(Ed25519.PRIVATE_KEY_LENGTH);</span>
+<span class="fc" id="L70">        privateKey.zeroOut(0, Ed25519.PRIVATE_KEY_LENGTH);</span>
+<span class="fc" id="L71">        privateKey.writeSkip(Ed25519.PRIVATE_KEY_LENGTH - Long.BYTES);</span>
+<span class="fc" id="L72">        privateKey.writeLong(seed);</span>
+<span class="fc" id="L73">        return privateKey;</span>
+    }
+
+    public static String toAddressString(long address) {
+<span class="fc" id="L77">        StringBuilder sb = new StringBuilder(13);</span>
+<span class="fc" id="L78">        appendAddress(sb, address);</span>
+<span class="fc" id="L79">        return sb.toString();</span>
+    }
+
+    public static void appendAddress(StringBuilder text, long value) {
+        // plain address
+<span class="fc bfc" id="L84" title="All 2 branches covered.">        if (isAddressNamed(value))</span>
+<span class="fc" id="L85">            base32(text, value &amp; ADDRESS_MASK);</span>
+        else
+<span class="fc" id="L87">            ipPortKey(text, value);</span>
+<span class="fc" id="L88">    }</span>
+
+    public static boolean isAddressNamed(long value) {
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        return (value &amp; TOP_3) == TOP_3;</span>
+    }
+
+    private static void base32(StringBuilder text, long value) {
+<span class="fc" id="L95">        LetterBase32.encode(text, value &amp; ADDRESS_MASK);</span>
+<span class="fc" id="L96">    }</span>
+
+    private static void ipPortKey(StringBuilder text, long value) {
+<span class="fc" id="L99">        AppendableUtil.append(text, (value &gt;&gt; 56) &amp; MASK_8);</span>
+<span class="fc" id="L100">        text.append('.');</span>
+<span class="fc" id="L101">        AppendableUtil.append(text, (value &gt;&gt; 48) &amp; MASK_8);</span>
+<span class="fc" id="L102">        text.append('.');</span>
+<span class="fc" id="L103">        AppendableUtil.append(text, (value &gt;&gt; 40) &amp; MASK_8);</span>
+<span class="fc" id="L104">        text.append('.');</span>
+<span class="fc" id="L105">        AppendableUtil.append(text, (value &gt;&gt; 32) &amp; MASK_8);</span>
+<span class="fc" id="L106">        text.append(':');</span>
+<span class="fc" id="L107">        AppendableUtil.append(text, (value &gt;&gt; 16) &amp; MASK_16);</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        if ((value &amp; MASK_16) != 0) {</span>
+<span class="fc" id="L109">            text.append(':');</span>
+<span class="fc" id="L110">            text.append(Integer.toHexString((int) (value &amp; MASK_16)));</span>
+        }
+<span class="fc" id="L112">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

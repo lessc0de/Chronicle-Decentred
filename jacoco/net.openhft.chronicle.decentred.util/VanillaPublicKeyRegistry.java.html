@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VanillaPublicKeyRegistry.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.util</a> &gt; <span class="el_source">VanillaPublicKeyRegistry.java</span></div><h1>VanillaPublicKeyRegistry.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.util;
+
+import net.openhft.chronicle.bytes.BytesStore;
+import net.openhft.chronicle.salt.Ed25519;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+<span class="fc" id="L9">public class VanillaPublicKeyRegistry implements PublicKeyRegistry {</span>
+<span class="fc" id="L10">    private final Map&lt;Long, BytesStore&gt; publicKeyMap = new ConcurrentHashMap&lt;&gt;();</span>
+    private boolean internal;
+
+    @Override
+    public void register(long address, BytesStore publicKey) {
+<span class="fc" id="L15">        publicKeyMap.put(address, publicKey.copy());</span>
+<span class="fc" id="L16">    }</span>
+
+    @Override
+    public Boolean verify(long address, BytesStore sigAndMsg) {
+<span class="nc bnc" id="L20" title="All 2 branches missed.">        if (internal)</span>
+<span class="nc" id="L21">            return true;</span>
+<span class="nc" id="L22">        BytesStore publicKey = publicKeyMap.get(address);</span>
+<span class="nc bnc" id="L23" title="All 2 branches missed.">        if (publicKey == null) return null;</span>
+<span class="nc" id="L24">        return Ed25519.verify(sigAndMsg, publicKey);</span>
+    }
+
+    @Override
+    public boolean internal() {
+<span class="nc" id="L29">        return internal;</span>
+    }
+
+    @Override
+    public PublicKeyRegistry internal(boolean internal) {
+<span class="fc" id="L34">        this.internal = internal;</span>
+<span class="fc" id="L35">        return this;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

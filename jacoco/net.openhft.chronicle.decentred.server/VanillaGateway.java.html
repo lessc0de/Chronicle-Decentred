@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VanillaGateway.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.server</a> &gt; <span class="el_source">VanillaGateway.java</span></div><h1>VanillaGateway.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.server;
+
+import net.openhft.chronicle.bytes.BytesStore;
+import net.openhft.chronicle.core.annotation.UsedViaReflection;
+import net.openhft.chronicle.decentred.api.Verifier;
+import net.openhft.chronicle.decentred.dto.*;
+import net.openhft.chronicle.decentred.remote.net.TCPConnection;
+import net.openhft.chronicle.decentred.util.DecentredUtil;
+import net.openhft.chronicle.decentred.util.DtoRegistry;
+import net.openhft.chronicle.decentred.util.PublicKeyRegistry;
+import net.openhft.chronicle.decentred.util.VanillaPublicKeyRegistry;
+
+/**
+ * This accepts message from the RPCServer and passes them to the appropriate downstream component
+ */
+public class VanillaGateway implements Gateway {
+<span class="fc" id="L17">    private static final long MAIN_CHAIN = DecentredUtil.parseAddress(&quot;main&quot;);</span>
+    //    private final long address;
+    private final long chainAddress;
+    private final BlockEngine main;
+    private final BlockEngine local;
+    private final VanillaVerifyIP verifyIP;
+    private DecentredServer decentredServer;
+<span class="fc" id="L24">    private PublicKeyRegistry publicKeyRegistry = new VanillaPublicKeyRegistry();</span>
+
+<span class="fc" id="L26">    public VanillaGateway(long address, long chainAddress, BlockEngine main, BlockEngine local) {</span>
+//        this.address = address;
+<span class="fc" id="L28">        this.chainAddress = chainAddress;</span>
+<span class="fc" id="L29">        this.main = main;</span>
+<span class="fc" id="L30">        this.local = local;</span>
+<span class="pc" id="L31">        verifyIP = new VanillaVerifyIP(addr -&gt; (Verifier) decentredServer.to(addr));</span>
+<span class="fc" id="L32">    }</span>
+
+    public static &lt;T&gt; VanillaGateway newGateway(DtoRegistry&lt;T&gt; dtoRegistry,
+                                                long address,
+                                                String regionStr,
+                                                long[] clusterAddresses,
+                                                int mainPeriodMS,
+                                                int localPeriodMS,
+                                                T mainTransactionProcessor,
+                                                T localTransactionPrcoessor) {
+<span class="fc" id="L42">        long region = DecentredUtil.parseAddress(regionStr);</span>
+<span class="fc" id="L43">        return new VanillaGateway(address,</span>
+                region,
+<span class="fc" id="L45">                VanillaBlockEngine.newMain(dtoRegistry, address, mainPeriodMS, clusterAddresses, mainTransactionProcessor),</span>
+<span class="fc" id="L46">                VanillaBlockEngine.newLocal(dtoRegistry, address, region, localPeriodMS, clusterAddresses, localTransactionPrcoessor)</span>
+        );
+    }
+
+    @Override
+    public void start(DecentredServer decentredServer) {
+<span class="fc" id="L52">        this.decentredServer = decentredServer;</span>
+<span class="fc" id="L53">        main.start(decentredServer);</span>
+<span class="fc" id="L54">        local.start(decentredServer);</span>
+<span class="fc" id="L55">    }</span>
+
+    public void tcpMessageListener(DecentredServer decentredServer) {
+<span class="nc" id="L58">        this.decentredServer = decentredServer;</span>
+<span class="nc" id="L59">        main.tcpMessageListener(decentredServer);</span>
+<span class="nc" id="L60">        local.tcpMessageListener(decentredServer);</span>
+<span class="nc" id="L61">    }</span>
+
+    @UsedViaReflection
+    public void processOneBlock() {
+<span class="nc" id="L65">        main.processOneBlock();</span>
+<span class="nc" id="L66">        local.processOneBlock();</span>
+<span class="nc" id="L67">    }</span>
+
+    @Override
+    public void createAddressRequest(CreateAddressRequest createAddressRequest) {
+<span class="fc" id="L71">        BytesStore publicKey = createAddressRequest.publicKey();</span>
+<span class="fc" id="L72">        long address = DecentredUtil.toAddress(publicKey);</span>
+<span class="fc" id="L73">        decentredServer.register(address, publicKey);</span>
+<span class="fc" id="L74">        decentredServer.subscribe(address);</span>
+<span class="fc" id="L75">        main.onMessage(createAddressRequest);</span>
+<span class="fc" id="L76">    }</span>
+
+    @Override
+    public void createChainRequest(CreateChainRequest createChainRequest) {
+<span class="nc" id="L80">        main.createChainRequest(createChainRequest);</span>
+<span class="nc" id="L81">    }</span>
+
+    @Override
+    public void createTokenRequest(CreateTokenRequest createTokenRequest) {
+<span class="nc" id="L85">        main.createTokenRequest(createTokenRequest);</span>
+<span class="nc" id="L86">    }</span>
+
+    @Override
+    public void verificationEvent(VerificationEvent verificationEvent) {
+<span class="nc" id="L90">        verifyIP.verificationEvent(verificationEvent);</span>
+<span class="nc" id="L91">    }</span>
+
+    @Override
+    public void invalidationEvent(InvalidationEvent invalidationEvent) {
+<span class="nc" id="L95">        verifyIP.invalidationEvent(invalidationEvent);</span>
+<span class="nc" id="L96">    }</span>
+
+    @Override
+    public void transactionBlockEvent(TransactionBlockEvent transactionBlockEvent) {
+<span class="nc" id="L100">        long chainAddress = transactionBlockEvent.chainAddress();</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (isMainChain(chainAddress))</span>
+<span class="nc" id="L102">            main.transactionBlockEvent(transactionBlockEvent);</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        else if (this.chainAddress == chainAddress)</span>
+<span class="nc" id="L104">            local.transactionBlockEvent(transactionBlockEvent);</span>
+        else
+<span class="nc" id="L106">            System.err.println(&quot;Unknown chainAddress &quot; + DecentredUtil.toAddressString(chainAddress));</span>
+<span class="nc" id="L107">    }</span>
+
+    private boolean isMainChain(long chainAddress) {
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        return chainAddress == MAIN_CHAIN;</span>
+    }
+
+    @Override
+    public void transactionBlockGossipEvent(TransactionBlockGossipEvent transactionBlockGossipEvent) {
+<span class="nc" id="L115">        long chainAddress = transactionBlockGossipEvent.chainAddress();</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (isMainChain(chainAddress))</span>
+<span class="nc" id="L117">            main.transactionBlockGossipEvent(transactionBlockGossipEvent);</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        else if (this.chainAddress == chainAddress)</span>
+<span class="nc" id="L119">            local.transactionBlockGossipEvent(transactionBlockGossipEvent);</span>
+        else
+<span class="nc" id="L121">            System.err.println(&quot;Unknown chainAddress &quot; + DecentredUtil.toAddressString(chainAddress));</span>
+<span class="nc" id="L122">    }</span>
+
+    @Override
+    public void transactionBlockVoteEvent(TransactionBlockVoteEvent transactionBlockVoteEvent) {
+<span class="nc" id="L126">        long chainAddress = transactionBlockVoteEvent.chainAddress();</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        if (isMainChain(chainAddress))</span>
+<span class="nc" id="L128">            main.transactionBlockVoteEvent(transactionBlockVoteEvent);</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        else if (this.chainAddress == chainAddress)</span>
+<span class="nc" id="L130">            local.transactionBlockVoteEvent(transactionBlockVoteEvent);</span>
+        else
+<span class="nc" id="L132">            System.err.println(&quot;Unknown chainAddress &quot; + DecentredUtil.toAddressString(chainAddress));</span>
+<span class="nc" id="L133">    }</span>
+
+    @Override
+    public void endOfRoundBlockEvent(EndOfRoundBlockEvent endOfRoundBlockEvent) {
+<span class="nc" id="L137">        long chainAddress = endOfRoundBlockEvent.chainAddress();</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        if (isMainChain(chainAddress))</span>
+<span class="nc" id="L139">            main.endOfRoundBlockEvent(endOfRoundBlockEvent);</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        else if (this.chainAddress == chainAddress)</span>
+<span class="nc" id="L141">            local.endOfRoundBlockEvent(endOfRoundBlockEvent);</span>
+        else
+<span class="nc" id="L143">            System.err.println(&quot;Unknown chainAddress &quot; + this.chainAddress);</span>
+<span class="nc" id="L144">    }</span>
+
+    public void createAddressEvent(CreateAddressEvent createAddressEvent) {
+        // received as a weekly event
+<span class="fc" id="L148">        checkTrusted(createAddressEvent);</span>
+<span class="fc" id="L149">        publicKeyRegistry.register(createAddressEvent.address(),</span>
+<span class="fc" id="L150">                createAddressEvent.publicKey());</span>
+<span class="fc" id="L151">    }</span>
+
+    private void checkTrusted(SignedMessage message) {
+
+<span class="fc" id="L155">    }</span>
+
+    @Override
+    public void close() {
+//        main.close();
+//        local.close();
+<span class="nc" id="L161">    }</span>
+
+    @Override
+    public void onConnection(TCPConnection connection) {
+<span class="nc" id="L165">        Gateway.super.onConnection(connection);</span>
+<span class="nc" id="L166">        verifyIP.onConnection(connection);</span>
+<span class="nc" id="L167">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

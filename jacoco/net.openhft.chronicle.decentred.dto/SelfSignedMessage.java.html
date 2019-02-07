@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SelfSignedMessage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.dto</a> &gt; <span class="el_source">SelfSignedMessage.java</span></div><h1>SelfSignedMessage.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.dto;
+
+import net.openhft.chronicle.bytes.Bytes;
+import net.openhft.chronicle.bytes.BytesStore;
+import net.openhft.chronicle.salt.Ed25519;
+
+/**
+ * This message states this node verifies a given public key after connecting to it successfully.
+ */
+<span class="pc bpc" id="L10" title="1 of 2 branches missed.">public class SelfSignedMessage&lt;M extends SelfSignedMessage&lt;M&gt;&gt; extends VanillaSignedMessage&lt;M&gt; {</span>
+<span class="fc" id="L11">    private final Bytes publicKey = Bytes.allocateElasticDirect(Ed25519.PUBLIC_KEY_LENGTH);</span>
+
+<span class="fc" id="L13">    public SelfSignedMessage() {</span>
+<span class="fc" id="L14">    }</span>
+
+    @Override
+    public boolean hasPublicKey() {
+<span class="fc" id="L18">        return true;</span>
+    }
+
+    @Override
+    public M publicKey(BytesStore key) {
+<span class="pc bpc" id="L23" title="2 of 4 branches missed.">        assert !signed();</span>
+<span class="fc" id="L24">        long offset = key.readLimit() - Ed25519.PUBLIC_KEY_LENGTH;</span>
+<span class="fc" id="L25">        this.publicKey.clear().write(key, offset, Ed25519.PUBLIC_KEY_LENGTH);</span>
+<span class="fc" id="L26">        return (M) this;</span>
+    }
+
+    public BytesStore publicKey() {
+<span class="fc" id="L30">        return publicKey;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

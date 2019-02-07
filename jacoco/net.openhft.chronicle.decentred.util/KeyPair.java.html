@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KeyPair.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.util</a> &gt; <span class="el_source">KeyPair.java</span></div><h1>KeyPair.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.util;
+
+import net.openhft.chronicle.bytes.Bytes;
+import net.openhft.chronicle.salt.Ed25519;
+
+public class KeyPair {
+<span class="pc" id="L7">    public final Bytes&lt;Void&gt; publicKey = Bytes.allocateDirect(Ed25519.PUBLIC_KEY_LENGTH);</span>
+<span class="pc" id="L8">    public final Bytes&lt;Void&gt; secretKey = Bytes.allocateDirect(Ed25519.SECRET_KEY_LENGTH);</span>
+
+    /**
+     * Generate a new public and secret key pair using a random seed.
+     */
+<span class="nc" id="L13">    public KeyPair() {</span>
+<span class="nc" id="L14">        Ed25519.generatePublicAndSecretKey(publicKey, secretKey);</span>
+<span class="nc" id="L15">    }</span>
+
+    /**
+     * Only use this for testing
+     *
+     * @param id to regr
+     */
+<span class="fc" id="L22">    public KeyPair(long id) {</span>
+<span class="fc" id="L23">        Bytes&lt;Void&gt; privateKey = Bytes.allocateDirect(Ed25519.PRIVATE_KEY_LENGTH);</span>
+<span class="fc" id="L24">        privateKey.zeroOut(0, Ed25519.PRIVATE_KEY_LENGTH);</span>
+<span class="fc" id="L25">        privateKey.writeLong(Ed25519.PRIVATE_KEY_LENGTH - Long.BYTES, id);</span>
+<span class="fc" id="L26">        privateKey.writeSkip(Ed25519.PRIVATE_KEY_LENGTH);</span>
+<span class="fc" id="L27">        Ed25519.privateToPublicAndSecret(publicKey, secretKey, privateKey);</span>
+<span class="fc" id="L28">        privateKey.release();</span>
+<span class="fc" id="L29">    }</span>
+
+    @Deprecated
+<span class="fc" id="L32">    public KeyPair(char ch) {</span>
+<span class="fc" id="L33">        Bytes&lt;Void&gt; privateKey = Bytes.allocateDirect(Ed25519.PRIVATE_KEY_LENGTH);</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        while (privateKey.writeRemaining() &gt; 0)</span>
+<span class="fc" id="L35">            privateKey.append(ch);</span>
+<span class="fc" id="L36">        Ed25519.privateToPublicAndSecret(publicKey, secretKey, privateKey);</span>
+<span class="fc" id="L37">        privateKey.release();</span>
+<span class="fc" id="L38">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

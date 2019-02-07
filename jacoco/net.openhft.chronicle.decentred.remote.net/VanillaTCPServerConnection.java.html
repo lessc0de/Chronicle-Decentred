@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VanillaTCPServerConnection.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.remote.net</a> &gt; <span class="el_source">VanillaTCPServerConnection.java</span></div><h1>VanillaTCPServerConnection.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.remote.net;
+
+import net.openhft.chronicle.bytes.Bytes;
+import net.openhft.chronicle.core.Jvm;
+
+import java.io.EOFException;
+import java.io.IOException;
+import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.SocketChannel;
+
+public class VanillaTCPServerConnection extends AbstractTCPConnection implements Runnable {
+    private final TCPServer tcpServer;
+
+    public VanillaTCPServerConnection(TCPServer tcpServer, SocketChannel channel) throws SocketException {
+<span class="fc" id="L17">        super(channel);</span>
+<span class="fc" id="L18">        this.tcpServer = tcpServer;</span>
+<span class="fc" id="L19">        channel.socket().setSendBufferSize(1 &lt;&lt; 20);</span>
+<span class="fc" id="L20">        channel.socket().setReceiveBufferSize(2 &lt;&lt; 20);</span>
+//        channel.socket().setTcpNoDelay(true);
+<span class="fc" id="L22">    }</span>
+
+    private static ByteBuffer[] createHeaderArray() {
+<span class="nc" id="L25">        ByteBuffer header = ByteBuffer.allocateDirect(4).order(ByteOrder.LITTLE_ENDIAN);</span>
+<span class="nc" id="L26">        ByteBuffer[] ret = {header, null};</span>
+<span class="nc" id="L27">        return ret;</span>
+    }
+
+    @Override
+    public void run() {
+        try {
+<span class="fc" id="L33">            tcpServer.connectionListener().onNewConnection(tcpServer, this);</span>
+<span class="fc" id="L34">            Bytes&lt;ByteBuffer&gt; readBytes = Bytes.elasticByteBuffer(MAX_MESSAGE_SIZE);</span>
+
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">            while (running) {</span>
+<span class="fc" id="L37">                readChannel(readBytes);</span>
+            }
+<span class="fc" id="L39">        } catch (EOFException eof) {</span>
+            // connection closed
+<span class="nc" id="L41">        } catch (Throwable t) {</span>
+<span class="nc" id="L42">            Jvm.pause(1);</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">            if (running)</span>
+<span class="nc" id="L44">                t.printStackTrace();</span>
+
+        } finally {
+<span class="fc" id="L47">            tcpServer.connectionListener().onClosedConnection(tcpServer, this);</span>
+        }
+<span class="fc" id="L49">    }</span>
+
+    @Override
+    protected void waitForReconnect() {
+        // never reconnects
+<span class="fc" id="L54">    }</span>
+
+    @Override
+    protected void onMessage(Bytes&lt;ByteBuffer&gt; bytes) throws IOException {
+<span class="fc" id="L58">        tcpServer.connectionListener().onMessage(tcpServer, this, bytes);</span>
+<span class="fc" id="L59">    }</span>
+
+    @Override
+    protected void close2() {
+
+<span class="fc" id="L64">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

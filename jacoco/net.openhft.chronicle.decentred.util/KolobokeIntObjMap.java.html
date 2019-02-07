@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KolobokeIntObjMap.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.util</a> &gt; <span class="el_source">KolobokeIntObjMap.java</span></div><h1>KolobokeIntObjMap.java</h1><pre class="source lang-java linenums">
+
+package net.openhft.chronicle.decentred.util;
+
+import java.util.Arrays;
+import java.util.ConcurrentModificationException;
+import javax.annotation.Generated;
+import com.koloboke.collect.hash.HashConfig;
+import com.koloboke.collect.impl.hash.HashConfigWrapper;
+import com.koloboke.collect.impl.IntArrays;
+import com.koloboke.function.IntObjConsumer;
+import com.koloboke.collect.impl.hash.LHash;
+import com.koloboke.collect.impl.hash.LHashCapacities;
+import com.koloboke.collect.impl.Maths;
+import java.util.Random;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.concurrent.ThreadLocalRandom;
+
+<span class="pc bpc" id="L19" title="1 of 2 branches missed.">@Generated(value = &quot;com.koloboke.compile.processor.KolobokeCollectionProcessor&quot;)</span>
+@SuppressFBWarnings(value = { &quot;IA_AMBIGUOUS_INVOCATION_OF_INHERITED_OR_OUTER_METHOD&quot; })
+@SuppressWarnings(value = { &quot;all&quot; , &quot;unsafe&quot; , &quot;deprecation&quot; , &quot;overloads&quot; , &quot;rawtypes&quot; })
+final class KolobokeIntObjMap&lt;V&gt;  extends IntObjMap&lt;V&gt; {
+<span class="fc" id="L23">    KolobokeIntObjMap(int expectedSize) {</span>
+<span class="fc" id="L24">        this.init(DEFAULT_CONFIG_WRAPPER, expectedSize);</span>
+<span class="fc" id="L25">    }</span>
+
+    static void verifyConfig(HashConfig config) {
+<span class="pc bpc" id="L28" title="1 of 2 branches missed.">        if ((config.getGrowthFactor()) != 2.0) {</span>
+<span class="nc" id="L29">            throw new IllegalArgumentException(((((((config + &quot; passed, HashConfig for a hashtable\n&quot;) + &quot;implementation with linear probing must have growthFactor of 2.0.\n&quot;) + &quot;A Koloboke Compile-generated hashtable implementation could have\n&quot;) + &quot;a different growth factor, if the implemented type is annotated with\n&quot;) + &quot;@com.koloboke.compile.hash.algo.openaddressing.QuadraticProbing or\n&quot;) + &quot;@com.koloboke.compile.hash.algo.openaddressing.DoubleHashing&quot;));</span>
+        } 
+<span class="fc" id="L31">    }</span>
+
+    int freeValue;
+
+    V[] values;
+
+    int[] set;
+
+    public final boolean isEmpty() {
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        return (size()) == 0;</span>
+    }
+
+    private HashConfigWrapper configWrapper;
+
+    public boolean containsKey(int key) {
+<span class="nc" id="L46">        return contains(key);</span>
+    }
+
+    int size;
+
+    private int maxSize;
+
+<span class="pc" id="L53">    private int modCount = 0;</span>
+
+    public int capacity() {
+<span class="nc" id="L56">        return set.length;</span>
+    }
+
+    final void init(HashConfigWrapper configWrapper, int size, int freeValue) {
+<span class="nc" id="L60">        KolobokeIntObjMap.this.freeValue = freeValue;</span>
+<span class="nc" id="L61">        init(configWrapper, size);</span>
+<span class="nc" id="L62">    }</span>
+
+    @Override
+    public final int size() {
+<span class="fc" id="L66">        return size;</span>
+    }
+
+    public final int modCount() {
+<span class="fc" id="L70">        return modCount;</span>
+    }
+
+    final void incrementModCount() {
+<span class="fc" id="L74">        (modCount)++;</span>
+<span class="fc" id="L75">    }</span>
+
+    public boolean contains(int key) {
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        return (index(key)) &gt;= 0;</span>
+    }
+
+    int index(int key) {
+        int free;
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">        if (key != (free = freeValue)) {</span>
+<span class="fc" id="L84">            int[] keys = set;</span>
+            int capacityMask;
+            int index;
+            int cur;
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">            if ((cur = keys[(index = (LHash.SeparateKVIntKeyMixing.mix(key)) &amp; (capacityMask = (keys.length) - 1))]) == key) {</span>
+<span class="fc" id="L89">                return index;</span>
+            } else {
+<span class="nc bnc" id="L91" title="All 2 branches missed.">                if (cur == free) {</span>
+<span class="nc" id="L92">                    return -1;</span>
+                } else {
+                    while (true) {
+<span class="nc bnc" id="L95" title="All 2 branches missed.">                        if ((cur = keys[(index = (index - 1) &amp; capacityMask)]) == key) {</span>
+<span class="nc" id="L96">                            return index;</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">                        } else if (cur == free) {</span>
+<span class="nc" id="L98">                            return -1;</span>
+                        } 
+                    }
+                }
+            }
+        } else {
+<span class="nc" id="L104">            return -1;</span>
+        }
+    }
+
+    final void init(HashConfigWrapper configWrapper, int size) {
+<span class="fc" id="L109">        KolobokeIntObjMap.verifyConfig(configWrapper.config());</span>
+<span class="fc" id="L110">        KolobokeIntObjMap.this.configWrapper = configWrapper;</span>
+<span class="fc" id="L111">        KolobokeIntObjMap.this.size = 0;</span>
+<span class="fc" id="L112">        internalInit(targetCapacity(size));</span>
+<span class="fc" id="L113">    }</span>
+
+    private void internalInit(int capacity) {
+<span class="pc bpc" id="L116" title="2 of 4 branches missed.">        assert Maths.isPowerOf2(capacity);</span>
+<span class="fc" id="L117">        maxSize = maxSize(capacity);</span>
+<span class="fc" id="L118">        allocateArrays(capacity);</span>
+<span class="fc" id="L119">    }</span>
+
+    private int maxSize(int capacity) {
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">        return !(isMaxCapacity(capacity)) ? configWrapper.maxSize(capacity) : capacity - 1;</span>
+    }
+
+    @Override
+    public V get(int key) {
+<span class="fc" id="L127">        int index = index(key);</span>
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">        if (index &gt;= 0) {</span>
+<span class="fc" id="L129">            return values[index];</span>
+        } else {
+<span class="nc" id="L131">            return null;</span>
+        }
+    }
+
+    private int findNewFreeOrRemoved() {
+<span class="nc" id="L136">        int free = KolobokeIntObjMap.this.freeValue;</span>
+<span class="nc" id="L137">        Random random = ThreadLocalRandom.current();</span>
+        int newFree;
+        {
+            do {
+<span class="nc" id="L141">                newFree = ((int) (random.nextInt()));</span>
+<span class="nc bnc" id="L142" title="All 4 branches missed.">            } while ((newFree == free) || ((index(newFree)) &gt;= 0) );</span>
+        }
+<span class="nc" id="L144">        return newFree;</span>
+    }
+
+    int insert(int key, V value) {
+        int free;
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">        if (key == (free = freeValue)) {</span>
+<span class="nc" id="L150">            free = changeFree();</span>
+        } 
+<span class="fc" id="L152">        int[] keys = set;</span>
+        int capacityMask;
+        int index;
+        int cur;
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">        keyAbsent : if ((cur = keys[(index = (LHash.SeparateKVIntKeyMixing.mix(key)) &amp; (capacityMask = (keys.length) - 1))]) != free) {</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">            if (cur == key) {</span>
+<span class="nc" id="L158">                return index;</span>
+            } else {
+                while (true) {
+<span class="nc bnc" id="L161" title="All 2 branches missed.">                    if ((cur = keys[(index = (index - 1) &amp; capacityMask)]) == free) {</span>
+<span class="nc" id="L162">                        break keyAbsent;</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">                    } else if (cur == key) {</span>
+<span class="nc" id="L164">                        return index;</span>
+                    } 
+                }
+            }
+        } 
+<span class="fc" id="L169">        incrementModCount();</span>
+<span class="fc" id="L170">        keys[index] = key;</span>
+<span class="fc" id="L171">        values[index] = value;</span>
+<span class="fc" id="L172">        postInsertHook();</span>
+<span class="fc" id="L173">        return -1;</span>
+    }
+
+    int changeFree() {
+<span class="nc" id="L177">        int mc = modCount();</span>
+<span class="nc" id="L178">        int newFree = findNewFreeOrRemoved();</span>
+<span class="nc" id="L179">        incrementModCount();</span>
+<span class="nc" id="L180">        mc++;</span>
+<span class="nc" id="L181">        IntArrays.replaceAll(set, freeValue, newFree);</span>
+<span class="nc" id="L182">        KolobokeIntObjMap.this.freeValue = newFree;</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L184">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L186">        return newFree;</span>
+    }
+
+    final void initForRehash(int newCapacity) {
+<span class="nc" id="L190">        (modCount)++;</span>
+<span class="nc" id="L191">        internalInit(newCapacity);</span>
+<span class="nc" id="L192">    }</span>
+
+    private void _UpdatableSeparateKVIntLHashSO_allocateArrays(int capacity) {
+<span class="fc" id="L195">        set = new int[capacity];</span>
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">        if ((freeValue) != 0)</span>
+<span class="nc" id="L197">            Arrays.fill(set, freeValue);</span>
+        
+<span class="fc" id="L199">    }</span>
+
+    private void _UpdatableLHash_clear() {
+<span class="nc" id="L202">        (modCount)++;</span>
+<span class="nc" id="L203">        size = 0;</span>
+<span class="nc" id="L204">    }</span>
+
+    private void _UpdatableSeparateKVIntLHashSO_clear() {
+<span class="nc" id="L207">        _UpdatableLHash_clear();</span>
+<span class="nc" id="L208">        Arrays.fill(set, freeValue);</span>
+<span class="nc" id="L209">    }</span>
+
+    @SuppressWarnings(value = &quot;unchecked&quot;)
+    void allocateArrays(int capacity) {
+<span class="fc" id="L213">        _UpdatableSeparateKVIntLHashSO_allocateArrays(capacity);</span>
+<span class="fc" id="L214">        values = ((V[]) (new Object[capacity]));</span>
+<span class="fc" id="L215">    }</span>
+
+    @Override
+    public void forEach(IntObjConsumer&lt;? super V&gt; action) {
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">        if (action == null)</span>
+<span class="nc" id="L220">            throw new NullPointerException();</span>
+        
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">        if (KolobokeIntObjMap.this.isEmpty())</span>
+<span class="nc" id="L223">            return ;</span>
+        
+<span class="fc" id="L225">        int mc = modCount();</span>
+<span class="fc" id="L226">        int free = freeValue;</span>
+<span class="fc" id="L227">        int[] keys = set;</span>
+<span class="fc" id="L228">        V[] vals = values;</span>
+<span class="fc bfc" id="L229" title="All 2 branches covered.">        for (int i = (keys.length) - 1; i &gt;= 0; i--) {</span>
+            int key;
+<span class="fc bfc" id="L231" title="All 2 branches covered.">            if ((key = keys[i]) != free) {</span>
+<span class="fc" id="L232">                action.accept(key, vals[i]);</span>
+            } 
+        }
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L236">            throw new ConcurrentModificationException();</span>
+        
+<span class="fc" id="L238">    }</span>
+
+    private void _UpdatableLHashSeparateKVIntObjMapSO_clear() {
+<span class="nc" id="L241">        _UpdatableSeparateKVIntLHashSO_clear();</span>
+<span class="nc" id="L242">        Arrays.fill(values, null);</span>
+<span class="nc" id="L243">    }</span>
+
+    final void postInsertHook() {
+<span class="pc bpc" id="L246" title="1 of 2 branches missed.">        if ((++(size)) &gt; (maxSize)) {</span>
+<span class="nc" id="L247">            int capacity = capacity();</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">            if (!(isMaxCapacity(capacity))) {</span>
+<span class="nc" id="L249">                rehash((capacity &lt;&lt; 1));</span>
+            } 
+        } 
+<span class="fc" id="L252">    }</span>
+
+    boolean doubleSizedArrays() {
+<span class="fc" id="L255">        return false;</span>
+    }
+
+    private int targetCapacity(int size) {
+<span class="fc" id="L259">        return LHashCapacities.capacity(configWrapper, size, doubleSizedArrays());</span>
+    }
+
+    private boolean isMaxCapacity(int capacity) {
+<span class="fc" id="L263">        return LHashCapacities.isMaxCapacity(capacity, doubleSizedArrays());</span>
+    }
+
+    @SuppressFBWarnings(value = &quot;EC_UNRELATED_TYPES_USING_POINTER_EQUALITY&quot;)
+    @Override
+    public String toString() {
+<span class="nc bnc" id="L269" title="All 2 branches missed.">        if (KolobokeIntObjMap.this.isEmpty())</span>
+<span class="nc" id="L270">            return &quot;{}&quot;;</span>
+        
+<span class="nc" id="L272">        StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L273">        int elementCount = 0;</span>
+<span class="nc" id="L274">        int mc = modCount();</span>
+<span class="nc" id="L275">        int free = freeValue;</span>
+<span class="nc" id="L276">        int[] keys = set;</span>
+<span class="nc" id="L277">        V[] vals = values;</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">        for (int i = (keys.length) - 1; i &gt;= 0; i--) {</span>
+            int key;
+<span class="nc bnc" id="L280" title="All 2 branches missed.">            if ((key = keys[i]) != free) {</span>
+<span class="nc" id="L281">                sb.append(' ');</span>
+<span class="nc" id="L282">                sb.append(key);</span>
+<span class="nc" id="L283">                sb.append('=');</span>
+<span class="nc" id="L284">                Object val = vals[i];</span>
+<span class="nc bnc" id="L285" title="All 2 branches missed.">                sb.append((val != ((Object) (KolobokeIntObjMap.this)) ? val : &quot;(this Map)&quot;));</span>
+<span class="nc" id="L286">                sb.append(',');</span>
+<span class="nc bnc" id="L287" title="All 2 branches missed.">                if ((++elementCount) == 8) {</span>
+<span class="nc" id="L288">                    int expectedLength = (sb.length()) * ((size()) / 8);</span>
+<span class="nc" id="L289">                    sb.ensureCapacity((expectedLength + (expectedLength / 2)));</span>
+                } 
+            } 
+        }
+<span class="nc bnc" id="L293" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L294">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L296">        sb.setCharAt(0, '{');</span>
+<span class="nc" id="L297">        sb.setCharAt(((sb.length()) - 1), '}');</span>
+<span class="nc" id="L298">        return sb.toString();</span>
+    }
+
+    void rehash(int newCapacity) {
+<span class="nc" id="L302">        int mc = modCount();</span>
+<span class="nc" id="L303">        int free = freeValue;</span>
+<span class="nc" id="L304">        int[] keys = set;</span>
+<span class="nc" id="L305">        V[] vals = values;</span>
+<span class="nc" id="L306">        initForRehash(newCapacity);</span>
+<span class="nc" id="L307">        mc++;</span>
+<span class="nc" id="L308">        int[] newKeys = set;</span>
+<span class="nc" id="L309">        int capacityMask = (newKeys.length) - 1;</span>
+<span class="nc" id="L310">        V[] newVals = values;</span>
+<span class="nc bnc" id="L311" title="All 2 branches missed.">        for (int i = (keys.length) - 1; i &gt;= 0; i--) {</span>
+            int key;
+<span class="nc bnc" id="L313" title="All 2 branches missed.">            if ((key = keys[i]) != free) {</span>
+                int index;
+<span class="nc bnc" id="L315" title="All 2 branches missed.">                if ((newKeys[(index = (LHash.SeparateKVIntKeyMixing.mix(key)) &amp; capacityMask)]) != free) {</span>
+                    while (true) {
+<span class="nc bnc" id="L317" title="All 2 branches missed.">                        if ((newKeys[(index = (index - 1) &amp; capacityMask)]) == free) {</span>
+<span class="nc" id="L318">                            break;</span>
+                        } 
+                    }
+                } 
+<span class="nc" id="L322">                newKeys[index] = key;</span>
+<span class="nc" id="L323">                newVals[index] = vals[i];</span>
+            } 
+        }
+<span class="nc bnc" id="L326" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L327">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L329">    }</span>
+
+    @Override
+    public void justPut(int key, V value) {
+<span class="fc" id="L333">        int index = insert(key, value);</span>
+<span class="pc bpc" id="L334" title="1 of 2 branches missed.">        if (index &lt; 0) {</span>
+<span class="fc" id="L335">            return ;</span>
+        } else {
+<span class="nc" id="L337">            values[index] = value;</span>
+<span class="nc" id="L338">            return ;</span>
+        }
+    }
+
+    @Override
+    public void clear() {
+<span class="nc" id="L344">        doClear();</span>
+<span class="nc" id="L345">    }</span>
+
+    private void doClear() {
+<span class="nc" id="L348">        int mc = (modCount()) + 1;</span>
+<span class="nc" id="L349">        _UpdatableLHashSeparateKVIntObjMapSO_clear();</span>
+<span class="nc bnc" id="L350" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L351">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L353">    }</span>
+
+<span class="nc" id="L355">    KolobokeIntObjMap(HashConfig hashConfig, int expectedSize) {</span>
+<span class="nc" id="L356">        this.init(new HashConfigWrapper(hashConfig), expectedSize);</span>
+<span class="nc" id="L357">    }</span>
+
+<span class="nc" id="L359">    static class Support {    }</span>
+
+<span class="fc" id="L361">    static final HashConfigWrapper DEFAULT_CONFIG_WRAPPER = new HashConfigWrapper(HashConfig.getDefault());</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

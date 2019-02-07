@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SingleMessageToListener.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.server</a> &gt; <span class="el_source">SingleMessageToListener.java</span></div><h1>SingleMessageToListener.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.server;
+
+import net.openhft.chronicle.bytes.Bytes;
+import net.openhft.chronicle.core.Jvm;
+import net.openhft.chronicle.decentred.api.MessageToListener;
+import net.openhft.chronicle.decentred.dto.SignedMessage;
+import net.openhft.chronicle.decentred.dto.VanillaSignedMessage;
+import net.openhft.chronicle.threads.LongPauser;
+import net.openhft.chronicle.threads.Pauser;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+public class SingleMessageToListener implements RunningMessageToListener, Runnable {
+<span class="nc" id="L15">    private final Pauser pauser = new LongPauser(0, 10, 1, 20, TimeUnit.MILLISECONDS);</span>
+    private final MessageToListener xclServer;
+<span class="nc" id="L17">    private final AtomicReference&lt;Bytes&gt; writeLock = new AtomicReference&lt;&gt;();</span>
+<span class="nc" id="L18">    private final VanillaSignedMessage signedMessage = new VanillaSignedMessage();</span>
+<span class="nc" id="L19">    private final Bytes bytes1 = Bytes.allocateElasticDirect(32 &lt;&lt; 20).unchecked(true);</span>
+<span class="nc" id="L20">    private final Bytes bytes2 = Bytes.allocateElasticDirect(32 &lt;&lt; 20).unchecked(true);</span>
+
+<span class="nc" id="L22">    public SingleMessageToListener(MessageToListener xclServer) {</span>
+<span class="nc" id="L23">        this.xclServer = xclServer;</span>
+<span class="nc" id="L24">        writeLock.set(bytes1);</span>
+<span class="nc" id="L25">    }</span>
+
+    @Override
+    public Runnable[] runnables() {
+<span class="nc" id="L29">        return new Runnable[]{this};</span>
+    }
+
+    @Override
+    public void onMessageTo(long address, SignedMessage message) {
+<span class="nc" id="L34">        Bytes bytes = lock();</span>
+        try {
+<span class="nc" id="L36">            long position = bytes.writePosition();</span>
+<span class="nc" id="L37">            bytes.ensureCapacity(position + (1 &lt;&lt; 16));</span>
+<span class="nc" id="L38">            bytes.writeInt(0);</span>
+<span class="nc" id="L39">            bytes.writeLong(address);</span>
+<span class="nc" id="L40">            message.writeMarshallable(bytes);</span>
+<span class="nc" id="L41">            bytes.writeInt(position, (int) (bytes.writePosition() - position - 4));</span>
+        } finally {
+<span class="nc" id="L43">            unlock(bytes);</span>
+        }
+<span class="nc" id="L45">        pauser.unpause();</span>
+<span class="nc" id="L46">    }</span>
+
+    private Bytes lock() {
+<span class="nc" id="L49">        return writeLock.getAndSet(null);</span>
+    }
+
+    private void unlock(Bytes bytes) {
+<span class="nc" id="L53">        writeLock.set(bytes);</span>
+<span class="nc" id="L54">    }</span>
+
+    boolean flush() {
+<span class="nc" id="L57">        Bytes bytes = writeLock.get();</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        if (bytes == null)</span>
+<span class="nc" id="L59">            return false;</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        Bytes other = bytes == bytes1 ? bytes2 : bytes1;</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        if (!writeLock.compareAndSet(bytes, other))</span>
+<span class="nc" id="L62">            return false;</span>
+
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        if (bytes.writePosition() == 0)</span>
+<span class="nc" id="L65">            return false;</span>
+
+<span class="nc" id="L67">        long limit = bytes.readLimit();</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        while (bytes.readRemaining() &gt; 0) {</span>
+<span class="nc" id="L69">            int size = bytes.readInt();</span>
+<span class="nc" id="L70">            long end = bytes.readPosition() + size;</span>
+<span class="nc" id="L71">            bytes.readLimit(end);</span>
+            try {
+<span class="nc" id="L73">                long address = bytes.readLong();</span>
+<span class="nc" id="L74">                signedMessage.readMarshallable(bytes);</span>
+<span class="nc" id="L75">                xclServer.onMessageTo(address, signedMessage);</span>
+            } finally {
+<span class="nc" id="L77">                bytes.readPosition(end);</span>
+<span class="nc" id="L78">                bytes.readLimit(limit);</span>
+            }
+<span class="nc" id="L80">        }</span>
+<span class="nc" id="L81">        bytes.clear();</span>
+<span class="nc" id="L82">        return true;</span>
+    }
+
+    @Override
+    public void run() {
+        try {
+<span class="nc bnc" id="L88" title="All 2 branches missed.">            while (!Thread.currentThread().isInterrupted()) {</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">                if (flush())</span>
+<span class="nc" id="L90">                    pauser.reset();</span>
+                else
+<span class="nc" id="L92">                    pauser.pause();</span>
+            }
+<span class="nc" id="L94">        } catch (Throwable t) {</span>
+<span class="nc" id="L95">            Jvm.warn().on(getClass(), &quot;Writer died&quot;, t);</span>
+<span class="nc" id="L96">        }</span>
+<span class="nc" id="L97">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

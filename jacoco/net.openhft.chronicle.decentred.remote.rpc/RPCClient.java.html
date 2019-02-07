@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RPCClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.remote.rpc</a> &gt; <span class="el_source">RPCClient.java</span></div><h1>RPCClient.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.remote.rpc;
+
+import net.openhft.chronicle.bytes.Bytes;
+import net.openhft.chronicle.bytes.BytesStore;
+import net.openhft.chronicle.core.io.Closeable;
+import net.openhft.chronicle.core.io.IORuntimeException;
+import net.openhft.chronicle.core.time.TimeProvider;
+import net.openhft.chronicle.core.time.UniqueMicroTimeProvider;
+import net.openhft.chronicle.decentred.api.MessageRouter;
+import net.openhft.chronicle.decentred.api.SystemMessageListener;
+import net.openhft.chronicle.decentred.dto.VanillaSignedMessage;
+import net.openhft.chronicle.decentred.remote.net.TCPClientListener;
+import net.openhft.chronicle.decentred.remote.net.TCPConnection;
+import net.openhft.chronicle.decentred.remote.net.VanillaTCPClient;
+import net.openhft.chronicle.decentred.util.*;
+import net.openhft.chronicle.wire.AbstractMethodWriterInvocationHandler;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.List;
+
+public class RPCClient&lt;T&gt; implements Closeable, TCPConnection, MessageRouter&lt;T&gt; {
+    private final VanillaTCPClient tcpClient;
+    private final T listener;
+    private final BytesStore secretKey;
+    private final DtoRegistry&lt;T&gt; registry;
+    private final DtoParser&lt;T&gt; parser;
+<span class="fc" id="L33">    private final LongObjMap&lt;BytesStore&gt; addressToPublicKey =</span>
+<span class="fc" id="L34">            LongObjMap.withExpectedSize(BytesStore.class, 16);</span>
+    private final T proxy;
+<span class="fc" id="L36">    private boolean internal = false;</span>
+<span class="fc" id="L37">    private TimeProvider timeProvider = UniqueMicroTimeProvider.INSTANCE;</span>
+
+    public RPCClient(String name,
+                     String socketHost,
+                     int socketPort,
+                     BytesStore secretKey,
+                     DtoRegistry&lt;T&gt; registry,
+                     T listener) {
+<span class="fc" id="L45">        this(name, Collections.singletonList(new InetSocketAddress(socketHost, socketPort)), secretKey, registry, listener);</span>
+<span class="fc" id="L46">    }</span>
+
+    public RPCClient(String name,
+                     List&lt;InetSocketAddress&gt; socketAddresses,
+                     BytesStore secretKey,
+                     DtoRegistry&lt;T&gt; registry,
+<span class="fc" id="L52">                     T listener) {</span>
+<span class="fc" id="L53">        this.secretKey = secretKey;</span>
+<span class="fc" id="L54">        this.parser = registry.get();</span>
+<span class="fc" id="L55">        this.registry = registry;</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        InvocationHandler handler = new AbstractMethodWriterInvocationHandler() {</span>
+            @Override
+            protected void handleInvoke(Method method, Object[] args) {
+<span class="pc bpc" id="L59" title="2 of 4 branches missed.">                assert args.length == 1;</span>
+<span class="fc" id="L60">                VanillaSignedMessage vsm = (VanillaSignedMessage) args[0];</span>
+<span class="fc" id="L61">                write(vsm);</span>
+<span class="fc" id="L62">            }</span>
+        };
+        //noinspection unchecked
+<span class="fc" id="L65">        Class&lt;T&gt; tClass = registry.superInterface();</span>
+<span class="fc" id="L66">        proxy = (T) Proxy.newProxyInstance(tClass.getClassLoader(),</span>
+                new Class[]{tClass, SystemMessageListener.class},
+                handler);
+<span class="fc" id="L69">        this.listener = listener;</span>
+<span class="fc" id="L70">        this.tcpClient = new VanillaTCPClient(name, socketAddresses, new ClientListener());</span>
+<span class="fc" id="L71">    }</span>
+
+    @Override
+    public T to(long address) {
+<span class="fc" id="L75">        return proxy;</span>
+    }
+
+    public void write(VanillaSignedMessage message) {
+        try {
+<span class="fc bfc" id="L80" title="All 2 branches covered.">            if (message.protocol() == 0) {</span>
+<span class="fc" id="L81">                int pmt = registry.protocolMessageTypeFor(message.getClass());</span>
+<span class="fc" id="L82">                message.protocol(pmt &gt;&gt;&gt; 16);</span>
+<span class="fc" id="L83">                message.messageType(pmt &amp; DecentredUtil.MASK_16);</span>
+            }
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">            if (!message.signed()) {</span>
+<span class="fc" id="L86">                message.sign(secretKey, timeProvider);</span>
+            }
+<span class="fc" id="L88">            tcpClient.write(message.byteBuffer());</span>
+
+<span class="nc" id="L90">        } catch (IOException e) {</span>
+<span class="nc" id="L91">            throw new IORuntimeException(e);</span>
+<span class="fc" id="L92">        }</span>
+<span class="fc" id="L93">    }</span>
+
+    @Override
+    public void write(BytesStore&lt;?, ByteBuffer&gt; bytes) throws IOException {
+<span class="nc" id="L97">        tcpClient.write(bytes);</span>
+<span class="nc" id="L98">    }</span>
+
+    @Override
+    public void write(ByteBuffer buffer) throws IOException {
+<span class="nc" id="L102">        tcpClient.write(buffer);</span>
+<span class="nc" id="L103">    }</span>
+
+    @Override
+    public void close() {
+<span class="fc" id="L107">        tcpClient.close();</span>
+<span class="fc" id="L108">    }</span>
+
+    public boolean internal() {
+<span class="nc" id="L111">        return internal;</span>
+    }
+
+    public RPCClient internal(boolean internal) {
+<span class="nc" id="L115">        this.internal = internal;</span>
+<span class="nc" id="L116">        return this;</span>
+    }
+
+    public TimeProvider timeProvider() {
+<span class="nc" id="L120">        return timeProvider;</span>
+    }
+
+    public RPCClient&lt;T&gt; timeProvider(TimeProvider timeProvider) {
+<span class="fc" id="L124">        this.timeProvider = timeProvider;</span>
+<span class="fc" id="L125">        return this;</span>
+    }
+
+<span class="fc" id="L128">    class ClientListener implements TCPClientListener {</span>
+
+        @Override
+        public void onMessage(TCPConnection client, Bytes bytes) throws IOException {
+<span class="fc" id="L132">            bytes.readSkip(-4);</span>
+            try {
+<span class="fc" id="L134">                parser.parseOne(bytes, listener);</span>
+
+<span class="nc" id="L136">            } catch (IORuntimeException iore) {</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">                if (iore.getCause() instanceof IOException)</span>
+<span class="nc" id="L138">                    throw (IOException) iore.getCause();</span>
+<span class="nc" id="L139">                throw iore;</span>
+<span class="fc" id="L140">            }</span>
+<span class="fc" id="L141">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

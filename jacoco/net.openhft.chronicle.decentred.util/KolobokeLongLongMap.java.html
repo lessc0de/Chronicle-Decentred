@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KolobokeLongLongMap.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.util</a> &gt; <span class="el_source">KolobokeLongLongMap.java</span></div><h1>KolobokeLongLongMap.java</h1><pre class="source lang-java linenums">
+
+package net.openhft.chronicle.decentred.util;
+
+import java.util.ConcurrentModificationException;
+import javax.annotation.Generated;
+import com.koloboke.collect.hash.HashConfig;
+import com.koloboke.collect.impl.hash.HashConfigWrapper;
+import com.koloboke.collect.impl.hash.LHash;
+import com.koloboke.collect.impl.hash.LHashCapacities;
+import com.koloboke.collect.impl.LongArrays;
+import com.koloboke.function.LongLongConsumer;
+import com.koloboke.collect.impl.Maths;
+import java.util.Random;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.concurrent.ThreadLocalRandom;
+
+<span class="pc bpc" id="L18" title="1 of 2 branches missed.">@Generated(value = &quot;com.koloboke.compile.processor.KolobokeCollectionProcessor&quot;)</span>
+@SuppressFBWarnings(value = { &quot;IA_AMBIGUOUS_INVOCATION_OF_INHERITED_OR_OUTER_METHOD&quot; })
+@SuppressWarnings(value = { &quot;all&quot; , &quot;unsafe&quot; , &quot;deprecation&quot; , &quot;overloads&quot; , &quot;rawtypes&quot; })
+final class KolobokeLongLongMap extends LongLongMap {
+<span class="fc" id="L22">    KolobokeLongLongMap(int expectedSize) {</span>
+<span class="fc" id="L23">        this.init(DEFAULT_CONFIG_WRAPPER, expectedSize);</span>
+<span class="fc" id="L24">    }</span>
+
+    static void verifyConfig(HashConfig config) {
+<span class="pc bpc" id="L27" title="1 of 2 branches missed.">        if ((config.getGrowthFactor()) != 2.0) {</span>
+<span class="nc" id="L28">            throw new IllegalArgumentException(((((((config + &quot; passed, HashConfig for a hashtable\n&quot;) + &quot;implementation with linear probing must have growthFactor of 2.0.\n&quot;) + &quot;A Koloboke Compile-generated hashtable implementation could have\n&quot;) + &quot;a different growth factor, if the implemented type is annotated with\n&quot;) + &quot;@com.koloboke.compile.hash.algo.openaddressing.QuadraticProbing or\n&quot;) + &quot;@com.koloboke.compile.hash.algo.openaddressing.DoubleHashing&quot;));</span>
+        } 
+<span class="fc" id="L30">    }</span>
+
+    long freeValue;
+
+    long[] table;
+
+    public final boolean isEmpty() {
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">        return (size()) == 0;</span>
+    }
+
+    private HashConfigWrapper configWrapper;
+
+    public boolean containsKey(long key) {
+<span class="fc" id="L43">        return contains(key);</span>
+    }
+
+    int size;
+
+    private int maxSize;
+
+    boolean doubleSizedArrays() {
+<span class="fc" id="L51">        return true;</span>
+    }
+
+<span class="pc" id="L54">    private int modCount = 0;</span>
+
+    final void init(HashConfigWrapper configWrapper, int size, long freeValue) {
+<span class="nc" id="L57">        KolobokeLongLongMap.this.freeValue = freeValue;</span>
+<span class="nc" id="L58">        init(configWrapper, size);</span>
+<span class="nc" id="L59">    }</span>
+
+    public int capacity() {
+<span class="nc" id="L62">        return (table.length) &gt;&gt; 1;</span>
+    }
+
+    @Override
+    public final int size() {
+<span class="fc" id="L67">        return size;</span>
+    }
+
+    int insert(long key, long value) {
+        long free;
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">        if (key == (free = freeValue)) {</span>
+<span class="nc" id="L73">            free = changeFree();</span>
+        } 
+<span class="fc" id="L75">        long[] tab = table;</span>
+        int capacityMask;
+        int index;
+        long cur;
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        keyAbsent : if ((cur = tab[(index = (LHash.ParallelKVLongKeyMixing.mix(key)) &amp; (capacityMask = (tab.length) - 2))]) != free) {</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">            if (cur == key) {</span>
+<span class="fc" id="L81">                return index;</span>
+            } else {
+                while (true) {
+<span class="nc bnc" id="L84" title="All 2 branches missed.">                    if ((cur = tab[(index = (index - 2) &amp; capacityMask)]) == free) {</span>
+<span class="nc" id="L85">                        break keyAbsent;</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">                    } else if (cur == key) {</span>
+<span class="nc" id="L87">                        return index;</span>
+                    } 
+                }
+            }
+        } 
+<span class="fc" id="L92">        incrementModCount();</span>
+<span class="fc" id="L93">        tab[index] = key;</span>
+<span class="fc" id="L94">        tab[(index + 1)] = value;</span>
+<span class="fc" id="L95">        postInsertHook();</span>
+<span class="fc" id="L96">        return -1;</span>
+    }
+
+    public final int modCount() {
+<span class="fc" id="L100">        return modCount;</span>
+    }
+
+    final void incrementModCount() {
+<span class="fc" id="L104">        (modCount)++;</span>
+<span class="fc" id="L105">    }</span>
+
+    public long defaultValue() {
+<span class="nc" id="L108">        return 0L;</span>
+    }
+
+    public boolean contains(long key) {
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">        return (index(key)) &gt;= 0;</span>
+    }
+
+    int index(long key) {
+        long free;
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        if (key != (free = freeValue)) {</span>
+<span class="fc" id="L118">            long[] tab = table;</span>
+            int capacityMask;
+            int index;
+            long cur;
+<span class="fc bfc" id="L122" title="All 2 branches covered.">            if ((cur = tab[(index = (LHash.ParallelKVLongKeyMixing.mix(key)) &amp; (capacityMask = (tab.length) - 2))]) == key) {</span>
+<span class="fc" id="L123">                return index;</span>
+            } else {
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">                if (cur == free) {</span>
+<span class="fc" id="L126">                    return -1;</span>
+                } else {
+                    while (true) {
+<span class="nc bnc" id="L129" title="All 2 branches missed.">                        if ((cur = tab[(index = (index - 2) &amp; capacityMask)]) == key) {</span>
+<span class="nc" id="L130">                            return index;</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">                        } else if (cur == free) {</span>
+<span class="nc" id="L132">                            return -1;</span>
+                        } 
+                    }
+                }
+            }
+        } else {
+<span class="fc" id="L138">            return -1;</span>
+        }
+    }
+
+    final void init(HashConfigWrapper configWrapper, int size) {
+<span class="fc" id="L143">        KolobokeLongLongMap.verifyConfig(configWrapper.config());</span>
+<span class="fc" id="L144">        KolobokeLongLongMap.this.configWrapper = configWrapper;</span>
+<span class="fc" id="L145">        KolobokeLongLongMap.this.size = 0;</span>
+<span class="fc" id="L146">        internalInit(targetCapacity(size));</span>
+<span class="fc" id="L147">    }</span>
+
+    private void internalInit(int capacity) {
+<span class="pc bpc" id="L150" title="2 of 4 branches missed.">        assert Maths.isPowerOf2(capacity);</span>
+<span class="fc" id="L151">        maxSize = maxSize(capacity);</span>
+<span class="fc" id="L152">        allocateArrays(capacity);</span>
+<span class="fc" id="L153">    }</span>
+
+    private int maxSize(int capacity) {
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">        return !(isMaxCapacity(capacity)) ? configWrapper.maxSize(capacity) : capacity - 1;</span>
+    }
+
+    @Override
+    public long get(long key) {
+<span class="nc" id="L161">        int index = index(key);</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        if (index &gt;= 0) {</span>
+<span class="nc" id="L163">            return table[(index + 1)];</span>
+        } else {
+<span class="nc" id="L165">            return defaultValue();</span>
+        }
+    }
+
+    private long findNewFreeOrRemoved() {
+<span class="nc" id="L170">        long free = KolobokeLongLongMap.this.freeValue;</span>
+<span class="nc" id="L171">        Random random = ThreadLocalRandom.current();</span>
+        long newFree;
+        {
+            do {
+<span class="nc" id="L175">                newFree = ((long) (random.nextLong()));</span>
+<span class="nc bnc" id="L176" title="All 4 branches missed.">            } while ((newFree == free) || ((index(newFree)) &gt;= 0) );</span>
+        }
+<span class="nc" id="L178">        return newFree;</span>
+    }
+
+    @Override
+    public long getOrDefault(long key, long defaultValue) {
+<span class="fc" id="L183">        int index = index(key);</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">        if (index &gt;= 0) {</span>
+<span class="fc" id="L185">            return table[(index + 1)];</span>
+        } else {
+<span class="fc" id="L187">            return defaultValue;</span>
+        }
+    }
+
+    long changeFree() {
+<span class="nc" id="L192">        int mc = modCount();</span>
+<span class="nc" id="L193">        long newFree = findNewFreeOrRemoved();</span>
+<span class="nc" id="L194">        incrementModCount();</span>
+<span class="nc" id="L195">        mc++;</span>
+<span class="nc" id="L196">        LongArrays.replaceAllKeys(table, freeValue, newFree);</span>
+<span class="nc" id="L197">        KolobokeLongLongMap.this.freeValue = newFree;</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L199">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L201">        return newFree;</span>
+    }
+
+    final void initForRehash(int newCapacity) {
+<span class="nc" id="L205">        (modCount)++;</span>
+<span class="nc" id="L206">        internalInit(newCapacity);</span>
+<span class="nc" id="L207">    }</span>
+
+    void allocateArrays(int capacity) {
+<span class="fc" id="L210">        table = new long[capacity * 2];</span>
+<span class="pc bpc" id="L211" title="1 of 2 branches missed.">        if ((freeValue) != 0)</span>
+<span class="nc" id="L212">            LongArrays.fillKeys(table, freeValue);</span>
+        
+<span class="fc" id="L214">    }</span>
+
+    private void _UpdatableLHash_clear() {
+<span class="nc" id="L217">        (modCount)++;</span>
+<span class="nc" id="L218">        size = 0;</span>
+<span class="nc" id="L219">    }</span>
+
+    private void _UpdatableParallelKVLongLHashSO_clear() {
+<span class="nc" id="L222">        _UpdatableLHash_clear();</span>
+<span class="nc" id="L223">        LongArrays.fillKeys(table, freeValue);</span>
+<span class="nc" id="L224">    }</span>
+
+    @Override
+    public void forEach(LongLongConsumer action) {
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">        if (action == null)</span>
+<span class="nc" id="L229">            throw new NullPointerException();</span>
+        
+<span class="pc bpc" id="L231" title="1 of 2 branches missed.">        if (KolobokeLongLongMap.this.isEmpty())</span>
+<span class="nc" id="L232">            return ;</span>
+        
+<span class="fc" id="L234">        int mc = modCount();</span>
+<span class="fc" id="L235">        long free = freeValue;</span>
+<span class="fc" id="L236">        long[] tab = table;</span>
+<span class="fc bfc" id="L237" title="All 2 branches covered.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="fc bfc" id="L239" title="All 2 branches covered.">            if ((key = tab[i]) != free) {</span>
+<span class="fc" id="L240">                action.accept(key, tab[(i + 1)]);</span>
+            } 
+        }
+<span class="pc bpc" id="L243" title="1 of 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L244">            throw new ConcurrentModificationException();</span>
+        
+<span class="fc" id="L246">    }</span>
+
+    final void postInsertHook() {
+<span class="pc bpc" id="L249" title="1 of 2 branches missed.">        if ((++(size)) &gt; (maxSize)) {</span>
+<span class="nc" id="L250">            int capacity = capacity();</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">            if (!(isMaxCapacity(capacity))) {</span>
+<span class="nc" id="L252">                rehash((capacity &lt;&lt; 1));</span>
+            } 
+        } 
+<span class="fc" id="L255">    }</span>
+
+    private int targetCapacity(int size) {
+<span class="fc" id="L258">        return LHashCapacities.capacity(configWrapper, size, doubleSizedArrays());</span>
+    }
+
+    private boolean isMaxCapacity(int capacity) {
+<span class="fc" id="L262">        return LHashCapacities.isMaxCapacity(capacity, doubleSizedArrays());</span>
+    }
+
+    void rehash(int newCapacity) {
+<span class="nc" id="L266">        int mc = modCount();</span>
+<span class="nc" id="L267">        long free = freeValue;</span>
+<span class="nc" id="L268">        long[] tab = table;</span>
+<span class="nc" id="L269">        initForRehash(newCapacity);</span>
+<span class="nc" id="L270">        mc++;</span>
+<span class="nc" id="L271">        long[] newTab = table;</span>
+<span class="nc" id="L272">        int capacityMask = (newTab.length) - 2;</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L275" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+                int index;
+<span class="nc bnc" id="L277" title="All 2 branches missed.">                if ((newTab[(index = (LHash.ParallelKVLongKeyMixing.mix(key)) &amp; capacityMask)]) != free) {</span>
+                    while (true) {
+<span class="nc bnc" id="L279" title="All 2 branches missed.">                        if ((newTab[(index = (index - 2) &amp; capacityMask)]) == free) {</span>
+<span class="nc" id="L280">                            break;</span>
+                        } 
+                    }
+                } 
+<span class="nc" id="L284">                newTab[index] = key;</span>
+<span class="nc" id="L285">                newTab[(index + 1)] = tab[(i + 1)];</span>
+            } 
+        }
+<span class="nc bnc" id="L288" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L289">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L291">    }</span>
+
+    @Override
+    public void justPut(long key, long value) {
+<span class="fc" id="L295">        int index = insert(key, value);</span>
+<span class="fc bfc" id="L296" title="All 2 branches covered.">        if (index &lt; 0) {</span>
+<span class="fc" id="L297">            return ;</span>
+        } else {
+<span class="fc" id="L299">            table[(index + 1)] = value;</span>
+<span class="fc" id="L300">            return ;</span>
+        }
+    }
+
+    @Override
+    public void clear() {
+<span class="nc" id="L306">        doClear();</span>
+<span class="nc" id="L307">    }</span>
+
+    private void doClear() {
+<span class="nc" id="L310">        int mc = (modCount()) + 1;</span>
+<span class="nc" id="L311">        _UpdatableParallelKVLongLHashSO_clear();</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L313">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L315">    }</span>
+
+<span class="nc" id="L317">    KolobokeLongLongMap(HashConfig hashConfig, int expectedSize) {</span>
+<span class="nc" id="L318">        this.init(new HashConfigWrapper(hashConfig), expectedSize);</span>
+<span class="nc" id="L319">    }</span>
+
+<span class="nc" id="L321">    static class Support {    }</span>
+
+<span class="fc" id="L323">    static final HashConfigWrapper DEFAULT_CONFIG_WRAPPER = new HashConfigWrapper(HashConfig.getDefault());</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>
