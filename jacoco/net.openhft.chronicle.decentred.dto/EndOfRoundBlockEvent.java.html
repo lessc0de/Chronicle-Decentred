@@ -68,7 +68,7 @@ import static net.openhft.chronicle.decentred.util.DecentredUtil.MASK_32;
 <span class="nc" id="L68">        super.writeMarshallable0(bytes);</span>
 <span class="nc" id="L69">        bytes.writeStopBit(addressToBlockNumberMap.size());</span>
 <span class="nc bnc" id="L70" title="All 2 branches missed.">        if (longU32Writer == null) longU32Writer = new LongU32Writer();</span>
-<span class="nc" id="L71">        longU32Writer.bytes = bytes;</span>
+<span class="nc" id="L71">        longU32Writer.bytes(bytes);</span>
 <span class="nc" id="L72">        addressToBlockNumberMap.forEach(longU32Writer);</span>
 <span class="nc" id="L73">    }</span>
 

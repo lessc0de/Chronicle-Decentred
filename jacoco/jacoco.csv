@@ -8,12 +8,12 @@ Chronicle-Decentred,net.openhft.chronicle.decentred.remote.rpc,RPCClient.new Abs
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,KolobokeIntObjMap,450,257,63,21,110,63,55,23,15,21
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,AddressLongConverter,0,10,0,0,0,4,0,3,0,3
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,KolobokeIntObjMap.Support,3,0,0,0,1,0,1,0,1,0
-Chronicle-Decentred,net.openhft.chronicle.decentred.util,LongU32Writer,0,12,0,0,0,3,0,2,0,2
+Chronicle-Decentred,net.openhft.chronicle.decentred.util,LongU32Writer,0,18,0,0,0,5,0,3,0,3
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,IntObjMap,43,16,3,1,10,5,5,2,3,2
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,LongLongMap,32,20,3,1,9,5,5,3,3,3
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,DtoParselet,39,76,0,0,5,20,1,4,1,4
-Chronicle-Decentred,net.openhft.chronicle.decentred.util,KolobokeLongLongMap.Support,3,0,0,0,1,0,1,0,1,0
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,KolobokeLongDoubleMap,610,0,68,0,134,0,61,0,27,0
+Chronicle-Decentred,net.openhft.chronicle.decentred.util,KolobokeLongLongMap.Support,3,0,0,0,1,0,1,0,1,0
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,KolobokeLongObjMap,544,315,79,27,128,82,59,32,12,26
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,KeyPair,16,68,0,2,3,17,1,3,1,2
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,VanillaPublicKeyRegistry,25,22,4,0,6,6,4,3,2,3
@@ -38,7 +38,7 @@ Chronicle-Decentred,net.openhft.chronicle.decentred.dto,EndOfRoundBlockEvent,111
 Chronicle-Decentred,net.openhft.chronicle.decentred.dto,CreateTokenRequest,0,3,0,0,0,1,0,1,0,1
 Chronicle-Decentred,net.openhft.chronicle.decentred.dto,AssignDelegatesRequest,11,0,0,0,4,0,3,0,3,0
 Chronicle-Decentred,net.openhft.chronicle.decentred.dto,DtoAliases,0,49,0,0,0,4,0,2,0,2
-Chronicle-Decentred,net.openhft.chronicle.decentred.dto,TransactionBlockGossipEvent,9,180,6,14,1,42,7,16,1,12
+Chronicle-Decentred,net.openhft.chronicle.decentred.dto,TransactionBlockGossipEvent,9,180,6,14,1,43,7,16,1,12
 Chronicle-Decentred,net.openhft.chronicle.decentred.dto,VerificationEvent,0,54,0,0,0,13,0,4,0,4
 Chronicle-Decentred,net.openhft.chronicle.decentred.dto,TransactionBlockEvent,85,241,14,12,18,61,14,18,4,15
 Chronicle-Decentred,net.openhft.chronicle.decentred.dto,CreateAddressRequest,0,3,0,0,0,1,0,1,0,1
