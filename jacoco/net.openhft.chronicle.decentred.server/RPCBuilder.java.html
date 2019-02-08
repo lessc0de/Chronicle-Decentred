@@ -97,7 +97,7 @@ import java.util.Set;
     }*/
 
 
-    public RPCBuilder addClusterAddress(long serverAddress) {
+    public RPCBuilder&lt;T&gt; addClusterAddress(long serverAddress) {
 <span class="fc" id="L101">        clusterAddresses.add(serverAddress);</span>
 <span class="fc" id="L102">        return this;</span>
     }
@@ -106,7 +106,7 @@ import java.util.Set;
 <span class="nc" id="L106">        return publicKey;</span>
     }
 
-    public RPCBuilder publicKey(Bytes publicKey) {
+    public RPCBuilder&lt;T&gt; publicKey(Bytes publicKey) {
 <span class="fc" id="L110">        this.publicKey = publicKey;</span>
 <span class="fc" id="L111">        return this;</span>
     }
@@ -115,7 +115,7 @@ import java.util.Set;
 <span class="nc" id="L115">        return secretKey;</span>
     }
 
-    public RPCBuilder secretKey(Bytes secretKey) {
+    public RPCBuilder&lt;T&gt; secretKey(Bytes secretKey) {
 <span class="fc" id="L119">        this.secretKey = secretKey;</span>
 <span class="fc" id="L120">        return this;</span>
     }
@@ -124,7 +124,7 @@ import java.util.Set;
 <span class="nc" id="L124">        return clusterAddresses;</span>
     }
 
-    public RPCBuilder clusterAddresses(Set&lt;Long&gt; clusterAddresses) {
+    public RPCBuilder&lt;T&gt; clusterAddresses(Set&lt;Long&gt; clusterAddresses) {
 <span class="nc" id="L128">        this.clusterAddresses = clusterAddresses;</span>
 <span class="nc" id="L129">        return this;</span>
     }
@@ -133,7 +133,7 @@ import java.util.Set;
 <span class="nc" id="L133">        return mainBlockPeriodMS;</span>
     }
 
-    public RPCBuilder mainBlockPeriodMS(int mainBlockPeriodMS) {
+    public RPCBuilder&lt;T&gt; mainBlockPeriodMS(int mainBlockPeriodMS) {
 <span class="nc" id="L137">        this.mainBlockPeriodMS = mainBlockPeriodMS;</span>
 <span class="nc" id="L138">        return this;</span>
     }
@@ -151,7 +151,7 @@ import java.util.Set;
 <span class="nc" id="L151">        return region;</span>
     }
 
-    public RPCBuilder region(String region) {
+    public RPCBuilder&lt;T&gt; region(String region) {
 <span class="nc" id="L155">        this.region = region;</span>
 <span class="nc" id="L156">        return this;</span>
     }
@@ -160,7 +160,7 @@ import java.util.Set;
 <span class="nc" id="L160">        return internal;</span>
     }
 
-    public RPCBuilder internal(boolean internal) {
+    public RPCBuilder&lt;T&gt; internal(boolean internal) {
 <span class="nc" id="L164">        this.internal = internal;</span>
 <span class="nc" id="L165">        return this;</span>
     }
