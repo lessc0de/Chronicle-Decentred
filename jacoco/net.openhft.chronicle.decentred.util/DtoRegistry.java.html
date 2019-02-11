@@ -15,89 +15,163 @@ import java.util.function.Supplier;
 
 import static net.openhft.chronicle.decentred.util.DecentredUtil.MASK_16;
 
-<span class="pc bpc" id="L18" title="1 of 2 branches missed.">public class DtoRegistry&lt;T&gt; implements Supplier&lt;DtoParser&lt;T&gt;&gt; {</span>
+/**
+ * A holder of the different protocols that are available for all data transfer objects (dto:s) and
+ * can supply new {@link DtoParser} objects.
+ *
+ * @param &lt;T&gt; the type of the super interface for all dto:s
+ */
+<span class="pc bpc" id="L24" title="1 of 2 branches missed.">public class DtoRegistry&lt;T&gt; implements Supplier&lt;DtoParser&lt;T&gt;&gt;, HasSuperInterface&lt;T&gt; {</span>
     static {
-<span class="fc" id="L20">        DtoAliases.addAliases();</span>
-<span class="fc" id="L21">    }</span>
+<span class="fc" id="L26">        DtoAliases.addAliases();</span>
+<span class="fc" id="L27">    }</span>
 
     private final Class&lt;T&gt; superInterface;
-<span class="fc" id="L24">    private final Map&lt;Class, Integer&gt; classToProtocolMessageType = new LinkedHashMap&lt;&gt;();</span>
-<span class="fc" id="L25">    private final IntObjMap&lt;DtoParselet&gt; parseletMap = IntObjMap.withExpectedSize(DtoParselet.class, 128);</span>
-<span class="fc" id="L26">    private final Map&lt;Class, Method&gt; classConsumerMap = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L30">    private final Map&lt;Class, Integer&gt; classToProtocolMessageType = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L31">    private final IntObjMap&lt;DtoParselet&gt; parseletMap = IntObjMap.withExpectedSize(DtoParselet.class, 128);</span>
+<span class="fc" id="L32">    private final Map&lt;Class, Method&gt; classConsumerMap = new LinkedHashMap&lt;&gt;();</span>
 
-<span class="fc" id="L28">    private DtoRegistry(Class&lt;T&gt; superInterface) {</span>
-<span class="fc" id="L29">        this.superInterface = superInterface;</span>
-<span class="fc" id="L30">        addProtocol(0xFFFF, (Class) SystemMessages.class);</span>
-<span class="fc" id="L31">    }</span>
+<span class="fc" id="L34">    private DtoRegistry(Class&lt;T&gt; superInterface) {</span>
+<span class="fc" id="L35">        this.superInterface = superInterface;</span>
+<span class="fc" id="L36">        addProtocol(0xFFFF, (Class) SystemMessages.class);</span>
+<span class="fc" id="L37">    }</span>
 
+    /**
+     * Creates and returns a new {@link DtoRegistry}.
+     * @param superInterface for all dto:s
+     * @param &lt;T&gt; super interface type
+     * @return a new {@link DtoRegistry}
+     */
     public static &lt;T&gt; DtoRegistry&lt;T&gt; newRegistry(Class&lt;T&gt; superInterface) {
-<span class="fc" id="L34">        return new DtoRegistry&lt;&gt;(superInterface);</span>
+<span class="fc" id="L46">        return new DtoRegistry&lt;&gt;(superInterface);</span>
     }
 
     public static &lt;T&gt; DtoRegistry&lt;T&gt; newRegistry(int protocol, Class&lt;T&gt; superInterface) {
-<span class="nc" id="L38">        return new DtoRegistry&lt;&gt;(superInterface).addProtocol(protocol, superInterface);</span>
+<span class="nc" id="L50">        return new DtoRegistry&lt;&gt;(superInterface).addProtocol(protocol, superInterface);</span>
     }
 
+    /**
+     * Adds a new protocol for this registry with the provided protocol
+     * number {@code protocol} and provided protocol class {@code pClass}.
+     * &lt;p&gt;
+     * The given {@code protocol} will be associated with the given {@code pClass}.
+     * &lt;p&gt;
+     * The provided {@code pClass} objects must contain at least one method
+     * annotated with the {@link net.openhft.chronicle.bytes.MethodId} annotation
+     * or this method will have no effect.
+     *
+     * @param protocol number to use
+     * @param pClass protocol class to be associated
+     * @return this (potentially modified) DtoRegistry
+     *
+     * @throws IllegalArgumentException if the provided {@code protocol} is negative or
+     * if the protocol otherwise cannot be added to this registry.
+     * @throws NullPointerException if the provided {@code pClass} is {@code null}
+     */
     public DtoRegistry&lt;T&gt; addProtocol(int protocol, Class&lt;? super T&gt; pClass) {
-<span class="fc bfc" id="L42" title="All 2 branches covered.">        for (Method method : pClass.getMethods()) {</span>
-<span class="fc" id="L43">            MethodId mid = method.getAnnotation(MethodId.class);</span>
-<span class="fc bfc" id="L44" title="All 2 branches covered.">            if (mid != null) {</span>
-<span class="pc bpc" id="L45" title="2 of 4 branches missed.">                assert (mid.value() | MASK_16) == MASK_16;</span>
-<span class="fc" id="L46">                int key = (int) ((protocol &lt;&lt; 16) + mid.value());</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        for (Method method : pClass.getMethods()) {</span>
+<span class="fc" id="L73">            MethodId mid = method.getAnnotation(MethodId.class);</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">            if (mid != null) {</span>
+<span class="pc bpc" id="L75" title="2 of 4 branches missed.">                assert (mid.value() | MASK_16) == MASK_16;</span>
+<span class="fc" id="L76">                int key = (int) ((protocol &lt;&lt; 16) + mid.value());</span>
                 try {
-<span class="fc" id="L48">                    parseletMap.justPut(key,</span>
-<span class="fc" id="L49">                            new DtoParselet(method, protocol, Maths.toUInt16(mid.value())));</span>
-<span class="fc" id="L50">                    Class&lt;?&gt;[] parameterTypes = method.getParameterTypes();</span>
-<span class="pc bpc" id="L51" title="1 of 2 branches missed.">                    if (parameterTypes.length != 1) {</span>
-<span class="nc" id="L52">                        Jvm.warn().on(getClass(), &quot;Methods must have 1 parameter &quot; + method);</span>
-<span class="nc" id="L53">                        continue;</span>
+<span class="fc" id="L78">                    parseletMap.justPut(key,</span>
+<span class="fc" id="L79">                            new DtoParselet(method, protocol, Maths.toUInt16(mid.value())));</span>
+<span class="fc" id="L80">                    Class&lt;?&gt;[] parameterTypes = method.getParameterTypes();</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">                    if (parameterTypes.length != 1) {</span>
+<span class="nc" id="L82">                        Jvm.warn().on(getClass(), &quot;Methods must have 1 parameter &quot; + method);</span>
+<span class="nc" id="L83">                        continue;</span>
                     }
-<span class="fc" id="L55">                    Class&lt;?&gt; parameterType = parameterTypes[0];</span>
-<span class="fc" id="L56">                    classToProtocolMessageType.put(parameterType, key);</span>
-<span class="fc" id="L57">                    classConsumerMap.putIfAbsent(parameterType, method);</span>
-<span class="nc" id="L58">                } catch (Exception e) {</span>
-<span class="nc" id="L59">                    throw new IllegalArgumentException(e);</span>
-<span class="fc" id="L60">                }</span>
+<span class="fc" id="L85">                    Class&lt;?&gt; parameterType = parameterTypes[0];</span>
+<span class="fc" id="L86">                    classToProtocolMessageType.put(parameterType, key);</span>
+<span class="fc" id="L87">                    classConsumerMap.putIfAbsent(parameterType, method);</span>
+<span class="nc" id="L88">                } catch (Exception e) {</span>
+<span class="nc" id="L89">                    throw new IllegalArgumentException(e);</span>
+<span class="fc" id="L90">                }</span>
             }
         }
-<span class="fc" id="L63">        return this;</span>
+<span class="fc" id="L93">        return this;</span>
     }
 
+    /**
+     * Returns the protocol number for the provided message parameter {@code clazz}.
+     *
+     * @param clazz of the method parameter to use for retrieval.
+     * @return the protocol number for the provided message parameter {@code clazz}
+     *
+     * @throws NullPointerException if the provided {@code clazz} is {@code null}
+     */
     public int protocolFor(Class clazz) {
-<span class="fc" id="L67">        return protocolMessageTypeFor(clazz) &gt;&gt;&gt; 16;</span>
+<span class="fc" id="L105">        return protocolMessageTypeFor(clazz) &gt;&gt;&gt; 16;</span>
     }
 
+    /**
+     * Returns the message type which is the {@link net.openhft.chronicle.bytes.MethodId}
+     * value for the provided message parameter {@code clazz}.
+     *
+     * @param clazz of the method parameter to use for retrieval.
+     * @return the message type which is the {@link net.openhft.chronicle.bytes.MethodId}
+     *         value for the provided message parameter {@code clazz}
+     *
+     * @throws NullPointerException if the provided {@code clazz} is {@code null}
+     */
     public int messageTypeFor(Class clazz) {
-<span class="fc" id="L71">        return protocolMessageTypeFor(clazz) &amp; MASK_16;</span>
+<span class="fc" id="L119">        return protocolMessageTypeFor(clazz) &amp; MASK_16;</span>
     }
 
+    /**
+     * Returns the combined protocol number and message type
+     * (i.e. {@link net.openhft.chronicle.bytes.MethodId} value) for the provided
+     * message parameter {@code clazz}.
+     *
+     * @param clazz of the method parameter to use for retrieval.
+     * @return the combined protocol number and message type
+     *         (i.e. {@link net.openhft.chronicle.bytes.MethodId} value) for the provided
+     *         message parameter {@code clazz}
+     *
+     * @throws NullPointerException if the provided {@code clazz} is {@code null}
+     */
     public int protocolMessageTypeFor(Class clazz) {
-<span class="fc" id="L75">        Integer pmt = classToProtocolMessageType.get(clazz);</span>
-<span class="pc bpc" id="L76" title="1 of 2 branches missed.">        if (pmt == null) throw new IllegalStateException(clazz + &quot; not defined&quot;);</span>
-<span class="fc" id="L77">        return pmt;</span>
+<span class="fc" id="L135">        Integer pmt = classToProtocolMessageType.get(clazz);</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">        if (pmt == null) throw new IllegalStateException(clazz + &quot; not defined&quot;);</span>
+<span class="fc" id="L137">        return pmt;</span>
     }
 
+    /**
+     * Creates and returns a new DtoParser.
+     *
+     * @return a new DtoParser
+     */
     @Override
     public DtoParser&lt;T&gt; get() {
-<span class="fc" id="L82">        IntObjMap&lt;DtoParselet&gt; parseletMap2 = IntObjMap.withExpectedSize(DtoParselet.class, parseletMap.size() * 2);</span>
-<span class="fc" id="L83">        parseletMap.forEach((i, dp) -&gt; parseletMap2.justPut(i, new DtoParselet(dp)));</span>
-<span class="fc" id="L84">        return new VanillaDtoParser&lt;&gt;(superInterface, parseletMap2, classConsumerMap);</span>
+<span class="fc" id="L147">        IntObjMap&lt;DtoParselet&gt; parseletMap2 = IntObjMap.withExpectedSize(DtoParselet.class, parseletMap.size() * 2);</span>
+<span class="fc" id="L148">        parseletMap.forEach((i, dp) -&gt; parseletMap2.justPut(i, new DtoParselet(dp)));</span>
+<span class="fc" id="L149">        return new VanillaDtoParser&lt;&gt;(superInterface, parseletMap2, classConsumerMap);</span>
     }
 
+    /**
+     * Creates and returns a new VanillaSignedMessage of the provided {@code tClass} type.
+     *
+     * @param tClass to use when creating a new message
+     * @param &lt;M&gt;    Message type
+     * @return       a new VanillaSignedMessage of the provided {@code tClass} type
+     *
+     * @throws NullPointerException if the provided {@code tClass } is {@code null}
+     */
     public &lt;M extends VanillaSignedMessage&lt;M&gt;&gt; M create(Class&lt;M&gt; tClass) {
-<span class="fc" id="L88">        int pmt = protocolMessageTypeFor(tClass);</span>
+<span class="fc" id="L162">        int pmt = protocolMessageTypeFor(tClass);</span>
         try {
-<span class="fc" id="L90">            int protocol = pmt &gt;&gt;&gt; 16;</span>
-<span class="fc" id="L91">            int messageType = pmt &amp; MASK_16;</span>
-<span class="fc" id="L92">            M vsm = ObjectUtils.newInstance(tClass);</span>
-<span class="fc" id="L93">            return vsm.protocol(protocol).messageType(messageType);</span>
-<span class="nc" id="L94">        } catch (Exception e) {</span>
-<span class="nc" id="L95">            throw new AssertionError(e);</span>
+<span class="fc" id="L164">            int protocol = pmt &gt;&gt;&gt; 16;</span>
+<span class="fc" id="L165">            int messageType = pmt &amp; MASK_16;</span>
+<span class="fc" id="L166">            M vsm = ObjectUtils.newInstance(tClass);</span>
+<span class="fc" id="L167">            return vsm.protocol(protocol).messageType(messageType);</span>
+<span class="nc" id="L168">        } catch (Exception e) {</span>
+<span class="nc" id="L169">            throw new AssertionError(e);</span>
         }
     }
 
     public Class&lt;T&gt; superInterface() {
-<span class="fc" id="L100">        return superInterface;</span>
+<span class="fc" id="L174">        return superInterface;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

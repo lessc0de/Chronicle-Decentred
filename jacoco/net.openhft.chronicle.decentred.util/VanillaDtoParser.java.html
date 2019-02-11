@@ -4,48 +4,58 @@ import net.openhft.chronicle.bytes.Bytes;
 import net.openhft.chronicle.core.Jvm;
 import net.openhft.chronicle.decentred.dto.VanillaSignedMessage;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-public class VanillaDtoParser&lt;T&gt; implements DtoParser&lt;T&gt; {
+import static java.util.Objects.requireNonNull;
+
+final class VanillaDtoParser&lt;T&gt; implements DtoParser&lt;T&gt; {
     private final Class&lt;T&gt; clazz;
 
     private final IntObjMap&lt;DtoParselet&gt; parseletMap;
     private final Map&lt;Class, Method&gt; classConsumerMap;
 
-<span class="fc" id="L17">    public VanillaDtoParser(Class&lt;T&gt; clazz, IntObjMap&lt;DtoParselet&gt; parseletMap, Map&lt;Class, Method&gt; classConsumerMap) {</span>
-<span class="fc" id="L18">        this.clazz = clazz;</span>
-<span class="fc" id="L19">        this.parseletMap = parseletMap;</span>
-<span class="fc" id="L20">        this.classConsumerMap = classConsumerMap;</span>
-<span class="fc" id="L21">    }</span>
+<span class="fc" id="L18">    VanillaDtoParser(Class&lt;T&gt; clazz, IntObjMap&lt;DtoParselet&gt; parseletMap, Map&lt;Class, Method&gt; classConsumerMap) {</span>
+<span class="fc" id="L19">        this.clazz = requireNonNull(clazz);</span>
+<span class="fc" id="L20">        this.parseletMap = requireNonNull(parseletMap);</span>
+<span class="fc" id="L21">        this.classConsumerMap = requireNonNull(classConsumerMap);</span>
+        /*this.parseletMap = IntObjMap.withExpectedSize(DtoParselet.class, parseletMap.size() * 2);
+        parseletMap.forEach((i, dp) -&gt; this.parseletMap.justPut(i, new DtoParselet(dp)));
+        this.classConsumerMap = new HashMap&lt;&gt;(classConsumerMap);*/
+<span class="fc" id="L25">    }</span>
 
     @Override
     public void parseOne(Bytes bytes, T listener) {
-<span class="fc" id="L25">        int protocolMessageType = bytes.readInt(bytes.readPosition() + VanillaSignedMessage.MESSAGE_TYPE);</span>
-<span class="fc" id="L26">        DtoParselet parselet = parseletMap.get(protocolMessageType);</span>
-<span class="pc bpc" id="L27" title="1 of 2 branches missed.">        if (parselet == null)</span>
-<span class="nc" id="L28">            Jvm.warn().on(getClass(), &quot;Unable to find a parselet for protocol &quot; + (protocolMessageType &gt;&gt;&gt; 16) + &quot; messageType &quot; + (protocolMessageType &amp; 0xFFFF));</span>
-        else
-<span class="fc" id="L30">            parselet.parse(bytes, listener);</span>
-<span class="fc" id="L31">    }</span>
+<span class="fc" id="L29">        requireNonNull(bytes);</span>
+<span class="fc" id="L30">        requireNonNull(listener);</span>
+<span class="fc" id="L31">        final int protocolMessageType = bytes.readInt(bytes.readPosition() + VanillaSignedMessage.MESSAGE_TYPE);</span>
+<span class="fc" id="L32">        final DtoParselet parselet = parseletMap.get(protocolMessageType);</span>
+<span class="pc bpc" id="L33" title="1 of 2 branches missed.">        if (parselet == null) {</span>
+<span class="nc" id="L34">            Jvm.warn().on(getClass(), &quot;Unable to find a parselet for protocol &quot; + (protocolMessageType &gt;&gt;&gt; 16) + &quot; messageType &quot; + (protocolMessageType &amp; 0xFFFF));</span>
+        } else {
+<span class="fc" id="L36">            parselet.parse(bytes, listener);</span>
+        }
+<span class="fc" id="L38">    }</span>
 
     @Override
     public void onMessage(T component, Object message) {
-<span class="nc" id="L35">        Method consumer = classConsumerMap.get(message.getClass());</span>
-<span class="nc bnc" id="L36" title="All 2 branches missed.">        if (consumer == null)</span>
-<span class="nc" id="L37">            Jvm.warn().on(getClass(), &quot;Unable to find a consumer for &quot; + message.getClass());</span>
-        else
+<span class="nc" id="L42">        requireNonNull(component);</span>
+<span class="nc" id="L43">        requireNonNull(message);</span>
+<span class="nc" id="L44">        Method consumer = classConsumerMap.get(message.getClass());</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        if (consumer == null) {</span>
+<span class="nc" id="L46">            Jvm.warn().on(getClass(), &quot;Unable to find a consumer for &quot; + message.getClass());</span>
+        } else {
             try {
-<span class="nc" id="L40">                consumer.invoke(component, message);</span>
-<span class="nc" id="L41">            } catch (IllegalAccessException | InvocationTargetException e) {</span>
-<span class="nc" id="L42">                Jvm.warn().on(getClass(), &quot;Unable to invoke &quot; + consumer + &quot; &quot; + message, e);</span>
-<span class="nc" id="L43">            }</span>
-<span class="nc" id="L44">    }</span>
+<span class="nc" id="L49">                consumer.invoke(component, message);</span>
+<span class="nc" id="L50">            } catch (ReflectiveOperationException e) {</span>
+<span class="nc" id="L51">                Jvm.warn().on(getClass(), &quot;Unable to invoke &quot; + consumer + &quot; &quot; + message, e);</span>
+<span class="nc" id="L52">            }</span>
+        }
+<span class="nc" id="L54">    }</span>
 
     @Override
     public Class&lt;T&gt; superInterface() {
-<span class="fc" id="L48">        return clazz;</span>
+<span class="fc" id="L58">        return clazz;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

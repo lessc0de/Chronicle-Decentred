@@ -23,7 +23,7 @@ Chronicle-Decentred,net.openhft.chronicle.decentred.util,DtoRegistry,51,197,5,9,
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,KolobokeLongDoubleMap.Support,3,0,0,0,1,0,1,0,1,0
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,DecentredUtil,30,226,1,13,3,47,1,20,0,13
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,LongObjMap,37,13,2,0,9,4,4,2,3,2
-Chronicle-Decentred,net.openhft.chronicle.decentred.util,VanillaDtoParser,74,35,3,1,9,11,3,3,1,3
+Chronicle-Decentred,net.openhft.chronicle.decentred.util,VanillaDtoParser,80,47,3,1,11,13,3,3,1,3
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,LetterBase32,25,148,1,9,5,34,2,7,1,3
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,SmallIntObjMap,161,0,18,0,35,0,17,0,8,0
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,KolobokeLongLongMap,330,294,45,29,76,69,43,29,13,22
