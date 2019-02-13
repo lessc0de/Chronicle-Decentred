@@ -2,35 +2,51 @@
 
 import net.openhft.chronicle.bytes.Bytes;
 import net.openhft.chronicle.bytes.BytesStore;
+import net.openhft.chronicle.decentred.util.AddressLongConverter;
+import net.openhft.chronicle.decentred.util.DecentredUtil;
 import net.openhft.chronicle.salt.Ed25519;
+import net.openhft.chronicle.wire.LongConversion;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * This message states this node verifies a given public key after connecting to it successfully.
  */
-<span class="fc" id="L11">public class VerificationEvent extends SelfSignedMessage&lt;VerificationEvent&gt; {</span>
-<span class="fc" id="L12">    private final Bytes keyVerified = Bytes.allocateElasticDirect(Ed25519.PUBLIC_KEY_LENGTH);</span>
+<span class="fc" id="L14">public class VerificationEvent extends SelfSignedMessage&lt;VerificationEvent&gt; {</span>
+    @LongConversion(AddressLongConverter.class)
+    private long addressVerified;
+<span class="fc" id="L17">    private Bytes keyVerified = Bytes.allocateElasticDirect(Ed25519.PUBLIC_KEY_LENGTH);</span>
+
+    public long addressVerified() {
+<span class="fc" id="L20">        return addressVerified;</span>
+    }
+
+    public VerificationEvent addressVerified(long addressVerified) {
+<span class="fc" id="L24">        this.addressVerified = addressVerified;</span>
+<span class="fc" id="L25">        return this;</span>
+    }
 
     public VerificationEvent keyVerified(BytesStore key) {
-<span class="fc" id="L15">        keyVerified.clear().write(key);</span>
-<span class="fc" id="L16">        return this;</span>
+<span class="fc" id="L29">        keyVerified.clear().write(key);</span>
+<span class="fc" id="L30">        addressVerified = DecentredUtil.toAddress(key);</span>
+<span class="fc" id="L31">        return this;</span>
     }
 
     public BytesStore keyVerified() {
-<span class="fc" id="L20">        return keyVerified;</span>
+<span class="fc" id="L35">        return keyVerified;</span>
     }
 
     @NotNull
     @Override
     public &lt;T&gt; T deepCopy() {
-<span class="fc" id="L26">        VerificationEvent v2 = new VerificationEvent();</span>
-<span class="fc" id="L27">        v2.protocol(protocol());</span>
-<span class="fc" id="L28">        v2.messageType(messageType());</span>
-<span class="fc" id="L29">        v2.address(address());</span>
-<span class="fc" id="L30">        v2.timestampUS(timestampUS());</span>
-<span class="fc" id="L31">        v2.publicKey(publicKey());</span>
-<span class="fc" id="L32">        v2.keyVerified(keyVerified());</span>
-<span class="fc" id="L33">        return (T) v2;</span>
+<span class="fc" id="L41">        VerificationEvent v2 = new VerificationEvent();</span>
+<span class="fc" id="L42">        v2.protocol(protocol());</span>
+<span class="fc" id="L43">        v2.messageType(messageType());</span>
+<span class="fc" id="L44">        v2.address(address());</span>
+<span class="fc" id="L45">        v2.timestampUS(timestampUS());</span>
+<span class="fc" id="L46">        v2.publicKey(publicKey());</span>
+<span class="fc" id="L47">        v2.keyVerified(keyVerified());</span>
+<span class="fc" id="L48">        v2.addressVerified(addressVerified());</span>
+<span class="fc" id="L49">        return (T) v2;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

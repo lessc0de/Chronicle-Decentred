@@ -29,7 +29,7 @@ Chronicle-Decentred,net.openhft.chronicle.decentred.util,LetterBase32,25,148,1,9
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,SmallIntObjMap,161,0,18,0,35,0,17,0,8,0
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,KolobokeLongLongMap,330,294,45,29,76,69,43,29,13,22
 Chronicle-Decentred,net.openhft.chronicle.decentred.util,LongDoubleMap,8,0,0,0,2,0,2,0,2,0
-Chronicle-Decentred,net.openhft.chronicle.decentred.api,AccountManagementResponses,13,0,0,0,2,0,1,0,1,0
+Chronicle-Decentred,net.openhft.chronicle.decentred.api,AddressManagementResponses,13,0,0,0,2,0,1,0,1,0
 Chronicle-Decentred,net.openhft.chronicle.decentred.api,MessageRouter,0,4,0,0,0,1,0,1,0,1
 Chronicle-Decentred,net.openhft.chronicle.decentred.api,BlockchainPhase,0,34,0,0,0,2,0,1,0,1
 Chronicle-Decentred,net.openhft.chronicle.decentred.api,ConnectionStatusListener,26,0,0,0,4,0,2,0,2,0
@@ -40,7 +40,7 @@ Chronicle-Decentred,net.openhft.chronicle.decentred.dto,CreateTokenRequest,0,3,0
 Chronicle-Decentred,net.openhft.chronicle.decentred.dto,AssignDelegatesRequest,11,0,0,0,4,0,3,0,3,0
 Chronicle-Decentred,net.openhft.chronicle.decentred.dto,DtoAliases,0,49,0,0,0,4,0,2,0,2
 Chronicle-Decentred,net.openhft.chronicle.decentred.dto,TransactionBlockGossipEvent,9,180,6,14,1,43,7,16,1,12
-Chronicle-Decentred,net.openhft.chronicle.decentred.dto,VerificationEvent,0,54,0,0,0,13,0,4,0,4
+Chronicle-Decentred,net.openhft.chronicle.decentred.dto,VerificationEvent,0,71,0,0,0,18,0,6,0,6
 Chronicle-Decentred,net.openhft.chronicle.decentred.dto,TransactionBlockEvent,85,243,14,12,18,61,14,18,4,15
 Chronicle-Decentred,net.openhft.chronicle.decentred.dto,CreateAddressRequest,0,3,0,0,0,1,0,1,0,1
 Chronicle-Decentred,net.openhft.chronicle.decentred.dto,InvalidationEvent,0,3,0,0,0,1,0,1,0,1
