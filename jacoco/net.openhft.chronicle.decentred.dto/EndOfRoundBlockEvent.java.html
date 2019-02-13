@@ -87,11 +87,11 @@ import static net.openhft.chronicle.decentred.util.DecentredUtil.MASK_32;
 
     @Override
     public void writeMarshallable(@NotNull WireOut wire) {
-<span class="nc" id="L90">        super.writeMarshallable(wire);</span>
-<span class="nc" id="L91">        wire.write(&quot;addressToBlockNumberMap&quot;).marshallable(out -&gt; {</span>
-<span class="nc" id="L92">            addressToBlockNumberMap.forEach((k, v) -&gt; out.write(DecentredUtil.toAddressString(k)).int64(v));</span>
-<span class="nc" id="L93">        });</span>
-<span class="nc" id="L94">    }</span>
+<span class="fc" id="L90">        super.writeMarshallable(wire);</span>
+<span class="fc" id="L91">        wire.write(&quot;addressToBlockNumberMap&quot;).marshallable(out -&gt; {</span>
+<span class="fc" id="L92">            addressToBlockNumberMap.forEach((k, v) -&gt; out.write(DecentredUtil.toAddressString(k)).int64(v));</span>
+<span class="fc" id="L93">        });</span>
+<span class="fc" id="L94">    }</span>
 
     @NotNull
     @Override

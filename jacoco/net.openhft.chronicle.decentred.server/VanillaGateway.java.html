@@ -28,7 +28,7 @@ public class VanillaGateway implements Gateway {
 <span class="fc" id="L28">        this.chainAddress = chainAddress;</span>
 <span class="fc" id="L29">        this.main = main;</span>
 <span class="fc" id="L30">        this.local = local;</span>
-<span class="pc" id="L31">        verifyIP = new VanillaVerifyIP(addr -&gt; (Verifier) decentredServer.to(addr));</span>
+<span class="fc" id="L31">        verifyIP = new VanillaVerifyIP(addr -&gt; (Verifier) decentredServer.to(addr));</span>
 <span class="fc" id="L32">    }</span>
 
     public static &lt;T&gt; VanillaGateway newGateway(DtoRegistry&lt;T&gt; dtoRegistry,
@@ -55,16 +55,16 @@ public class VanillaGateway implements Gateway {
 <span class="fc" id="L55">    }</span>
 
     public void tcpMessageListener(DecentredServer decentredServer) {
-<span class="nc" id="L58">        this.decentredServer = decentredServer;</span>
-<span class="nc" id="L59">        main.tcpMessageListener(decentredServer);</span>
-<span class="nc" id="L60">        local.tcpMessageListener(decentredServer);</span>
-<span class="nc" id="L61">    }</span>
+<span class="fc" id="L58">        this.decentredServer = decentredServer;</span>
+<span class="fc" id="L59">        main.tcpMessageListener(decentredServer);</span>
+<span class="fc" id="L60">        local.tcpMessageListener(decentredServer);</span>
+<span class="fc" id="L61">    }</span>
 
     @UsedViaReflection
     public void processOneBlock() {
-<span class="nc" id="L65">        main.processOneBlock();</span>
-<span class="nc" id="L66">        local.processOneBlock();</span>
-<span class="nc" id="L67">    }</span>
+<span class="fc" id="L65">        main.processOneBlock();</span>
+<span class="fc" id="L66">        local.processOneBlock();</span>
+<span class="fc" id="L67">    }</span>
 
     @Override
     public void createAddressRequest(CreateAddressRequest createAddressRequest) {
@@ -87,50 +87,50 @@ public class VanillaGateway implements Gateway {
 
     @Override
     public void verificationEvent(VerificationEvent verificationEvent) {
-<span class="nc" id="L90">        verifyIP.verificationEvent(verificationEvent);</span>
-<span class="nc" id="L91">    }</span>
+<span class="fc" id="L90">        verifyIP.verificationEvent(verificationEvent);</span>
+<span class="fc" id="L91">    }</span>
 
     @Override
     public void invalidationEvent(InvalidationEvent invalidationEvent) {
-<span class="nc" id="L95">        verifyIP.invalidationEvent(invalidationEvent);</span>
-<span class="nc" id="L96">    }</span>
+<span class="fc" id="L95">        verifyIP.invalidationEvent(invalidationEvent);</span>
+<span class="fc" id="L96">    }</span>
 
     @Override
     public void transactionBlockEvent(TransactionBlockEvent transactionBlockEvent) {
-<span class="nc" id="L100">        long chainAddress = transactionBlockEvent.chainAddress();</span>
-<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (isMainChain(chainAddress))</span>
-<span class="nc" id="L102">            main.transactionBlockEvent(transactionBlockEvent);</span>
+<span class="fc" id="L100">        long chainAddress = transactionBlockEvent.chainAddress();</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">        if (isMainChain(chainAddress))</span>
+<span class="fc" id="L102">            main.transactionBlockEvent(transactionBlockEvent);</span>
 <span class="nc bnc" id="L103" title="All 2 branches missed.">        else if (this.chainAddress == chainAddress)</span>
 <span class="nc" id="L104">            local.transactionBlockEvent(transactionBlockEvent);</span>
         else
 <span class="nc" id="L106">            System.err.println(&quot;Unknown chainAddress &quot; + DecentredUtil.toAddressString(chainAddress));</span>
-<span class="nc" id="L107">    }</span>
+<span class="fc" id="L107">    }</span>
 
     private boolean isMainChain(long chainAddress) {
-<span class="nc bnc" id="L110" title="All 2 branches missed.">        return chainAddress == MAIN_CHAIN;</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        return chainAddress == MAIN_CHAIN;</span>
     }
 
     @Override
     public void transactionBlockGossipEvent(TransactionBlockGossipEvent transactionBlockGossipEvent) {
-<span class="nc" id="L115">        long chainAddress = transactionBlockGossipEvent.chainAddress();</span>
-<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (isMainChain(chainAddress))</span>
+<span class="fc" id="L115">        long chainAddress = transactionBlockGossipEvent.chainAddress();</span>
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">        if (isMainChain(chainAddress))</span>
 <span class="nc" id="L117">            main.transactionBlockGossipEvent(transactionBlockGossipEvent);</span>
-<span class="nc bnc" id="L118" title="All 2 branches missed.">        else if (this.chainAddress == chainAddress)</span>
-<span class="nc" id="L119">            local.transactionBlockGossipEvent(transactionBlockGossipEvent);</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">        else if (this.chainAddress == chainAddress)</span>
+<span class="fc" id="L119">            local.transactionBlockGossipEvent(transactionBlockGossipEvent);</span>
         else
 <span class="nc" id="L121">            System.err.println(&quot;Unknown chainAddress &quot; + DecentredUtil.toAddressString(chainAddress));</span>
-<span class="nc" id="L122">    }</span>
+<span class="fc" id="L122">    }</span>
 
     @Override
     public void transactionBlockVoteEvent(TransactionBlockVoteEvent transactionBlockVoteEvent) {
-<span class="nc" id="L126">        long chainAddress = transactionBlockVoteEvent.chainAddress();</span>
-<span class="nc bnc" id="L127" title="All 2 branches missed.">        if (isMainChain(chainAddress))</span>
+<span class="fc" id="L126">        long chainAddress = transactionBlockVoteEvent.chainAddress();</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">        if (isMainChain(chainAddress))</span>
 <span class="nc" id="L128">            main.transactionBlockVoteEvent(transactionBlockVoteEvent);</span>
-<span class="nc bnc" id="L129" title="All 2 branches missed.">        else if (this.chainAddress == chainAddress)</span>
-<span class="nc" id="L130">            local.transactionBlockVoteEvent(transactionBlockVoteEvent);</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">        else if (this.chainAddress == chainAddress)</span>
+<span class="fc" id="L130">            local.transactionBlockVoteEvent(transactionBlockVoteEvent);</span>
         else
 <span class="nc" id="L132">            System.err.println(&quot;Unknown chainAddress &quot; + DecentredUtil.toAddressString(chainAddress));</span>
-<span class="nc" id="L133">    }</span>
+<span class="fc" id="L133">    }</span>
 
     @Override
     public void endOfRoundBlockEvent(EndOfRoundBlockEvent endOfRoundBlockEvent) {

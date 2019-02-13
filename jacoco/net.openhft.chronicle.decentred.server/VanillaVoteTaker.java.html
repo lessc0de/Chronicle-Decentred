@@ -56,10 +56,10 @@ import java.util.stream.LongStream;
 <span class="fc" id="L56">        }</span>
 <span class="fc" id="L57">        endOfRoundBlockEvent.blockNumber(blockNumber);</span>
 <span class="fc bfc" id="L58" title="All 2 branches covered.">        for (long clusterAddress : clusterAddresses) {</span>
-<span class="pc bpc" id="L59" title="1 of 2 branches missed.">            if (clusterAddress == address)</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">            if (clusterAddress == address)</span>
 <span class="fc" id="L60">                replayer.endOfRoundBlockEvent(endOfRoundBlockEvent);</span>
             else
-<span class="nc" id="L62">                tcpMessageListener.onMessageTo(clusterAddress, endOfRoundBlockEvent);</span>
+<span class="fc" id="L62">                tcpMessageListener.onMessageTo(clusterAddress, endOfRoundBlockEvent);</span>
         }
 <span class="fc" id="L64">        return true;</span>
     }

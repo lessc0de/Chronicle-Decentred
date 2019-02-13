@@ -63,10 +63,10 @@ public class TransactionBlockEvent&lt;T&gt; extends VanillaSignedMessage&lt;Tran
 <span class="nc" id="L63">    }</span>
 
     public void replay(T allMessages) {
-<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        if (transactionsList != null) {</span>
-<span class="nc bnc" id="L67" title="All 2 branches missed.">            for (SignedMessage signedMessage : transactionsList) {</span>
-<span class="nc" id="L68">                dtoParser.onMessage(allMessages, signedMessage);</span>
-<span class="nc" id="L69">            }</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (transactionsList != null) {</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">            for (SignedMessage signedMessage : transactionsList) {</span>
+<span class="fc" id="L68">                dtoParser.onMessage(allMessages, signedMessage);</span>
+<span class="fc" id="L69">            }</span>
         }
 <span class="fc" id="L71">        long p0 = transactions.readPosition();</span>
 <span class="fc" id="L72">        transactions.readPosition(messagesStart);</span>
@@ -154,15 +154,15 @@ public class TransactionBlockEvent&lt;T&gt; extends VanillaSignedMessage&lt;Tran
     public &lt;T&gt; T deepCopy() {
 <span class="fc" id="L155">        TransactionBlockEvent tbe = new TransactionBlockEvent();</span>
 <span class="fc" id="L156">        tbe.dtoParser = dtoParser;</span>
-<span class="pc bpc" id="L157" title="1 of 2 branches missed.">        tbe.transactions = (transactions.readRemaining() == 0</span>
-<span class="nc" id="L158">                ? Bytes.elasticHeapByteBuffer(1)</span>
+<span class="fc bfc" id="L157" title="All 2 branches covered.">        tbe.transactions = (transactions.readRemaining() == 0</span>
+<span class="fc" id="L158">                ? Bytes.elasticHeapByteBuffer(1)</span>
 <span class="fc" id="L159">                : transactions.copy().bytesForRead());</span>
 <span class="fc" id="L160">        tbe.transactionsList = transactionsList;</span>
 <span class="fc" id="L161">        return (T) tbe;</span>
     }
 
     public long chainAddress() {
-<span class="nc" id="L165">        return chainAddress;</span>
+<span class="fc" id="L165">        return chainAddress;</span>
     }
 
     public TransactionBlockEvent chainAddress(long chainAddress) {

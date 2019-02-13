@@ -37,7 +37,7 @@ public class VanillaBlockReplayer&lt;T&gt; implements BlockReplayer {
 
     @Override
     public synchronized void endOfRoundBlockEvent(EndOfRoundBlockEvent endOfRoundBlockEvent) {
-<span class="pc" id="L40">        transactionLogMap.computeIfAbsent(endOfRoundBlockEvent.address(), k -&gt; new TransactionLog())</span>
+<span class="fc" id="L40">        transactionLogMap.computeIfAbsent(endOfRoundBlockEvent.address(), k -&gt; new TransactionLog())</span>
 <span class="fc" id="L41">                .add(endOfRoundBlockEvent);</span>
 <span class="fc" id="L42">        lastEndOfRoundBlockEvent = endOfRoundBlockEvent;</span>
 <span class="fc" id="L43">        notifyAll();</span>
@@ -56,8 +56,8 @@ public class VanillaBlockReplayer&lt;T&gt; implements BlockReplayer {
 <span class="fc bfc" id="L56" title="All 2 branches covered.">                for (Map.Entry&lt;Long, TransactionLog&gt; entry : transactionLogMap.entrySet()) {</span>
 <span class="fc" id="L57">                    long upto = lastEndOfRoundBlockEvent.addressToBlockNumberMap()</span>
 <span class="fc" id="L58">                            .getOrDefault(entry.getKey(), -1L);</span>
-<span class="pc bpc" id="L59" title="1 of 2 branches missed.">                    if (upto == -1L) {</span>
-<span class="nc" id="L60">                        continue;</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">                    if (upto == -1L) {</span>
+<span class="fc" id="L60">                        continue;</span>
                     }
 
 <span class="fc" id="L63">                    long last = replayedMap.getOrDefault(entry.getKey(), -1L);</span>

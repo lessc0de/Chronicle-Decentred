@@ -45,9 +45,9 @@ public class VanillaVerifyIP implements Verifier, ConnectionStatusListener {
 
     @Override
     public void invalidationEvent(InvalidationEvent invalidationEvent) {
-<span class="nc" id="L48">        verifyMap.remove(invalidationEvent.publicKey());</span>
-<span class="nc" id="L49">        client.to(DEFAULT_CONNECTION)</span>
-<span class="nc" id="L50">                .invalidationEvent(invalidationEvent);</span>
-<span class="nc" id="L51">    }</span>
+<span class="fc" id="L48">        verifyMap.remove(invalidationEvent.publicKey());</span>
+<span class="fc" id="L49">        client.to(DEFAULT_CONNECTION)</span>
+<span class="fc" id="L50">                .invalidationEvent(invalidationEvent);</span>
+<span class="fc" id="L51">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

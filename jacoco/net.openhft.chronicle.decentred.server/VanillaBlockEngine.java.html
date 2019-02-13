@@ -101,12 +101,12 @@ import java.util.stream.LongStream;
 <span class="fc" id="L101">    }</span>
 
     public void transactionBlockGossipEvent(TransactionBlockGossipEvent transactionBlockGossipEvent) {
-<span class="nc" id="L104">        voter.transactionBlockGossipEvent(transactionBlockGossipEvent);</span>
-<span class="nc" id="L105">    }</span>
+<span class="fc" id="L104">        voter.transactionBlockGossipEvent(transactionBlockGossipEvent);</span>
+<span class="fc" id="L105">    }</span>
 
     public void transactionBlockVoteEvent(TransactionBlockVoteEvent transactionBlockVoteEvent) {
-<span class="nc" id="L108">        voteTaker.transactionBlockVoteEvent(transactionBlockVoteEvent);</span>
-<span class="nc" id="L109">    }</span>
+<span class="fc" id="L108">        voteTaker.transactionBlockVoteEvent(transactionBlockVoteEvent);</span>
+<span class="fc" id="L109">    }</span>
 
     public void endOfRoundBlockEvent(EndOfRoundBlockEvent endOfRoundBlockEvent) {
 <span class="nc" id="L112">        blockReplayer.endOfRoundBlockEvent(endOfRoundBlockEvent);</span>
@@ -139,13 +139,13 @@ import java.util.stream.LongStream;
     @Override
     public void processOneBlock() {
         try {
-<span class="nc" id="L142">            doProcessOneBlock();</span>
-<span class="nc" id="L143">            blockReplayer.replayBlocks();</span>
+<span class="fc" id="L142">            doProcessOneBlock();</span>
+<span class="fc" id="L143">            blockReplayer.replayBlocks();</span>
 <span class="nc" id="L144">        } catch (InterruptedException e) {</span>
 <span class="nc" id="L145">            Thread.currentThread().interrupt();</span>
 <span class="nc" id="L146">            throw new AssertionError(e);</span>
-<span class="nc" id="L147">        }</span>
-<span class="nc" id="L148">    }</span>
+<span class="fc" id="L147">        }</span>
+<span class="fc" id="L148">    }</span>
 
     void runVoter() {
         try {
@@ -193,10 +193,10 @@ import java.util.stream.LongStream;
 <span class="fc" id="L193">            tbe.address(address);</span>
 <span class="fc" id="L194">            tbe.blockNumber(blockNumber);</span>
 <span class="fc bfc" id="L195" title="All 2 branches covered.">            for (long clusterAddress : clusterAddresses) {</span>
-<span class="pc bpc" id="L196" title="1 of 2 branches missed.">                if (clusterAddress == address) {</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">                if (clusterAddress == address) {</span>
 <span class="fc" id="L197">                    transactionBlockEvent(tbe);</span>
                 } else {
-<span class="nc" id="L199">                    tcpMessageListener.onMessageTo(clusterAddress, tbe);</span>
+<span class="fc" id="L199">                    tcpMessageListener.onMessageTo(clusterAddress, tbe);</span>
                 }
             }
 <span class="fc" id="L202">            blockNumber++;</span>
