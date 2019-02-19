@@ -51,16 +51,16 @@ public class TransactionBlockEvent&lt;T&gt; extends VanillaSignedMessage&lt;Tran
 
     @Override
     public void readMarshallable(BytesIn bytes) throws IORuntimeException {
-<span class="nc" id="L54">        super.readMarshallable(bytes);</span>
-<span class="nc" id="L55">        messagesStart = bytes.readPosition();</span>
-<span class="nc" id="L56">        transactions = this.bytes;</span>
-<span class="nc" id="L57">    }</span>
+<span class="fc" id="L54">        super.readMarshallable(bytes);</span>
+<span class="fc" id="L55">        messagesStart = this.bytes.readPosition();</span>
+<span class="fc" id="L56">        transactions = this.bytes;</span>
+<span class="fc" id="L57">    }</span>
 
     public void replay(DtoRegistry&lt;T&gt; dtoRegistry, T allMessages) {
-<span class="nc bnc" id="L60" title="All 2 branches missed.">        if (dtoParser == null)</span>
-<span class="nc" id="L61">            dtoParser = dtoRegistry.get();</span>
-<span class="nc" id="L62">        replay(allMessages);</span>
-<span class="nc" id="L63">    }</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">        if (dtoParser == null)</span>
+<span class="fc" id="L61">            dtoParser = dtoRegistry.get();</span>
+<span class="fc" id="L62">        replay(allMessages);</span>
+<span class="fc" id="L63">    }</span>
 
     public void replay(T allMessages) {
 <span class="fc bfc" id="L66" title="All 2 branches covered.">        if (transactionsList != null) {</span>
