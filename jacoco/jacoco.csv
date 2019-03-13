@@ -60,7 +60,7 @@ OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaGossip
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaVerifyIP,0,87,0,4,0,21,0,7,0,5
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaVoteTaker,10,138,5,11,0,31,5,9,0,6
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaVoter,0,101,0,6,0,23,0,7,0,4
-OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaBlockEngine,60,367,10,20,18,70,17,19,7,14
+OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaBlockEngine,60,367,11,19,18,70,18,18,7,14
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaChainer,67,0,2,0,18,0,4,0,3,0
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,QueuingChainer,0,80,0,2,0,21,0,4,0,3
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,MultiMessageToListener,48,0,2,0,10,0,4,0,3,0
