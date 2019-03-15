@@ -53,7 +53,7 @@ OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.dto,TransactionBlock
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,AbstractTCPConnection,170,186,28,18,28,46,22,12,2,9
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPServer,3,91,2,2,2,25,2,4,0,4
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,TCPClientListener,0,2,0,0,0,2,0,2,0,2
-OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPClient,22,134,5,11,9,41,5,9,0,6
+OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPClient,28,128,7,9,11,39,6,8,0,6
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,TCPServerConnectionListener,0,8,0,0,0,3,0,3,0,3
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPServerConnection,26,52,3,1,7,16,3,5,1,5
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaGossiper,18,146,6,12,2,33,6,9,0,6

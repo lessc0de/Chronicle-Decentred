@@ -35,9 +35,9 @@ public class VanillaTCPClient extends AbstractTCPConnection {
     @Override
     protected void waitForReconnect() throws IOException {
 <span class="fc" id="L37">        int count = 0;</span>
-<span class="fc bfc" id="L38" title="All 2 branches covered.">        while (channel == null) {</span>
-<span class="fc" id="L39">            Jvm.pause(1);</span>
-<span class="pc bpc" id="L40" title="1 of 2 branches missed.">            if (++count &gt; 1000)</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        while (channel == null) {</span>
+<span class="nc" id="L39">            Jvm.pause(1);</span>
+<span class="nc bnc" id="L40" title="All 2 branches missed.">            if (++count &gt; 1000)</span>
 <span class="nc" id="L41">                throw new IOException(&quot;not open yet&quot;);</span>
         }
 <span class="fc" id="L43">    }</span>
