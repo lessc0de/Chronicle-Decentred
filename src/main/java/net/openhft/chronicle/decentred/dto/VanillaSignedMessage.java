@@ -38,6 +38,26 @@ public class VanillaSignedMessage<T extends VanillaSignedMessage<T>> extends Abs
 
     private transient boolean signed = false;
     private transient ByteBuffer byteBuffer;
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final VanillaSignedMessage<?> that = (VanillaSignedMessage<?>) o;
+
+        if (timestampUS != that.timestampUS) return false;
+        return address == that.address;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (int) (timestampUS ^ (timestampUS >>> 32));
+        result = 31 * result + (int) (address ^ (address >>> 32));
+        return result;
+    }
+
     // unsigned 16-bit
     private transient int messageType, protocol;
     @LongConversion(MicroTimestampLongConverter.class)
