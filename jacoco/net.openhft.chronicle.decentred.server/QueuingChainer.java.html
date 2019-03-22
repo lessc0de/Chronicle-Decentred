@@ -3,40 +3,38 @@
 import net.openhft.chronicle.decentred.api.MessageListener;
 import net.openhft.chronicle.decentred.dto.SignedMessage;
 import net.openhft.chronicle.decentred.dto.TransactionBlockEvent;
-import net.openhft.chronicle.decentred.util.DtoParser;
 import net.openhft.chronicle.decentred.util.DtoRegistry;
 
 public class QueuingChainer implements MessageListener {
-<span class="fc" id="L10">    private final Object transactionLock = new Object();</span>
-<span class="fc" id="L11">    private TransactionBlockEvent tbe = new TransactionBlockEvent();</span>
-<span class="fc" id="L12">    private TransactionBlockEvent tbe2 = new TransactionBlockEvent();</span>
+<span class="fc" id="L9">    private final Object transactionLock = new Object();</span>
+<span class="fc" id="L10">    private TransactionBlockEvent tbe = new TransactionBlockEvent();</span>
+<span class="fc" id="L11">    private TransactionBlockEvent tbe2 = new TransactionBlockEvent();</span>
 
 
-<span class="fc" id="L15">    public QueuingChainer(long chainAddress, DtoRegistry dtoRegistry) {</span>
-<span class="fc" id="L16">        DtoParser dtoParser = dtoRegistry.get();</span>
-<span class="fc" id="L17">        tbe.chainAddress(chainAddress).dtoParser(dtoParser);</span>
-<span class="fc" id="L18">        tbe2.chainAddress(chainAddress).dtoParser(dtoParser);</span>
-<span class="fc" id="L19">    }</span>
+<span class="fc" id="L14">    public QueuingChainer(long chainAddress, DtoRegistry dtoRegistry) {</span>
+<span class="fc" id="L15">        tbe.chainAddress(chainAddress).dtoRegistry(dtoRegistry);</span>
+<span class="fc" id="L16">        tbe2.chainAddress(chainAddress).dtoRegistry(dtoRegistry);</span>
+<span class="fc" id="L17">    }</span>
 
     @Override
     public void onMessage(SignedMessage message) {
-<span class="fc" id="L23">        synchronized (transactionLock) {</span>
-<span class="fc" id="L24">            tbe.addTransaction(message);</span>
-<span class="fc" id="L25">        }</span>
-<span class="fc" id="L26">    }</span>
+<span class="fc" id="L21">        synchronized (transactionLock) {</span>
+<span class="fc" id="L22">            tbe.addTransaction(message);</span>
+<span class="fc" id="L23">        }</span>
+<span class="fc" id="L24">    }</span>
 
     public TransactionBlockEvent nextTransactionBlockEvent() {
         TransactionBlockEvent tbeToSend;
-<span class="fc" id="L30">        synchronized (transactionLock) {</span>
+<span class="fc" id="L28">        synchronized (transactionLock) {</span>
 //            System.out.println(&quot;tbe.isEmpty() &quot; + tbe.isEmpty());
-<span class="fc bfc" id="L32" title="All 2 branches covered.">            if (tbe.isEmpty())</span>
-<span class="fc" id="L33">                return null;</span>
-<span class="fc" id="L34">            tbeToSend = tbe;</span>
-<span class="fc" id="L35">            tbe = tbe2;</span>
-<span class="fc" id="L36">            tbe2 = tbeToSend;</span>
-<span class="fc" id="L37">            tbe.reset();</span>
-<span class="fc" id="L38">        }</span>
-<span class="fc" id="L39">        return tbeToSend;</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">            if (tbe.isEmpty())</span>
+<span class="fc" id="L31">                return null;</span>
+<span class="fc" id="L32">            tbeToSend = tbe;</span>
+<span class="fc" id="L33">            tbe = tbe2;</span>
+<span class="fc" id="L34">            tbe2 = tbeToSend;</span>
+<span class="fc" id="L35">            tbe.reset();</span>
+<span class="fc" id="L36">        }</span>
+<span class="fc" id="L37">        return tbeToSend;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

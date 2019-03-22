@@ -31,61 +31,63 @@ import org.jetbrains.annotations.NotNull;
 <span class="fc" id="L31">        wire.read(&quot;addressToBlockNumberMap&quot;).marshallable(in -&gt; {</span>
 <span class="fc bfc" id="L32" title="All 2 branches covered.">            while (in.hasMore()) {</span>
 <span class="fc" id="L33">                String key = in.readEvent(String.class);</span>
-<span class="fc" id="L34">                long addr = DecentredUtil.parseAddress(key);</span>
-<span class="fc" id="L35">                long value = in.getValueIn().int64();</span>
-<span class="fc" id="L36">                addressToBlockNumberMap().justPut(addr, value);</span>
-<span class="fc" id="L37">            }</span>
-<span class="fc" id="L38">        });</span>
-<span class="fc" id="L39">    }</span>
+<span class="pc bpc" id="L34" title="1 of 4 branches missed.">                if (key == null || key.length() == 0)</span>
+<span class="fc" id="L35">                    return;</span>
+<span class="fc" id="L36">                long addr = DecentredUtil.parseAddress(key);</span>
+<span class="fc" id="L37">                long value = in.getValueIn().int64();</span>
+<span class="fc" id="L38">                addressToBlockNumberMap().justPut(addr, value);</span>
+<span class="fc" id="L39">            }</span>
+<span class="fc" id="L40">        });</span>
+<span class="fc" id="L41">    }</span>
 
     @Override
     public void writeMarshallable(@NotNull WireOut wire) {
-<span class="fc" id="L43">        super.writeMarshallable(wire);</span>
-<span class="pc bpc" id="L44" title="2 of 4 branches missed.">        if (addressToBlockNumberMap != null &amp;&amp; addressToBlockNumberMap.size() &gt; 0)</span>
-<span class="fc" id="L45">            wire.write(&quot;addressToBlockNumberMap&quot;).marshallable(out -&gt; {</span>
-<span class="fc" id="L46">                addressToBlockNumberMap.forEach((k, v) -&gt; out.write(DecentredUtil.toAddressString(k)).int64(v));</span>
-<span class="fc" id="L47">            });</span>
-<span class="fc" id="L48">    }</span>
+<span class="fc" id="L45">        super.writeMarshallable(wire);</span>
+<span class="pc bpc" id="L46" title="2 of 4 branches missed.">        if (addressToBlockNumberMap != null &amp;&amp; addressToBlockNumberMap.size() &gt; 0)</span>
+<span class="fc" id="L47">            wire.write(&quot;addressToBlockNumberMap&quot;).marshallable(out -&gt; {</span>
+<span class="fc" id="L48">                addressToBlockNumberMap.forEach((k, v) -&gt; out.write(DecentredUtil.toAddressString(k)).int64(v));</span>
+<span class="fc" id="L49">            });</span>
+<span class="fc" id="L50">    }</span>
 
     @Override
-    public void readMarshallable(BytesIn bytes) throws IORuntimeException {
-<span class="fc" id="L52">        chainAddress = bytes.readLong();</span>
-<span class="fc" id="L53">        weekNumber = bytes.readShort();</span>
-<span class="fc" id="L54">        blockNumber = bytes.readInt();</span>
-<span class="fc" id="L55">        int entries = (int) bytes.readStopBit();</span>
-<span class="fc bfc" id="L56" title="All 2 branches covered.">        if (addressToBlockNumberMap == null)</span>
-<span class="fc" id="L57">            addressToBlockNumberMap = LongLongMap.withExpectedSize(entries);</span>
-<span class="fc bfc" id="L58" title="All 2 branches covered.">        for (int i = 0; i &lt; entries; i++)</span>
-<span class="fc" id="L59">            addressToBlockNumberMap.justPut(bytes.readLong(), bytes.readUnsignedInt());</span>
-<span class="pc bpc" id="L60" title="2 of 4 branches missed.">        assert !addressToBlockNumberMap.containsKey(0L);</span>
-<span class="fc" id="L61">    }</span>
+    protected void readMarshallable0(BytesIn bytes) throws IORuntimeException {
+<span class="fc" id="L54">        chainAddress = bytes.readLong();</span>
+<span class="fc" id="L55">        weekNumber = bytes.readShort();</span>
+<span class="fc" id="L56">        blockNumber = bytes.readInt();</span>
+<span class="fc" id="L57">        int entries = (int) bytes.readStopBit();</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        if (addressToBlockNumberMap == null)</span>
+<span class="fc" id="L59">            addressToBlockNumberMap = LongLongMap.withExpectedSize(entries);</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        for (int i = 0; i &lt; entries; i++)</span>
+<span class="fc" id="L61">            addressToBlockNumberMap.justPut(bytes.readLong(), bytes.readUnsignedInt());</span>
+<span class="pc bpc" id="L62" title="2 of 4 branches missed.">        assert !addressToBlockNumberMap.containsKey(0L);</span>
+<span class="fc" id="L63">    }</span>
 
     @Override
-    public void writeMarshallable(BytesOut bytes) {
-<span class="fc" id="L65">        bytes.writeLong(chainAddress);</span>
-<span class="fc" id="L66">        bytes.writeShort(weekNumber);</span>
-<span class="fc" id="L67">        bytes.writeInt(blockNumber);</span>
-<span class="fc" id="L68">        bytes.writeStopBit(addressToBlockNumberMap.size());</span>
-<span class="pc bpc" id="L69" title="1 of 2 branches missed.">        if (longU32Writer == null) {</span>
-<span class="fc" id="L70">            longU32Writer = new LongU32Writer();</span>
+    protected void writeMarshallable0(BytesOut bytes) {
+<span class="fc" id="L67">        bytes.writeLong(chainAddress);</span>
+<span class="fc" id="L68">        bytes.writeShort(weekNumber);</span>
+<span class="fc" id="L69">        bytes.writeInt(blockNumber);</span>
+<span class="fc" id="L70">        bytes.writeStopBit(addressToBlockNumberMap.size());</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">        if (longU32Writer == null) {</span>
+<span class="fc" id="L72">            longU32Writer = new LongU32Writer();</span>
         }
-<span class="fc" id="L72">        longU32Writer.bytes(bytes);</span>
-<span class="fc" id="L73">        addressToBlockNumberMap.forEach(longU32Writer);</span>
-<span class="fc" id="L74">    }</span>
+<span class="fc" id="L74">        longU32Writer.bytes(bytes);</span>
+<span class="fc" id="L75">        addressToBlockNumberMap.forEach(longU32Writer);</span>
+<span class="fc" id="L76">    }</span>
 
     public long chainAddress() {
-<span class="fc" id="L77">        return chainAddress;</span>
+<span class="fc" id="L79">        return chainAddress;</span>
     }
 
     public TransactionBlockGossipEvent chainAddress(long chainAddress) {
-<span class="fc" id="L81">        this.chainAddress = chainAddress;</span>
-<span class="fc" id="L82">        return this;</span>
+<span class="fc" id="L83">        this.chainAddress = chainAddress;</span>
+<span class="fc" id="L84">        return this;</span>
     }
 
     public LongLongMap addressToBlockNumberMap() {
-<span class="fc bfc" id="L86" title="All 2 branches covered.">        if (addressToBlockNumberMap == null)</span>
-<span class="fc" id="L87">            addressToBlockNumberMap = LongLongMap.withExpectedSize(16);</span>
-<span class="fc" id="L88">        return addressToBlockNumberMap;</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        if (addressToBlockNumberMap == null)</span>
+<span class="fc" id="L89">            addressToBlockNumberMap = LongLongMap.withExpectedSize(16);</span>
+<span class="fc" id="L90">        return addressToBlockNumberMap;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

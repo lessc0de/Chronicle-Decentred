@@ -57,49 +57,52 @@ import static net.openhft.chronicle.decentred.util.DecentredUtil.MASK_32;
     }
 
     @Override
-    public void readMarshallable(BytesIn bytes) throws IORuntimeException {
-<span class="nc" id="L61">        super.readMarshallable(bytes);</span>
-<span class="nc" id="L62">        addressToBlockNumberMap.justPut(bytes.readLong(), bytes.readUnsignedInt());</span>
-
-<span class="nc" id="L64">    }</span>
+    protected void readMarshallable0(BytesIn bytes) throws IORuntimeException {
+<span class="fc" id="L61">        super.readMarshallable0(bytes);</span>
+<span class="fc" id="L62">        int entries = (int) bytes.readStopBit();</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">        if (addressToBlockNumberMap == null)</span>
+<span class="fc" id="L64">            addressToBlockNumberMap = LongLongMap.withExpectedSize(entries);</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        for (int i = 0; i &lt; entries; i++)</span>
+<span class="fc" id="L66">            addressToBlockNumberMap.justPut(bytes.readLong(), bytes.readUnsignedInt());</span>
+<span class="fc" id="L67">    }</span>
 
     @Override
     protected void writeMarshallable0(BytesOut bytes) {
-<span class="nc" id="L68">        super.writeMarshallable0(bytes);</span>
-<span class="nc" id="L69">        bytes.writeStopBit(addressToBlockNumberMap.size());</span>
-<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (longU32Writer == null) longU32Writer = new LongU32Writer();</span>
-<span class="nc" id="L71">        longU32Writer.bytes(bytes);</span>
-<span class="nc" id="L72">        addressToBlockNumberMap.forEach(longU32Writer);</span>
-<span class="nc" id="L73">    }</span>
+<span class="fc" id="L71">        super.writeMarshallable0(bytes);</span>
+<span class="fc" id="L72">        bytes.writeStopBit(addressToBlockNumberMap.size());</span>
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">        if (longU32Writer == null) longU32Writer = new LongU32Writer();</span>
+<span class="fc" id="L74">        longU32Writer.bytes(bytes);</span>
+<span class="fc" id="L75">        addressToBlockNumberMap.forEach(longU32Writer);</span>
+<span class="fc" id="L76">    }</span>
 
     @Override
     public void readMarshallable(@NotNull WireIn wire) throws IORuntimeException {
-<span class="nc" id="L77">        super.readMarshallable(wire);</span>
-<span class="nc" id="L78">        wire.read(&quot;addressToBlockNumberMap&quot;).marshallable(in -&gt; {</span>
-<span class="nc bnc" id="L79" title="All 2 branches missed.">            while (in.hasMore()) {</span>
-<span class="nc" id="L80">                String key = in.readEvent(String.class);</span>
-<span class="nc" id="L81">                long addr = DecentredUtil.parseAddress(key);</span>
-<span class="nc" id="L82">                long value = in.getValueIn().int64();</span>
-<span class="nc" id="L83">                addressToBlockNumberMap().justPut(addr, value);</span>
-<span class="nc" id="L84">            }</span>
-<span class="nc" id="L85">        });</span>
-<span class="nc" id="L86">    }</span>
+<span class="nc" id="L80">        super.readMarshallable(wire);</span>
+<span class="nc" id="L81">        wire.read(&quot;addressToBlockNumberMap&quot;).marshallable(in -&gt; {</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">            while (in.hasMore()) {</span>
+<span class="nc" id="L83">                String key = in.readEvent(String.class);</span>
+<span class="nc" id="L84">                long addr = DecentredUtil.parseAddress(key);</span>
+<span class="nc" id="L85">                long value = in.getValueIn().int64();</span>
+<span class="nc" id="L86">                addressToBlockNumberMap().justPut(addr, value);</span>
+<span class="nc" id="L87">            }</span>
+<span class="nc" id="L88">        });</span>
+<span class="nc" id="L89">    }</span>
 
     @Override
     public void writeMarshallable(@NotNull WireOut wire) {
-<span class="fc" id="L90">        super.writeMarshallable(wire);</span>
-<span class="fc" id="L91">        wire.write(&quot;addressToBlockNumberMap&quot;).marshallable(out -&gt; {</span>
-<span class="fc" id="L92">            addressToBlockNumberMap.forEach((k, v) -&gt; out.write(DecentredUtil.toAddressString(k)).int64(v));</span>
-<span class="fc" id="L93">        });</span>
-<span class="fc" id="L94">    }</span>
+<span class="fc" id="L93">        super.writeMarshallable(wire);</span>
+<span class="fc" id="L94">        wire.write(&quot;addressToBlockNumberMap&quot;).marshallable(out -&gt; {</span>
+<span class="fc" id="L95">            addressToBlockNumberMap.forEach((k, v) -&gt; out.write(DecentredUtil.toAddressString(k)).int64(v));</span>
+<span class="fc" id="L96">        });</span>
+<span class="fc" id="L97">    }</span>
 
     @NotNull
     @Override
     public &lt;T&gt; T deepCopy() {
-<span class="fc" id="L99">        EndOfRoundBlockEvent eorbe = new EndOfRoundBlockEvent();</span>
-<span class="fc" id="L100">        eorbe.addressToBlockNumberMap = LongLongMap.withExpectedSize(addressToBlockNumberMap.size());</span>
-<span class="fc" id="L101">        eorbe.addressToBlockNumberMap.putAll(addressToBlockNumberMap);</span>
-<span class="fc" id="L102">        return (T) eorbe;</span>
+<span class="fc" id="L102">        EndOfRoundBlockEvent eorbe = new EndOfRoundBlockEvent();</span>
+<span class="fc" id="L103">        eorbe.addressToBlockNumberMap = LongLongMap.withExpectedSize(addressToBlockNumberMap.size());</span>
+<span class="fc" id="L104">        eorbe.addressToBlockNumberMap.putAll(addressToBlockNumberMap);</span>
+<span class="fc" id="L105">        return (T) eorbe;</span>
     }
 }
 

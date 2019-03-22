@@ -1,68 +1,83 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VanillaGossiper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenHFT/Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.server</a> &gt; <span class="el_source">VanillaGossiper.java</span></div><h1>VanillaGossiper.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.server;
 
+import net.openhft.chronicle.core.time.TimeProvider;
 import net.openhft.chronicle.decentred.api.MessageToListener;
 import net.openhft.chronicle.decentred.dto.TransactionBlockEvent;
 import net.openhft.chronicle.decentred.dto.TransactionBlockGossipEvent;
+import net.openhft.chronicle.decentred.util.DtoRegistry;
+import net.openhft.chronicle.decentred.util.KeyPair;
 import net.openhft.chronicle.decentred.util.LongLongMap;
 
 import java.util.stream.LongStream;
 
-<span class="pc bpc" id="L10" title="1 of 2 branches missed.">public class VanillaGossiper implements Gossiper {</span>
-<span class="fc" id="L11">    private static final Long NO_BLOCK = -1L;</span>
+<span class="pc bpc" id="L13" title="1 of 2 branches missed.">public class VanillaGossiper implements Gossiper {</span>
+<span class="fc" id="L14">    private static final Long NO_BLOCK = -1L;</span>
     private final long address;
-<span class="fc" id="L13">    private final LongLongMap lastBlockMap = LongLongMap.withExpectedSize(16);</span>
+<span class="fc" id="L16">    private final LongLongMap lastBlockMap = LongLongMap.withExpectedSize(16);</span>
     private final long[] clusterAddresses;
     private final Voter voter;
+    private final TimeProvider timeProvider;
     private final TransactionBlockGossipEvent gossip;
     private MessageToListener tcpMessageToListener;
+    private final KeyPair keyPair;
+    private final int protocol;
+    private final int messageType;
 
-<span class="fc" id="L19">    public VanillaGossiper(long address, long chainAddress, long[] clusterAddresses, Voter voter) {</span>
-<span class="fc" id="L20">        this.address = address;</span>
-<span class="fc" id="L21">        this.clusterAddresses = clusterAddresses;</span>
-<span class="fc" id="L22">        this.voter = voter;</span>
-<span class="pc bpc" id="L23" title="3 of 6 branches missed.">        assert LongStream.of(clusterAddresses).anyMatch(a -&gt; a == address);</span>
-<span class="fc" id="L24">        gossip = new TransactionBlockGossipEvent()</span>
-<span class="fc" id="L25">                .chainAddress(chainAddress);</span>
-<span class="fc" id="L26">    }</span>
+<span class="fc" id="L26">    public VanillaGossiper(KeyPair keyPair, DtoRegistry dtoRegistry, long chainAddress, long[] clusterAddresses, Voter voter, TimeProvider timeProvider) {</span>
+<span class="fc" id="L27">        this.keyPair = keyPair;</span>
+<span class="fc" id="L28">        this.address = keyPair.address();</span>
+<span class="fc" id="L29">        protocol = dtoRegistry.protocolFor(TransactionBlockGossipEvent.class);</span>
+<span class="fc" id="L30">        messageType = dtoRegistry.messageTypeFor(TransactionBlockGossipEvent.class);</span>
+
+<span class="fc" id="L32">        this.clusterAddresses = clusterAddresses;</span>
+<span class="fc" id="L33">        this.voter = voter;</span>
+<span class="fc" id="L34">        this.timeProvider = timeProvider;</span>
+<span class="pc bpc" id="L35" title="3 of 6 branches missed.">        assert LongStream.of(clusterAddresses).anyMatch(a -&gt; a == address);</span>
+<span class="fc" id="L36">        gossip = new TransactionBlockGossipEvent()</span>
+<span class="fc" id="L37">                .chainAddress(chainAddress);</span>
+<span class="fc" id="L38">    }</span>
 
     @Override
     public synchronized void transactionBlockEvent(TransactionBlockEvent transactionBlockEvent) {
         //System.out.println(address + &quot; &quot; + transactionBlockEvent);
-<span class="fc" id="L31">        long sourceAddress = transactionBlockEvent.address();</span>
-<span class="pc bpc" id="L32" title="1 of 2 branches missed.">        if (sourceAddress == 0) {</span>
-<span class="nc" id="L33">            System.err.println(&quot;Missing sourceAddress &quot; + transactionBlockEvent);</span>
-<span class="nc" id="L34">            return;</span>
+<span class="fc" id="L43">        long sourceAddress = transactionBlockEvent.address();</span>
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">        if (sourceAddress == 0) {</span>
+<span class="nc" id="L45">            System.err.println(&quot;Missing sourceAddress &quot; + transactionBlockEvent);</span>
+<span class="nc" id="L46">            return;</span>
         }
-<span class="fc" id="L36">        long lastBlockNumber = lastBlockMap.getOrDefault(sourceAddress, NO_BLOCK);</span>
-<span class="fc" id="L37">        long blockNumber = transactionBlockEvent.blockNumber();</span>
-<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        if (lastBlockNumber &lt; blockNumber)</span>
-<span class="fc" id="L39">            lastBlockMap.justPut(sourceAddress, blockNumber);</span>
-<span class="fc" id="L40">    }</span>
+<span class="fc" id="L48">        long lastBlockNumber = lastBlockMap.getOrDefault(sourceAddress, NO_BLOCK);</span>
+<span class="fc" id="L49">        long blockNumber = transactionBlockEvent.blockNumber();</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">        if (lastBlockNumber &lt; blockNumber)</span>
+<span class="fc" id="L51">            lastBlockMap.justPut(sourceAddress, blockNumber);</span>
+<span class="fc" id="L52">    }</span>
 
     @Override
     public void sendGossip(long blockNumber) {
-<span class="fc bfc" id="L44" title="All 2 branches covered.">        if (lastBlockMap.size() == 0) {</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        if (lastBlockMap.size() == 0) {</span>
 //            Jvm.warn().on(getClass(), &quot;nothing to gossip about&quot;);
-<span class="fc" id="L46">            return;</span>
+<span class="fc" id="L58">            return;</span>
         }
 
-<span class="fc" id="L49">        gossip.reset();</span>
-<span class="fc" id="L50">        gossip.address(address);</span>
-<span class="fc" id="L51">        gossip.blockNumber(blockNumber);</span>
-<span class="fc" id="L52">        synchronized (this) {</span>
-<span class="fc" id="L53">            gossip.addressToBlockNumberMap().putAll(lastBlockMap);</span>
-<span class="fc" id="L54">        }</span>
-<span class="fc bfc" id="L55" title="All 2 branches covered.">        for (long clusterAddress : clusterAddresses) {</span>
-<span class="fc bfc" id="L56" title="All 2 branches covered.">            if (clusterAddress == address)</span>
-<span class="fc" id="L57">                voter.transactionBlockGossipEvent(gossip);</span>
+<span class="fc" id="L61">        gossip.reset();</span>
+<span class="fc" id="L62">        gossip.protocol(protocol)</span>
+<span class="fc" id="L63">                .messageType(messageType)</span>
+<span class="fc" id="L64">                .address(address)</span>
+<span class="fc" id="L65">                .blockNumber(blockNumber);</span>
+<span class="fc" id="L66">        synchronized (this) {</span>
+<span class="fc" id="L67">            gossip.addressToBlockNumberMap().putAll(lastBlockMap);</span>
+<span class="fc" id="L68">        }</span>
+<span class="fc" id="L69">        gossip.sign(keyPair.secretKey, timeProvider);</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        for (long clusterAddress : clusterAddresses) {</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">            if (clusterAddress == address)</span>
+<span class="fc" id="L72">                voter.transactionBlockGossipEvent(gossip);</span>
             else
-<span class="fc" id="L59">                tcpMessageToListener.onMessageTo(clusterAddress, gossip);</span>
+<span class="fc" id="L74">                tcpMessageToListener.onMessageTo(clusterAddress, gossip);</span>
         }
-<span class="fc" id="L61">    }</span>
+<span class="fc" id="L76">    }</span>
 
     public VanillaGossiper tcpMessageToListener(MessageToListener tcpMessageToListener) {
-<span class="fc" id="L64">        this.tcpMessageToListener = tcpMessageToListener;</span>
-<span class="fc" id="L65">        return this;</span>
+<span class="fc" id="L79">        this.tcpMessageToListener = tcpMessageToListener;</span>
+<span class="fc" id="L80">        return this;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

@@ -8,7 +8,7 @@ import net.openhft.chronicle.salt.Ed25519;
  * This message states this node verifies a given public key after connecting to it successfully.
  */
 <span class="pc bpc" id="L10" title="1 of 2 branches missed.">public class SelfSignedMessage&lt;M extends SelfSignedMessage&lt;M&gt;&gt; extends VanillaSignedMessage&lt;M&gt; {</span>
-<span class="fc" id="L11">    private final Bytes publicKey = Bytes.allocateElasticDirect(Ed25519.PUBLIC_KEY_LENGTH);</span>
+<span class="fc" id="L11">    private Bytes publicKey = Bytes.allocateElasticDirect(Ed25519.PUBLIC_KEY_LENGTH);</span>
 
 <span class="fc" id="L13">    public SelfSignedMessage() {</span>
 <span class="fc" id="L14">    }</span>
@@ -29,5 +29,36 @@ import net.openhft.chronicle.salt.Ed25519;
     public BytesStore publicKey() {
 <span class="fc" id="L30">        return publicKey;</span>
     }
+/*
+    @Override
+    public void readMarshallable(@NotNull WireIn wire) throws IORuntimeException {
+        super.readMarshallable(wire);
+        if (publicKey == null)
+            publicKey = Bytes.allocateElasticDirect(Ed25519.PUBLIC_KEY_LENGTH);
+        wire.read(&quot;publicKey&quot;).bytes(publicKey);
+    }
+
+    @Override
+    public void writeMarshallable(@NotNull WireOut wire) {
+        super.writeMarshallable(wire);
+        wire.write(&quot;publicKey&quot;).bytes(publicKey);
+    }
+
+    @Override
+    protected void readMarshallable0(BytesIn bytes) {
+        super.readMarshallable0(bytes);
+        int length = Ed25519.PUBLIC_KEY_LENGTH;
+        if (publicKey == null)
+            publicKey = Bytes.allocateElasticDirect(length);
+        publicKey.write(bytes, bytes.readPosition(), length);
+        bytes.readSkip(length);
+    }
+
+    @Override
+    protected void writeMarshallable0(BytesOut bytes) {
+        super.writeMarshallable0(bytes);
+        assert publicKey.readRemaining() == Ed25519.PUBLIC_KEY_LENGTH;
+        bytes.write(publicKey);
+    }*/
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

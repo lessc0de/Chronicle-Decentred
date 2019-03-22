@@ -6,6 +6,7 @@ import net.openhft.chronicle.core.io.IORuntimeException;
 import net.openhft.chronicle.core.time.TimeProvider;
 import net.openhft.chronicle.core.time.UniqueMicroTimeProvider;
 import net.openhft.chronicle.decentred.util.AddressLongConverter;
+import net.openhft.chronicle.decentred.util.DtoRegistry;
 import net.openhft.chronicle.salt.Ed25519;
 import net.openhft.chronicle.wire.AbstractBytesMarshallable;
 import net.openhft.chronicle.wire.LongConversion;
@@ -17,7 +18,7 @@ import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.function.LongFunction;
 
-<span class="pc bpc" id="L20" title="1 of 2 branches missed.">public class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;T&gt;&gt; extends AbstractBytesMarshallable implements SignedMessage {</span>
+<span class="pc bpc" id="L21" title="1 of 2 branches missed.">public class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;T&gt;&gt; extends AbstractBytesMarshallable implements SignedMessage {</span>
     private static final int LENGTH = 0;
     private static final int LENGTH_END = LENGTH + Integer.BYTES;
     private static final int SIGNATURE = LENGTH_END;
@@ -26,17 +27,17 @@ import java.util.function.LongFunction;
     private static final int MESSAGE_TYPE_END = MESSAGE_TYPE + Short.BYTES;
     private static final int PROTOCOL = MESSAGE_TYPE_END;
     private static final int PROTOCOL_END = PROTOCOL + Short.BYTES;
-    private static final int MESSAGE_START = PROTOCOL_END;
+    public static final int MESSAGE_START = PROTOCOL_END;
 
-<span class="fc" id="L31">    private static final Field BB_ADDRESS = Jvm.getField(ByteBuffer.allocateDirect(0).getClass(), &quot;address&quot;);</span>
-<span class="fc" id="L32">    private static final Field BB_CAPACITY = Jvm.getField(ByteBuffer.allocateDirect(0).getClass(), &quot;capacity&quot;);</span>
+<span class="fc" id="L32">    private static final Field BB_ADDRESS = Jvm.getField(ByteBuffer.allocateDirect(0).getClass(), &quot;address&quot;);</span>
+<span class="fc" id="L33">    private static final Field BB_CAPACITY = Jvm.getField(ByteBuffer.allocateDirect(0).getClass(), &quot;capacity&quot;);</span>
     // for writing to a new set of bytes
-<span class="fc" id="L34">    private transient Bytes tempBytes = Bytes.allocateElasticDirect(4L &lt;&lt; 10);</span>
+<span class="fc" id="L35">    private transient Bytes tempBytes = Bytes.allocateElasticDirect(4L &lt;&lt; 10);</span>
     // for reading an existing Bytes
-<span class="fc" id="L36">    private transient PointerBytesStore readPointer = BytesStore.nativePointer();</span>
-<span class="fc" id="L37">    protected transient Bytes&lt;Void&gt; bytes = readPointer.bytesForRead();</span>
+<span class="fc" id="L37">    private transient PointerBytesStore readPointer = BytesStore.nativePointer();</span>
+<span class="fc" id="L38">    protected transient Bytes&lt;Void&gt; bytes = readPointer.bytesForRead();</span>
 
-<span class="fc" id="L39">    private transient boolean signed = false;</span>
+<span class="fc" id="L40">    private transient boolean signed = false;</span>
     private transient ByteBuffer byteBuffer;
     // unsigned 16-bit
     private transient int messageType, protocol;
@@ -45,69 +46,78 @@ import java.util.function.LongFunction;
     @LongConversion(AddressLongConverter.class)
     private long address;
 
-<span class="fc" id="L48">    public VanillaSignedMessage() {</span>
-<span class="fc" id="L49">    }</span>
+<span class="fc" id="L49">    public VanillaSignedMessage() {</span>
+<span class="fc" id="L50">    }</span>
+
+    @Override
+    public T dtoRegistry(DtoRegistry dtoRegistry) {
+<span class="fc" id="L54">        return (T) this;</span>
+    }
 
     @Override
     public void readMarshallable(@NotNull WireIn wire) throws IORuntimeException {
-<span class="fc" id="L53">        signed = false;</span>
-<span class="fc" id="L54">        super.readMarshallable(wire);</span>
-<span class="fc" id="L55">    }</span>
+<span class="fc" id="L59">        signed = false;</span>
+<span class="fc" id="L60">        super.readMarshallable(wire);</span>
+<span class="fc" id="L61">    }</span>
 
     @Override
-    public void readMarshallable(BytesIn bytes) throws IORuntimeException {
-<span class="fc" id="L59">        long capacity = bytes.readRemaining();</span>
-<span class="fc" id="L60">        readPointer.set(bytes.addressForRead(bytes.readPosition()), capacity);</span>
-<span class="fc" id="L61">        messageType = readPointer.readShort(MESSAGE_TYPE);</span>
-<span class="fc" id="L62">        protocol = readPointer.readShort(PROTOCOL);</span>
+    public final void readMarshallable(BytesIn bytes) throws IORuntimeException {
+<span class="fc" id="L65">        long capacity = bytes.readRemaining();</span>
+<span class="fc" id="L66">        readPointer.set(bytes.addressForRead(bytes.readPosition()), capacity);</span>
+<span class="fc" id="L67">        messageType = readPointer.readShort(MESSAGE_TYPE);</span>
+<span class="fc" id="L68">        protocol = readPointer.readShort(PROTOCOL);</span>
 
-<span class="fc" id="L64">        this.bytes.clear();</span>
-<span class="fc" id="L65">        this.bytes.readPositionRemaining(MESSAGE_START, capacity - MESSAGE_START);</span>
-<span class="fc" id="L66">        super.readMarshallable(this.bytes);</span>
-<span class="fc" id="L67">        signed = true;</span>
-<span class="fc" id="L68">    }</span>
+<span class="fc" id="L70">        this.bytes.clear();</span>
+<span class="fc" id="L71">        this.bytes.readPositionRemaining(MESSAGE_START, capacity - MESSAGE_START);</span>
+<span class="fc" id="L72">        readMarshallable0(this.bytes);</span>
+<span class="fc" id="L73">        signed = true;</span>
+<span class="fc" id="L74">    }</span>
+
+    protected void readMarshallable0(BytesIn bytes) {
+<span class="fc" id="L77">        BytesUtil.readMarshallable(this, bytes);</span>
+<span class="fc" id="L78">    }</span>
 
     public void reset() {
-<span class="fc" id="L71">        signed = false;</span>
+<span class="fc" id="L81">        signed = false;</span>
         // address = timestampUS = 0; set by super.reset();
-<span class="fc" id="L73">        super.reset();</span>
-<span class="fc" id="L74">    }</span>
+<span class="fc" id="L83">        super.reset();</span>
+<span class="fc" id="L84">    }</span>
 
     @Override
     public boolean signed() {
-<span class="fc" id="L78">        return signed;</span>
+<span class="fc" id="L88">        return signed;</span>
     }
 
     @Override
-    public void writeMarshallable(BytesOut bytes) {
-<span class="pc bpc" id="L83" title="2 of 4 branches missed.">        assert signed();</span>
-<span class="fc" id="L84">        bytes.write(this.bytes, 0, this.bytes.readLimit());</span>
-<span class="fc" id="L85">    }</span>
+    public final void writeMarshallable(BytesOut bytes) {
+<span class="pc bpc" id="L93" title="2 of 4 branches missed.">        assert signed();</span>
+<span class="fc" id="L94">        bytes.write(this.bytes, 0, this.bytes.readLimit());</span>
+<span class="fc" id="L95">    }</span>
 
     protected void writeMarshallable0(BytesOut bytes) {
-<span class="fc" id="L88">        super.writeMarshallable(bytes);</span>
-<span class="fc" id="L89">    }</span>
+<span class="fc" id="L98">        super.writeMarshallable(bytes);</span>
+<span class="fc" id="L99">    }</span>
 
     @Override
     public long address() {
-<span class="fc" id="L93">        return address;</span>
+<span class="fc" id="L103">        return address;</span>
     }
 
     public T address(long address) {
-<span class="pc bpc" id="L97" title="2 of 4 branches missed.">        assert !signed();</span>
-<span class="fc" id="L98">        this.address = address;</span>
-<span class="fc" id="L99">        return (T) this;</span>
+<span class="pc bpc" id="L107" title="2 of 4 branches missed.">        assert !signed();</span>
+<span class="fc" id="L108">        this.address = address;</span>
+<span class="fc" id="L109">        return (T) this;</span>
     }
 
     @Override
     public long timestampUS() {
-<span class="fc" id="L104">        return timestampUS;</span>
+<span class="fc" id="L114">        return timestampUS;</span>
     }
 
     public T timestampUS(long timestampUS) {
-<span class="pc bpc" id="L108" title="2 of 4 branches missed.">        assert !signed();</span>
-<span class="fc" id="L109">        this.timestampUS = timestampUS;</span>
-<span class="fc" id="L110">        return (T) this;</span>
+<span class="pc bpc" id="L118" title="2 of 4 branches missed.">        assert !signed();</span>
+<span class="fc" id="L119">        this.timestampUS = timestampUS;</span>
+<span class="fc" id="L120">        return (T) this;</span>
     }
 
     /**
@@ -117,119 +127,119 @@ import java.util.function.LongFunction;
      */
     @Override
     public BytesStore publicKey() {
-<span class="fc" id="L120">        return NoBytesStore.noBytesStore();</span>
+<span class="fc" id="L130">        return NoBytesStore.noBytesStore();</span>
     }
 
     public boolean hasPublicKey() {
-<span class="fc" id="L124">        return false;</span>
+<span class="fc" id="L134">        return false;</span>
     }
 
     public T publicKey(BytesStore key) {
-<span class="nc bnc" id="L128" title="All 2 branches missed.">        assert false;</span>
-<span class="nc" id="L129">        return (T) this;</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        assert false;</span>
+<span class="nc" id="L139">        return (T) this;</span>
     }
 
     @Override
-    public T sign(BytesStore secretKey) {
-<span class="fc" id="L134">        UniqueMicroTimeProvider timeProvider = UniqueMicroTimeProvider.INSTANCE;</span>
-<span class="fc" id="L135">        return sign(secretKey, timeProvider);</span>
+    public final T sign(BytesStore secretKey) {
+<span class="fc" id="L144">        UniqueMicroTimeProvider timeProvider = UniqueMicroTimeProvider.INSTANCE;</span>
+<span class="fc" id="L145">        return sign(secretKey, timeProvider);</span>
     }
 
     public T sign(BytesStore secretKey, TimeProvider timeProvider) {
-<span class="pc bpc" id="L139" title="2 of 4 branches missed.">        assert !signed() : &quot;Already signed&quot;;</span>
-<span class="pc bpc" id="L140" title="2 of 4 branches missed.">        assert protocol != 0 : &quot;protocol must be set&quot;;</span>
-<span class="pc bpc" id="L141" title="2 of 4 branches missed.">        assert messageType != 0 : &quot;messageType must be set&quot;;</span>
+<span class="pc bpc" id="L149" title="2 of 4 branches missed.">        assert !signed() : &quot;Already signed&quot;;</span>
+<span class="pc bpc" id="L150" title="2 of 4 branches missed.">        assert protocol != 0 : &quot;protocol must be set&quot;;</span>
+<span class="pc bpc" id="L151" title="2 of 4 branches missed.">        assert messageType != 0 : &quot;messageType must be set&quot;;</span>
 
-<span class="fc bfc" id="L143" title="All 2 branches covered.">        if (hasPublicKey())</span>
-<span class="fc" id="L144">            publicKey(secretKey);</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        if (hasPublicKey())</span>
+<span class="fc" id="L154">            publicKey(secretKey);</span>
 
-<span class="fc" id="L146">        address = secretKey.readLong(secretKey.readRemaining() - Long.BYTES);</span>
-<span class="fc" id="L147">        timestampUS = timeProvider.currentTimeMicros();</span>
+<span class="fc" id="L156">        address = secretKey.readLong(secretKey.readRemaining() - Long.BYTES);</span>
+<span class="fc" id="L157">        timestampUS = timeProvider.currentTimeMicros();</span>
 
-<span class="fc" id="L149">        tempBytes.clear();</span>
-<span class="fc" id="L150">        tempBytes.writeInt(0);</span>
-<span class="fc" id="L151">        long signatureStart = tempBytes.writePosition();</span>
-<span class="fc" id="L152">        tempBytes.writeSkip(Ed25519.SIGNATURE_LENGTH);</span>
-<span class="fc" id="L153">        tempBytes.writeUnsignedShort(messageType);</span>
-<span class="fc" id="L154">        tempBytes.writeUnsignedShort(protocol);</span>
-<span class="fc" id="L155">        writeMarshallable0(tempBytes);</span>
-<span class="fc" id="L156">        long length = tempBytes.readRemaining();</span>
-<span class="fc" id="L157">        tempBytes.writeUnsignedInt(LENGTH, length);</span>
-<span class="fc" id="L158">        tempBytes.readPosition(signatureStart);</span>
-<span class="fc" id="L159">        Ed25519.sign(tempBytes, secretKey);</span>
-<span class="fc" id="L160">        signed = true;</span>
-<span class="fc" id="L161">        readPointer.set(tempBytes.addressForRead(0), length);</span>
-<span class="fc" id="L162">        bytes.writeLimit(length)</span>
-<span class="fc" id="L163">                .readPositionRemaining(0, length);</span>
-<span class="fc" id="L164">        return (T) this;</span>
+<span class="fc" id="L159">        tempBytes.clear();</span>
+<span class="fc" id="L160">        tempBytes.writeInt(0);</span>
+<span class="fc" id="L161">        long signatureStart = tempBytes.writePosition();</span>
+<span class="fc" id="L162">        tempBytes.writeSkip(Ed25519.SIGNATURE_LENGTH);</span>
+<span class="fc" id="L163">        tempBytes.writeUnsignedShort(messageType);</span>
+<span class="fc" id="L164">        tempBytes.writeUnsignedShort(protocol);</span>
+<span class="fc" id="L165">        writeMarshallable0(tempBytes);</span>
+<span class="fc" id="L166">        long length = tempBytes.readRemaining();</span>
+<span class="fc" id="L167">        tempBytes.writeUnsignedInt(LENGTH, length);</span>
+<span class="fc" id="L168">        tempBytes.readPosition(signatureStart);</span>
+<span class="fc" id="L169">        Ed25519.sign(tempBytes, secretKey);</span>
+<span class="fc" id="L170">        signed = true;</span>
+<span class="fc" id="L171">        readPointer.set(tempBytes.addressForRead(0), length);</span>
+<span class="fc" id="L172">        bytes.writeLimit(length)</span>
+<span class="fc" id="L173">                .readPositionRemaining(0, length);</span>
+<span class="fc" id="L174">        return (T) this;</span>
     }
 
     public String toHexString() {
-<span class="fc" id="L168">        HexDumpBytes dump = new HexDumpBytes()</span>
-<span class="fc" id="L169">                .offsetFormat((o, b) -&gt; b.appendBase16(o, 4));</span>
-<span class="fc" id="L170">        dump.comment(&quot;length&quot;).writeUnsignedInt(bytes.readUnsignedInt(LENGTH));</span>
-<span class="fc" id="L171">        dump.comment(&quot;signature start&quot;).write(bytes, (long) SIGNATURE, Ed25519.SIGNATURE_LENGTH);</span>
-<span class="fc" id="L172">        dump.comment(&quot;signature end&quot;);</span>
-<span class="fc" id="L173">        dump.comment(&quot;messageType&quot;).writeUnsignedShort(messageType);</span>
-<span class="fc" id="L174">        dump.comment(&quot;protocol&quot;).writeUnsignedShort(protocol);</span>
-<span class="fc" id="L175">        writeMarshallable0(dump);</span>
-<span class="fc" id="L176">        String text = dump.toHexString();</span>
-<span class="fc" id="L177">        dump.release();</span>
-<span class="fc" id="L178">        return text;</span>
+<span class="fc" id="L178">        HexDumpBytes dump = new HexDumpBytes()</span>
+<span class="fc" id="L179">                .offsetFormat((o, b) -&gt; b.appendBase16(o, 4));</span>
+<span class="fc" id="L180">        dump.comment(&quot;length&quot;).writeUnsignedInt(bytes.readUnsignedInt(LENGTH));</span>
+<span class="fc" id="L181">        dump.comment(&quot;signature start&quot;).write(bytes, (long) SIGNATURE, Ed25519.SIGNATURE_LENGTH);</span>
+<span class="fc" id="L182">        dump.comment(&quot;signature end&quot;);</span>
+<span class="fc" id="L183">        dump.comment(&quot;messageType&quot;).writeUnsignedShort(messageType);</span>
+<span class="fc" id="L184">        dump.comment(&quot;protocol&quot;).writeUnsignedShort(protocol);</span>
+<span class="fc" id="L185">        writeMarshallable0(dump);</span>
+<span class="fc" id="L186">        String text = dump.toHexString();</span>
+<span class="fc" id="L187">        dump.release();</span>
+<span class="fc" id="L188">        return text;</span>
     }
 
     public boolean verify(LongFunction&lt;BytesStore&gt; addressToPublickKey) {
-<span class="fc bfc" id="L182" title="All 2 branches covered.">        BytesStore publicKey = hasPublicKey()</span>
-<span class="fc" id="L183">                ? publicKey()</span>
-<span class="fc" id="L184">                : addressToPublickKey.apply(address());</span>
-<span class="pc bpc" id="L185" title="2 of 4 branches missed.">        if (publicKey == null || publicKey.readRemaining() != Ed25519.PUBLIC_KEY_LENGTH)</span>
-<span class="nc" id="L186">            return false;</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">        BytesStore publicKey = hasPublicKey()</span>
+<span class="fc" id="L193">                ? publicKey()</span>
+<span class="fc" id="L194">                : addressToPublickKey.apply(address());</span>
+<span class="pc bpc" id="L195" title="2 of 4 branches missed.">        if (publicKey == null || publicKey.readRemaining() != Ed25519.PUBLIC_KEY_LENGTH)</span>
+<span class="nc" id="L196">            return false;</span>
 
-<span class="fc" id="L188">        bytes.readPosition(SIGNATURE);</span>
-<span class="fc" id="L189">        bytes.readLimit(readPointer.readLimit());</span>
-<span class="fc" id="L190">        return Ed25519.verify(bytes, publicKey);</span>
+<span class="fc" id="L198">        bytes.readPosition(SIGNATURE);</span>
+<span class="fc" id="L199">        bytes.readLimit(readPointer.readLimit());</span>
+<span class="fc" id="L200">        return Ed25519.verify(bytes, publicKey);</span>
     }
 
     public int protocol() {
-<span class="fc" id="L194">        return protocol;</span>
+<span class="fc" id="L204">        return protocol;</span>
     }
 
     public T protocol(int protocol) {
-<span class="fc" id="L198">        this.protocol = protocol;</span>
-<span class="fc" id="L199">        return (T) this;</span>
+<span class="fc" id="L208">        this.protocol = protocol;</span>
+<span class="fc" id="L209">        return (T) this;</span>
     }
 
     public String protocolString() {
-<span class="nc" id="L203">        return getClass().getPackage().getName();</span>
+<span class="nc" id="L213">        return getClass().getPackage().getName();</span>
     }
 
     public int messageType() {
-<span class="fc" id="L207">        return messageType;</span>
+<span class="fc" id="L217">        return messageType;</span>
     }
 
     public T messageType(int messageType) {
-<span class="fc" id="L211">        this.messageType = messageType;</span>
-<span class="fc" id="L212">        return (T) this;</span>
+<span class="fc" id="L221">        this.messageType = messageType;</span>
+<span class="fc" id="L222">        return (T) this;</span>
     }
 
     public String messageTypeString() {
-<span class="nc" id="L216">        return getClass().getSimpleName();</span>
+<span class="nc" id="L226">        return getClass().getSimpleName();</span>
     }
 
     public BytesStore bytes() {
-<span class="nc" id="L220">        return readPointer;</span>
+<span class="nc" id="L230">        return readPointer;</span>
     }
 
     public ByteBuffer byteBuffer() {
-<span class="pc bpc" id="L224" title="1 of 2 branches missed.">        if (byteBuffer == null)</span>
-<span class="fc" id="L225">            byteBuffer = ByteBuffer.allocateDirect(0);</span>
+<span class="fc bfc" id="L234" title="All 2 branches covered.">        if (byteBuffer == null)</span>
+<span class="fc" id="L235">            byteBuffer = ByteBuffer.allocateDirect(0);</span>
         try {
-<span class="fc" id="L227">            BB_ADDRESS.setLong(byteBuffer, readPointer.addressForRead(0));</span>
-<span class="fc" id="L228">            BB_CAPACITY.setInt(byteBuffer, Math.toIntExact(readPointer.readRemaining()));</span>
-<span class="fc" id="L229">            byteBuffer.clear(); // position = 0, limit = capacity.</span>
-<span class="fc" id="L230">            return byteBuffer;</span>
-<span class="nc" id="L231">        } catch (IllegalAccessException e) {</span>
-<span class="nc" id="L232">            throw new AssertionError(e);</span>
+<span class="fc" id="L237">            BB_ADDRESS.setLong(byteBuffer, readPointer.addressForRead(0));</span>
+<span class="fc" id="L238">            BB_CAPACITY.setInt(byteBuffer, Math.toIntExact(readPointer.readRemaining()));</span>
+<span class="fc" id="L239">            byteBuffer.clear(); // position = 0, limit = capacity.</span>
+<span class="fc" id="L240">            return byteBuffer;</span>
+<span class="nc" id="L241">        } catch (IllegalAccessException e) {</span>
+<span class="nc" id="L242">            throw new AssertionError(e);</span>
         }
     }
 }

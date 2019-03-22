@@ -89,26 +89,28 @@ import static net.openhft.chronicle.decentred.util.DecentredUtil.MASK_16;
     public DtoParser&lt;T&gt; get() {
 <span class="fc" id="L90">        final IntObjMap&lt;DtoParselet&gt; parseletMap2 = IntObjMap.withExpectedSize(DtoParselet.class, parseletMap.size() * 2);</span>
 <span class="fc" id="L91">        parseletMap.forEach((i, dp) -&gt; parseletMap2.justPut(i, new DtoParselet(dp)));</span>
-<span class="fc" id="L92">        return new VanillaDtoParser&lt;&gt;(superInterface, parseletMap2, classConsumerMap);</span>
+<span class="fc" id="L92">        VanillaDtoParser&lt;T&gt; dtoParser = new VanillaDtoParser&lt;&gt;(superInterface, parseletMap2, classConsumerMap);</span>
+<span class="fc" id="L93">        parseletMap2.forEach((i, p) -&gt; p.dtoRegistry(this));</span>
+<span class="fc" id="L94">        return dtoParser;</span>
     }
 
     @Override
     public &lt;M extends VanillaSignedMessage&lt;M&gt;&gt; M create(Class&lt;M&gt; tClass) {
-<span class="fc" id="L97">        requireNonNull(tClass);</span>
-<span class="fc" id="L98">        final int pmt = protocolMessageTypeFor(tClass);</span>
+<span class="fc" id="L99">        requireNonNull(tClass);</span>
+<span class="fc" id="L100">        final int pmt = protocolMessageTypeFor(tClass);</span>
         try {
-<span class="fc" id="L100">            final int protocol = pmt &gt;&gt;&gt; 16;</span>
-<span class="fc" id="L101">            final int messageType = pmt &amp; MASK_16;</span>
-<span class="fc" id="L102">            final M vsm = ObjectUtils.newInstance(tClass);</span>
-<span class="fc" id="L103">            return vsm.protocol(protocol).messageType(messageType);</span>
-<span class="nc" id="L104">        } catch (Exception e) {</span>
-<span class="nc" id="L105">            throw new AssertionError(e);</span>
+<span class="fc" id="L102">            final int protocol = pmt &gt;&gt;&gt; 16;</span>
+<span class="fc" id="L103">            final int messageType = pmt &amp; MASK_16;</span>
+<span class="fc" id="L104">            final M vsm = ObjectUtils.newInstance(tClass);</span>
+<span class="fc" id="L105">            return vsm.protocol(protocol).messageType(messageType);</span>
+<span class="nc" id="L106">        } catch (Exception e) {</span>
+<span class="nc" id="L107">            throw new AssertionError(e);</span>
         }
     }
 
     @Override
     public Class&lt;T&gt; superInterface() {
-<span class="fc" id="L111">        return superInterface;</span>
+<span class="fc" id="L113">        return superInterface;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

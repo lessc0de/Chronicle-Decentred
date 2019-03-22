@@ -1,28 +1,79 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApplicationErrorResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenHFT/Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.dto</a> &gt; <span class="el_source">ApplicationErrorResponse.java</span></div><h1>ApplicationErrorResponse.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.dto;
 
-<span class="pc bpc" id="L3" title="1 of 2 branches missed.">public class ApplicationErrorResponse extends VanillaSignedMessage&lt;ApplicationErrorResponse&gt; {</span>
-    private VanillaSignedMessage origMessage;
+import net.openhft.chronicle.bytes.BytesIn;
+import net.openhft.chronicle.bytes.BytesOut;
+import net.openhft.chronicle.core.io.IORuntimeException;
+import net.openhft.chronicle.decentred.util.DtoParser;
+import net.openhft.chronicle.decentred.util.DtoRegistry;
+import net.openhft.chronicle.wire.WireIn;
+import net.openhft.chronicle.wire.WireOut;
+import org.jetbrains.annotations.NotNull;
+
+<span class="pc bpc" id="L12" title="1 of 2 branches missed.">public class ApplicationErrorResponse extends VanillaSignedMessage&lt;ApplicationErrorResponse&gt; {</span>
     private String reason;
+    private transient DtoRegistry dtoRegistry;
+    private transient DtoParser dtoParser;
+    private transient SignedMessage origMessage;
 
     public String reason() {
-<span class="nc" id="L8">        return reason;</span>
+<span class="nc" id="L19">        return reason;</span>
     }
 
     public ApplicationErrorResponse reason(String reason) {
-<span class="nc bnc" id="L12" title="All 4 branches missed.">        assert !signed();</span>
-<span class="nc" id="L13">        this.reason = reason;</span>
-<span class="nc" id="L14">        return this;</span>
+<span class="nc bnc" id="L23" title="All 4 branches missed.">        assert !signed();</span>
+<span class="nc" id="L24">        this.reason = reason;</span>
+<span class="nc" id="L25">        return this;</span>
     }
 
-    public ApplicationErrorResponse init(VanillaSignedMessage origMessage, String reason) {
-<span class="pc bpc" id="L18" title="2 of 4 branches missed.">        assert !signed();</span>
-<span class="fc" id="L19">        this.origMessage = origMessage;</span>
-<span class="fc" id="L20">        this.reason = reason;</span>
-<span class="fc" id="L21">        return this;</span>
+    public ApplicationErrorResponse init(SignedMessage origMessage, String reason) {
+<span class="pc bpc" id="L29" title="2 of 4 branches missed.">        assert !signed();</span>
+<span class="fc" id="L30">        this.origMessage = origMessage;</span>
+<span class="fc" id="L31">        this.reason = reason;</span>
+<span class="fc" id="L32">        return this;</span>
     }
 
-    public VanillaSignedMessage origMessage() {
-<span class="nc" id="L25">        return origMessage;</span>
+    public SignedMessage origMessage() {
+<span class="nc" id="L36">        return origMessage;</span>
+    }
+
+    @Override
+    public void readMarshallable(@NotNull WireIn wire) throws IORuntimeException {
+<span class="nc" id="L41">        super.readMarshallable(wire);</span>
+<span class="nc" id="L42">        origMessage = wire.read(&quot;origMessage&quot;).object(VanillaSignedMessage.class);</span>
+<span class="nc" id="L43">    }</span>
+
+    @Override
+    public void writeMarshallable(@NotNull WireOut wire) {
+<span class="fc" id="L47">        super.writeMarshallable(wire);</span>
+<span class="fc" id="L48">        wire.write(&quot;origMessage&quot;).object(origMessage);</span>
+<span class="fc" id="L49">    }</span>
+
+    @Override
+    protected void readMarshallable0(BytesIn bytes) {
+<span class="fc" id="L53">        super.readMarshallable0(bytes);</span>
+<span class="fc" id="L54">        int length = bytes.readInt();</span>
+<span class="fc" id="L55">        bytes.readLimit(bytes.readPosition() + length);</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        if (dtoParser == null)</span>
+<span class="fc" id="L57">            dtoParser = dtoRegistry.get();</span>
+<span class="fc" id="L58">        origMessage = dtoParser.parseOne(bytes);</span>
+<span class="fc" id="L59">    }</span>
+
+    @Override
+    protected void writeMarshallable0(BytesOut bytes) {
+<span class="fc" id="L63">        super.writeMarshallable0(bytes);</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        if (!origMessage.signed())</span>
+<span class="nc" id="L65">            throw new IllegalStateException(&quot;origMessage is not signed&quot;);</span>
+<span class="fc" id="L66">        bytes.comment(&quot;origMessage.length&quot;);</span>
+<span class="fc" id="L67">        VanillaSignedMessage vsm = (VanillaSignedMessage) origMessage;</span>
+<span class="fc" id="L68">        bytes.writeUnsignedInt(vsm.bytes.readRemaining());</span>
+<span class="fc" id="L69">        bytes.comment(&quot;origMessage&quot;);</span>
+<span class="fc" id="L70">        bytes.write(vsm.bytes);</span>
+<span class="fc" id="L71">    }</span>
+
+    @Override
+    public ApplicationErrorResponse dtoRegistry(DtoRegistry dtoRegistry) {
+<span class="fc" id="L75">        this.dtoRegistry = dtoRegistry;</span>
+<span class="fc" id="L76">        return this;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>
