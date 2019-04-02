@@ -18,8 +18,8 @@ OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.util,KolobokeLongObj
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.util,VanillaDtoRegistry,55,215,6,10,8,44,6,13,0,11
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.util,KeyPair,0,94,0,2,0,21,0,5,0,4
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.util,VanillaPublicKeyRegistry,25,22,4,0,6,6,4,3,2,3
-OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.util,KolobokeLongObjMap.Support,3,0,0,0,1,0,1,0,1,0
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.util,OffsetIntConverter,7,9,0,0,2,3,1,2,1,2
+OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.util,KolobokeLongObjMap.Support,3,0,0,0,1,0,1,0,1,0
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.util,DtoRegistry,8,5,0,0,1,1,1,1,1,1
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.util,KolobokeLongDoubleMap.Support,3,0,0,0,1,0,1,0,1,0
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.util,DecentredUtil,0,33,0,0,0,10,0,6,0,6
@@ -50,15 +50,15 @@ OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.dto,CreateAddressEve
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.dto,TransactionBlockVoteEvent,0,64,0,4,0,13,0,8,0,6
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.dto,ApplicationErrorResponse,43,98,9,5,9,25,11,7,4,7
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.dto,TransactionBlockEvent.new AbstractMethodWriterInvocationHandler() {...},0,17,0,0,0,3,0,2,0,2
-OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,AbstractTCPConnection,168,188,27,19,28,46,21,13,2,9
+OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,AbstractTCPConnection,170,186,28,18,28,46,22,12,2,9
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPServer,3,91,2,2,2,25,2,4,0,4
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,TCPClientListener,0,2,0,0,0,2,0,2,0,2
-OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPClient,24,190,6,14,5,52,6,10,0,6
+OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPClient,70,144,11,9,15,42,8,8,0,6
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,TCPServerConnectionListener,0,8,0,0,0,3,0,3,0,3
-OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPServerConnection,20,58,2,2,4,19,3,5,1,5
+OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPServerConnection,26,52,3,1,7,16,3,5,1,5
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaGossiper,18,179,6,12,2,40,6,9,0,6
-OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaVerifyIP,0,87,0,4,0,21,0,7,0,5
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaVoteTaker,10,138,5,11,0,31,5,9,0,6
+OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaVerifyIP,0,87,0,4,0,21,0,7,0,5
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaVoter,0,101,0,6,0,23,0,7,0,4
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaBlockEngine,60,376,11,19,18,70,18,18,7,14
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaChainer,67,0,2,0,18,0,4,0,3,0
