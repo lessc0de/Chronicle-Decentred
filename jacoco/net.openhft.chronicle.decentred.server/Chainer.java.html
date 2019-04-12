@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Chainer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenHFT/Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.server</a> &gt; <span class="el_source">Chainer.java</span></div><h1>Chainer.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.server;
+
+
+import net.openhft.chronicle.decentred.api.MessageListener;
+import net.openhft.chronicle.decentred.dto.base.SignedMessage;
+import net.openhft.chronicle.decentred.dto.blockevent.TransactionBlockEvent;
+import net.openhft.chronicle.decentred.internal.server.QueuingChainer;
+import net.openhft.chronicle.decentred.internal.server.VanillaChainer;
+import net.openhft.chronicle.decentred.util.DtoRegistry;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * A {@link Chainer } is used to gather one or more {@link SignedMessage } objects and
+ * collect them into a {@link TransactionBlockEvent}.
+ *
+ * Implementations of this interface should be thread safe.
+ *
+ * @param &lt;T&gt; the message union type
+ *
+ */
+public interface Chainer&lt;T&gt; extends MessageListener {
+
+    /**
+     * Returns a {@link TransactionBlockEvent} consisting of
+     * all messages previously received via the {@link #onMessage(SignedMessage)}
+     * since this method was previously called.
+     * &lt;p&gt;
+     * If no {@link SignedMessage} was received since last call, this method will
+     * return {@code null}.
+     *
+     * @return a {@link TransactionBlockEvent} consisting of
+     *         all messages received via the {@link #onMessage(SignedMessage)} since
+     *         this method was previously called
+     */
+    TransactionBlockEvent&lt;T&gt; nextTransactionBlockEvent();
+
+    /**
+     * Creates and returns a new standard {@link Chainer} for the provided {@code chainAddress}.
+     *
+     * @param chainAddress to use
+     * @param dtoRegistry to use when handling messages
+     * @param &lt;T&gt; message type
+     * @return a new {@link Chainer} for the provided {@code chainAddress}
+     */
+    static &lt;T&gt; Chainer&lt;T&gt; createVanilla(long chainAddress, @NotNull DtoRegistry&lt;T&gt; dtoRegistry) {
+<span class="nc" id="L46">        return new VanillaChainer&lt;&gt;(chainAddress, dtoRegistry);</span>
+    }
+
+    /**
+     * Creates and returns a new {@link Chainer} for the provided {@code chainAddress}.
+     * &lt;p&gt;
+     * The Chainer will queue incoming messages in a separate queue internally
+     * before they are actually added to a TransactionBlockEvent.
+     *
+     * @param chainAddress to use
+     * @param dtoRegistry to use when handling messages
+     * @param &lt;T&gt; message type
+     * @return a new {@link Chainer} for the provided {@code chainAddress}
+     */
+    static &lt;T&gt; Chainer&lt;T&gt; createQueuing(long chainAddress, @NotNull DtoRegistry&lt;T&gt; dtoRegistry) {
+<span class="fc" id="L61">        return new QueuingChainer&lt;&gt;(chainAddress, dtoRegistry);</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

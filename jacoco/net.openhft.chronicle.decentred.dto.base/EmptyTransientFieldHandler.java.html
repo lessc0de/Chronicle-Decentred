@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EmptyTransientFieldHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenHFT/Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.dto.base</a> &gt; <span class="el_source">EmptyTransientFieldHandler.java</span></div><h1>EmptyTransientFieldHandler.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.dto.base;
+
+import net.openhft.chronicle.bytes.BytesIn;
+import net.openhft.chronicle.bytes.BytesOut;
+import net.openhft.chronicle.wire.WireIn;
+import net.openhft.chronicle.wire.WireOut;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * Internal class that provides an implementation of a TransientFieldHandle
+ * suitable for messages with no transient fields.
+ *
+ * @param &lt;T&gt; message type
+ */
+class EmptyTransientFieldHandler&lt;T extends VanillaSignedMessage&lt;T&gt;&gt; implements TransientFieldHandler&lt;T&gt; {
+
+<span class="fc" id="L17">    private static final TransientFieldHandler&lt;?&gt; INSTANCE = new EmptyTransientFieldHandler&lt;&gt;();</span>
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public static &lt;T extends VanillaSignedMessage&lt;T&gt;&gt; TransientFieldHandler&lt;T&gt; instance() {
+<span class="fc" id="L21">        return (TransientFieldHandler&lt;T&gt;) INSTANCE;</span>
+    }
+
+    private EmptyTransientFieldHandler() {}
+
+    @Override
+<span class="fc" id="L27">    public void reset(T original) {}</span>
+
+    @Override
+<span class="fc" id="L30">    public void copyNonMarshalled(@NotNull T original, @NotNull T target) {}</span>
+
+    /*    @Override
+    public void copyNonMarshalled(@NotNull T original, @NotNull T target) {}
+
+    @Override
+    public void deepCopy(@NotNull T original, @NotNull T target) {}*/
+
+    @Override
+<span class="fc" id="L39">    public void writeMarshallable(@NotNull T original, @NotNull WireOut wire) {}</span>
+
+    @Override
+<span class="fc" id="L42">    public void readMarshallable(T original, @NotNull WireIn wire) {}</span>
+
+    @Override
+<span class="fc" id="L45">    public void writeMarshallableInternal(T original, BytesOut bytes) {}</span>
+
+    @Override
+<span class="fc" id="L48">    public void readMarshallable(@NotNull T original, @NotNull BytesIn bytes) {}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

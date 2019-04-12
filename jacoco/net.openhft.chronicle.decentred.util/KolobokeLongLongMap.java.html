@@ -2,324 +2,1875 @@
 
 package net.openhft.chronicle.decentred.util;
 
+import com.koloboke.collect.impl.AbstractLongKeyView;
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.ConcurrentModificationException;
+import java.util.function.Consumer;
 import javax.annotation.Generated;
+import com.koloboke.collect.impl.hash.Hash;
 import com.koloboke.collect.hash.HashConfig;
 import com.koloboke.collect.impl.hash.HashConfigWrapper;
+import com.koloboke.collect.set.hash.HashLongSet;
+import com.koloboke.collect.impl.InternalLongCollectionOps;
 import com.koloboke.collect.impl.hash.LHash;
 import com.koloboke.collect.impl.hash.LHashCapacities;
 import com.koloboke.collect.impl.LongArrays;
+import com.koloboke.collect.LongCollection;
+import java.util.function.LongConsumer;
+import com.koloboke.collect.LongCursor;
+import com.koloboke.collect.LongIterator;
 import com.koloboke.function.LongLongConsumer;
+import java.util.function.LongPredicate;
+import com.koloboke.collect.set.LongSet;
 import com.koloboke.collect.impl.Maths;
+import java.util.NoSuchElementException;
+import javax.annotation.Nonnull;
+import java.util.function.Predicate;
 import java.util.Random;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.concurrent.ThreadLocalRandom;
 
-<span class="pc bpc" id="L18" title="1 of 2 branches missed.">@Generated(value = &quot;com.koloboke.compile.processor.KolobokeCollectionProcessor&quot;)</span>
+<span class="pc bpc" id="L35" title="1 of 2 branches missed.">@Generated(value = &quot;com.koloboke.compile.processor.KolobokeCollectionProcessor&quot;)</span>
 @SuppressFBWarnings(value = { &quot;IA_AMBIGUOUS_INVOCATION_OF_INHERITED_OR_OUTER_METHOD&quot; })
 @SuppressWarnings(value = { &quot;all&quot; , &quot;unsafe&quot; , &quot;deprecation&quot; , &quot;overloads&quot; , &quot;rawtypes&quot; })
 final class KolobokeLongLongMap extends LongLongMap {
-<span class="fc" id="L22">    KolobokeLongLongMap(int expectedSize) {</span>
-<span class="fc" id="L23">        this.init(DEFAULT_CONFIG_WRAPPER, expectedSize);</span>
-<span class="fc" id="L24">    }</span>
+<span class="fc" id="L39">    KolobokeLongLongMap(int expectedSize) {</span>
+<span class="fc" id="L40">        this.init(DEFAULT_CONFIG_WRAPPER, expectedSize);</span>
+<span class="fc" id="L41">    }</span>
 
     static void verifyConfig(HashConfig config) {
-<span class="pc bpc" id="L27" title="1 of 2 branches missed.">        if ((config.getGrowthFactor()) != 2.0) {</span>
-<span class="nc" id="L28">            throw new IllegalArgumentException(((((((config + &quot; passed, HashConfig for a hashtable\n&quot;) + &quot;implementation with linear probing must have growthFactor of 2.0.\n&quot;) + &quot;A Koloboke Compile-generated hashtable implementation could have\n&quot;) + &quot;a different growth factor, if the implemented type is annotated with\n&quot;) + &quot;@com.koloboke.compile.hash.algo.openaddressing.QuadraticProbing or\n&quot;) + &quot;@com.koloboke.compile.hash.algo.openaddressing.DoubleHashing&quot;));</span>
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">        if ((config.getGrowthFactor()) != 2.0) {</span>
+<span class="nc" id="L45">            throw new IllegalArgumentException(((((((config + &quot; passed, HashConfig for a hashtable\n&quot;) + &quot;implementation with linear probing must have growthFactor of 2.0.\n&quot;) + &quot;A Koloboke Compile-generated hashtable implementation could have\n&quot;) + &quot;a different growth factor, if the implemented type is annotated with\n&quot;) + &quot;@com.koloboke.compile.hash.algo.openaddressing.QuadraticProbing or\n&quot;) + &quot;@com.koloboke.compile.hash.algo.openaddressing.DoubleHashing&quot;));</span>
         } 
-<span class="fc" id="L30">    }</span>
+<span class="fc" id="L47">    }</span>
+
+    @Nonnull
+    public final HashConfig hashConfig() {
+<span class="nc" id="L51">        return configWrapper().config();</span>
+    }
 
     long freeValue;
 
     long[] table;
 
+    public final boolean noRemoved() {
+<span class="nc" id="L59">        return true;</span>
+    }
+
     public final boolean isEmpty() {
-<span class="pc bpc" id="L37" title="1 of 2 branches missed.">        return (size()) == 0;</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">        return (size()) == 0;</span>
+    }
+
+    public final int freeSlots() {
+<span class="nc" id="L67">        return (capacity()) - (size());</span>
     }
 
     private HashConfigWrapper configWrapper;
 
+    @Nonnull
+    public long[] table() {
+<span class="nc" id="L74">        return table;</span>
+    }
+
     public boolean containsKey(long key) {
-<span class="fc" id="L43">        return contains(key);</span>
+<span class="fc" id="L78">        return contains(key);</span>
     }
 
     int size;
 
+    public final int removedSlots() {
+<span class="nc" id="L84">        return 0;</span>
+    }
+
     private int maxSize;
 
     boolean doubleSizedArrays() {
-<span class="fc" id="L51">        return true;</span>
+<span class="fc" id="L90">        return true;</span>
     }
 
-<span class="pc" id="L54">    private int modCount = 0;</span>
+<span class="pc" id="L93">    private int modCount = 0;</span>
+
+    @Nonnull
+    public HashLongSet keySet() {
+<span class="fc" id="L97">        return new KolobokeLongLongMap.KeyView();</span>
+    }
+
+    public final double currentLoad() {
+<span class="nc" id="L101">        return ((double) (size())) / ((double) (capacity()));</span>
+    }
 
     final void init(HashConfigWrapper configWrapper, int size, long freeValue) {
-<span class="nc" id="L57">        KolobokeLongLongMap.this.freeValue = freeValue;</span>
-<span class="nc" id="L58">        init(configWrapper, size);</span>
-<span class="nc" id="L59">    }</span>
+<span class="nc" id="L105">        KolobokeLongLongMap.this.freeValue = freeValue;</span>
+<span class="nc" id="L106">        init(configWrapper, size);</span>
+<span class="nc" id="L107">    }</span>
 
     public int capacity() {
-<span class="nc" id="L62">        return (table.length) &gt;&gt; 1;</span>
+<span class="nc" id="L110">        return (table.length) &gt;&gt; 1;</span>
+    }
+
+    public final HashConfigWrapper configWrapper() {
+<span class="nc" id="L114">        return configWrapper;</span>
+    }
+
+    public void forEach(Consumer&lt;? super Long&gt; action) {
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (action == null)</span>
+<span class="nc" id="L119">            throw new NullPointerException();</span>
+        
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        if (KolobokeLongLongMap.this.isEmpty())</span>
+<span class="nc" id="L122">            return ;</span>
+        
+<span class="nc" id="L124">        int mc = modCount();</span>
+<span class="nc" id="L125">        long free = freeValue;</span>
+<span class="nc" id="L126">        long[] tab = table;</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L129" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc" id="L130">                action.accept(key);</span>
+            } 
+        }
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L134">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L136">    }</span>
+
+<span class="fc" id="L138">    class KeyView extends AbstractLongKeyView implements HashLongSet , InternalLongCollectionOps , KolobokeLongLongMap.Support.ParallelKVLongLHash {</span>
+        @Nonnull
+        @Override
+        public HashConfig hashConfig() {
+<span class="nc" id="L142">            return KolobokeLongLongMap.this.hashConfig();</span>
+        }
+
+        @Override
+        public HashConfigWrapper configWrapper() {
+<span class="nc" id="L147">            return KolobokeLongLongMap.this.configWrapper();</span>
+        }
+
+        @Override
+        public int size() {
+<span class="nc" id="L152">            return KolobokeLongLongMap.this.size();</span>
+        }
+
+        @Override
+        public double currentLoad() {
+<span class="nc" id="L157">            return KolobokeLongLongMap.this.currentLoad();</span>
+        }
+
+        @Override
+        public long freeValue() {
+<span class="nc" id="L162">            return KolobokeLongLongMap.this.freeValue();</span>
+        }
+
+        @Override
+        public boolean supportRemoved() {
+<span class="nc" id="L167">            return KolobokeLongLongMap.this.supportRemoved();</span>
+        }
+
+        @Override
+        public long removedValue() {
+<span class="nc" id="L172">            return KolobokeLongLongMap.this.removedValue();</span>
+        }
+
+        @Nonnull
+        @Override
+        public long[] table() {
+<span class="nc" id="L178">            return KolobokeLongLongMap.this.table();</span>
+        }
+
+        @Override
+        public int capacity() {
+<span class="nc" id="L183">            return KolobokeLongLongMap.this.capacity();</span>
+        }
+
+        @Override
+        public int freeSlots() {
+<span class="nc" id="L188">            return KolobokeLongLongMap.this.freeSlots();</span>
+        }
+
+        @Override
+        public boolean noRemoved() {
+<span class="nc" id="L193">            return KolobokeLongLongMap.this.noRemoved();</span>
+        }
+
+        @Override
+        public int removedSlots() {
+<span class="nc" id="L198">            return KolobokeLongLongMap.this.removedSlots();</span>
+        }
+
+        @Override
+        public int modCount() {
+<span class="nc" id="L203">            return KolobokeLongLongMap.this.modCount();</span>
+        }
+
+        @Override
+        public final boolean contains(Object o) {
+<span class="nc" id="L208">            return KolobokeLongLongMap.this.contains(o);</span>
+        }
+
+        @Override
+        public boolean contains(long key) {
+<span class="nc" id="L213">            return KolobokeLongLongMap.this.contains(key);</span>
+        }
+
+        @Override
+        public void forEach(Consumer&lt;? super Long&gt; action) {
+<span class="nc" id="L218">            KolobokeLongLongMap.this.forEach(action);</span>
+<span class="nc" id="L219">        }</span>
+
+        @Override
+        public void forEach(LongConsumer action) {
+<span class="nc" id="L223">            KolobokeLongLongMap.this.forEach(action);</span>
+<span class="nc" id="L224">        }</span>
+
+        @Override
+        public boolean forEachWhile(LongPredicate predicate) {
+<span class="nc" id="L228">            return KolobokeLongLongMap.this.forEachWhile(predicate);</span>
+        }
+
+        @Override
+        public boolean allContainingIn(LongCollection c) {
+<span class="nc" id="L233">            return KolobokeLongLongMap.this.allContainingIn(c);</span>
+        }
+
+        @Override
+        public boolean reverseAddAllTo(LongCollection c) {
+<span class="nc" id="L238">            return KolobokeLongLongMap.this.reverseAddAllTo(c);</span>
+        }
+
+        @Override
+        public boolean reverseRemoveAllFrom(LongSet s) {
+<span class="nc" id="L243">            return KolobokeLongLongMap.this.reverseRemoveAllFrom(s);</span>
+        }
+
+        @Override
+        @Nonnull
+        public LongIterator iterator() {
+<span class="nc" id="L249">            return KolobokeLongLongMap.this.iterator();</span>
+        }
+
+        @Override
+        @Nonnull
+        public LongCursor cursor() {
+<span class="nc" id="L255">            return setCursor();</span>
+        }
+
+        @Override
+        @Nonnull
+        public Object[] toArray() {
+<span class="nc" id="L261">            return KolobokeLongLongMap.this.toArray();</span>
+        }
+
+        @Override
+        @Nonnull
+        public &lt;T&gt;  T[] toArray(@Nonnull
+        T[] a) {
+<span class="nc" id="L268">            return KolobokeLongLongMap.this.toArray(a);</span>
+        }
+
+        @Override
+        public long[] toLongArray() {
+<span class="fc" id="L273">            return KolobokeLongLongMap.this.toLongArray();</span>
+        }
+
+        @Override
+        public long[] toArray(long[] a) {
+<span class="nc" id="L278">            return KolobokeLongLongMap.this.toArray(a);</span>
+        }
+
+        @Override
+        public int hashCode() {
+<span class="nc" id="L283">            return setHashCode();</span>
+        }
+
+        @Override
+        public String toString() {
+<span class="nc" id="L288">            return setToString();</span>
+        }
+
+        @Override
+        public boolean shrink() {
+<span class="nc" id="L293">            return KolobokeLongLongMap.this.shrink();</span>
+        }
+
+        @Override
+        public final boolean remove(Object o) {
+<span class="nc" id="L298">            return justRemove(((Long) (o)));</span>
+        }
+
+        @Override
+        public boolean removeLong(long v) {
+<span class="nc" id="L303">            return justRemove(v);</span>
+        }
+
+        @Override
+        public boolean removeIf(Predicate&lt;? super Long&gt; filter) {
+<span class="nc" id="L308">            return KolobokeLongLongMap.this.removeIf(filter);</span>
+        }
+
+        @Override
+        public boolean removeIf(LongPredicate filter) {
+<span class="nc" id="L313">            return KolobokeLongLongMap.this.removeIf(filter);</span>
+        }
+
+        @Override
+        public boolean removeAll(@Nonnull
+        Collection&lt;?&gt; c) {
+<span class="nc bnc" id="L319" title="All 2 branches missed.">            if (c instanceof LongCollection) {</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">                if (c instanceof InternalLongCollectionOps) {</span>
+<span class="nc" id="L321">                    InternalLongCollectionOps c2 = ((InternalLongCollectionOps) (c));</span>
+<span class="nc bnc" id="L322" title="All 2 branches missed.">                    if ((c2.size()) &lt; (KolobokeLongLongMap.KeyView.this.size())) {</span>
+<span class="nc" id="L323">                        return c2.reverseRemoveAllFrom(KolobokeLongLongMap.KeyView.this);</span>
+                    } 
+                } 
+<span class="nc" id="L326">                return KolobokeLongLongMap.this.removeAll(KolobokeLongLongMap.KeyView.this, ((LongCollection) (c)));</span>
+            } 
+<span class="nc" id="L328">            return KolobokeLongLongMap.this.removeAll(KolobokeLongLongMap.KeyView.this, c);</span>
+        }
+
+        @Override
+        public boolean retainAll(@Nonnull
+        Collection&lt;?&gt; c) {
+<span class="nc" id="L334">            return KolobokeLongLongMap.this.retainAll(KolobokeLongLongMap.KeyView.this, c);</span>
+        }
+
+        @Override
+        public void clear() {
+<span class="nc" id="L339">            KolobokeLongLongMap.this.clear();</span>
+<span class="nc" id="L340">        }</span>
+    }
+
+    public long freeValue() {
+<span class="nc" id="L344">        return freeValue;</span>
     }
 
     @Override
     public final int size() {
-<span class="fc" id="L67">        return size;</span>
+<span class="fc" id="L349">        return size;</span>
+    }
+
+    public final int modCount() {
+<span class="fc" id="L353">        return modCount;</span>
+    }
+
+    public boolean supportRemoved() {
+<span class="nc" id="L357">        return false;</span>
+    }
+
+    final void incrementModCount() {
+<span class="fc" id="L361">        (modCount)++;</span>
+<span class="fc" id="L362">    }</span>
+
+    public long removedValue() {
+<span class="nc" id="L365">        throw new UnsupportedOperationException();</span>
+    }
+
+    public long defaultValue() {
+<span class="nc" id="L369">        return 0L;</span>
     }
 
     int insert(long key, long value) {
         long free;
-<span class="pc bpc" id="L72" title="1 of 2 branches missed.">        if (key == (free = freeValue)) {</span>
-<span class="nc" id="L73">            free = changeFree();</span>
+<span class="pc bpc" id="L374" title="1 of 2 branches missed.">        if (key == (free = freeValue)) {</span>
+<span class="nc" id="L375">            free = changeFree();</span>
         } 
-<span class="fc" id="L75">        long[] tab = table;</span>
+<span class="fc" id="L377">        long[] tab = table;</span>
         int capacityMask;
         int index;
         long cur;
-<span class="fc bfc" id="L79" title="All 2 branches covered.">        keyAbsent : if ((cur = tab[(index = (LHash.ParallelKVLongKeyMixing.mix(key)) &amp; (capacityMask = (tab.length) - 2))]) != free) {</span>
-<span class="fc bfc" id="L80" title="All 2 branches covered.">            if (cur == key) {</span>
-<span class="fc" id="L81">                return index;</span>
+<span class="fc bfc" id="L381" title="All 2 branches covered.">        keyAbsent : if ((cur = tab[(index = (LHash.ParallelKVLongKeyMixing.mix(key)) &amp; (capacityMask = (tab.length) - 2))]) != free) {</span>
+<span class="pc bpc" id="L382" title="1 of 2 branches missed.">            if (cur == key) {</span>
+<span class="nc" id="L383">                return index;</span>
             } else {
                 while (true) {
-<span class="pc bpc" id="L84" title="1 of 2 branches missed.">                    if ((cur = tab[(index = (index - 2) &amp; capacityMask)]) == free) {</span>
-<span class="fc" id="L85">                        break keyAbsent;</span>
-<span class="nc bnc" id="L86" title="All 2 branches missed.">                    } else if (cur == key) {</span>
-<span class="nc" id="L87">                        return index;</span>
+<span class="fc bfc" id="L386" title="All 2 branches covered.">                    if ((cur = tab[(index = (index - 2) &amp; capacityMask)]) == free) {</span>
+<span class="fc" id="L387">                        break keyAbsent;</span>
+<span class="pc bpc" id="L388" title="1 of 2 branches missed.">                    } else if (cur == key) {</span>
+<span class="nc" id="L389">                        return index;</span>
                     } 
                 }
             }
         } 
-<span class="fc" id="L92">        incrementModCount();</span>
-<span class="fc" id="L93">        tab[index] = key;</span>
-<span class="fc" id="L94">        tab[(index + 1)] = value;</span>
-<span class="fc" id="L95">        postInsertHook();</span>
-<span class="fc" id="L96">        return -1;</span>
+<span class="fc" id="L394">        incrementModCount();</span>
+<span class="fc" id="L395">        tab[index] = key;</span>
+<span class="fc" id="L396">        tab[(index + 1)] = value;</span>
+<span class="fc" id="L397">        postInsertHook();</span>
+<span class="fc" id="L398">        return -1;</span>
     }
 
-    public final int modCount() {
-<span class="fc" id="L100">        return modCount;</span>
+    public boolean contains(Object key) {
+<span class="nc" id="L402">        return contains(((Long) (key)).longValue());</span>
     }
 
-    final void incrementModCount() {
-<span class="fc" id="L104">        (modCount)++;</span>
-<span class="fc" id="L105">    }</span>
-
-    public long defaultValue() {
-<span class="nc" id="L108">        return 0L;</span>
-    }
+    public void forEach(LongConsumer action) {
+<span class="nc bnc" id="L406" title="All 2 branches missed.">        if (action == null)</span>
+<span class="nc" id="L407">            throw new NullPointerException();</span>
+        
+<span class="nc bnc" id="L409" title="All 2 branches missed.">        if (KolobokeLongLongMap.this.isEmpty())</span>
+<span class="nc" id="L410">            return ;</span>
+        
+<span class="nc" id="L412">        int mc = modCount();</span>
+<span class="nc" id="L413">        long free = freeValue;</span>
+<span class="nc" id="L414">        long[] tab = table;</span>
+<span class="nc bnc" id="L415" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L417" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc" id="L418">                action.accept(key);</span>
+            } 
+        }
+<span class="nc bnc" id="L421" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L422">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L424">    }</span>
 
     public boolean contains(long key) {
-<span class="pc bpc" id="L112" title="1 of 2 branches missed.">        return (index(key)) &gt;= 0;</span>
+<span class="fc bfc" id="L427" title="All 2 branches covered.">        return (index(key)) &gt;= 0;</span>
     }
 
     int index(long key) {
         long free;
-<span class="fc bfc" id="L117" title="All 2 branches covered.">        if (key != (free = freeValue)) {</span>
-<span class="fc" id="L118">            long[] tab = table;</span>
+<span class="fc bfc" id="L432" title="All 2 branches covered.">        if (key != (free = freeValue)) {</span>
+<span class="fc" id="L433">            long[] tab = table;</span>
             int capacityMask;
             int index;
             long cur;
-<span class="fc bfc" id="L122" title="All 2 branches covered.">            if ((cur = tab[(index = (LHash.ParallelKVLongKeyMixing.mix(key)) &amp; (capacityMask = (tab.length) - 2))]) == key) {</span>
-<span class="fc" id="L123">                return index;</span>
+<span class="fc bfc" id="L437" title="All 2 branches covered.">            if ((cur = tab[(index = (LHash.ParallelKVLongKeyMixing.mix(key)) &amp; (capacityMask = (tab.length) - 2))]) == key) {</span>
+<span class="fc" id="L438">                return index;</span>
             } else {
-<span class="pc bpc" id="L125" title="1 of 2 branches missed.">                if (cur == free) {</span>
-<span class="fc" id="L126">                    return -1;</span>
+<span class="fc bfc" id="L440" title="All 2 branches covered.">                if (cur == free) {</span>
+<span class="fc" id="L441">                    return -1;</span>
                 } else {
                     while (true) {
-<span class="nc bnc" id="L129" title="All 2 branches missed.">                        if ((cur = tab[(index = (index - 2) &amp; capacityMask)]) == key) {</span>
-<span class="nc" id="L130">                            return index;</span>
-<span class="nc bnc" id="L131" title="All 2 branches missed.">                        } else if (cur == free) {</span>
-<span class="nc" id="L132">                            return -1;</span>
+<span class="fc bfc" id="L444" title="All 2 branches covered.">                        if ((cur = tab[(index = (index - 2) &amp; capacityMask)]) == key) {</span>
+<span class="fc" id="L445">                            return index;</span>
+<span class="pc bpc" id="L446" title="1 of 2 branches missed.">                        } else if (cur == free) {</span>
+<span class="nc" id="L447">                            return -1;</span>
                         } 
                     }
                 }
             }
         } else {
-<span class="fc" id="L138">            return -1;</span>
+<span class="fc" id="L453">            return -1;</span>
         }
     }
 
     final void init(HashConfigWrapper configWrapper, int size) {
-<span class="fc" id="L143">        KolobokeLongLongMap.verifyConfig(configWrapper.config());</span>
-<span class="fc" id="L144">        KolobokeLongLongMap.this.configWrapper = configWrapper;</span>
-<span class="fc" id="L145">        KolobokeLongLongMap.this.size = 0;</span>
-<span class="fc" id="L146">        internalInit(targetCapacity(size));</span>
-<span class="fc" id="L147">    }</span>
+<span class="fc" id="L458">        KolobokeLongLongMap.verifyConfig(configWrapper.config());</span>
+<span class="fc" id="L459">        KolobokeLongLongMap.this.configWrapper = configWrapper;</span>
+<span class="fc" id="L460">        KolobokeLongLongMap.this.size = 0;</span>
+<span class="fc" id="L461">        internalInit(targetCapacity(size));</span>
+<span class="fc" id="L462">    }</span>
 
     private void internalInit(int capacity) {
-<span class="pc bpc" id="L150" title="2 of 4 branches missed.">        assert Maths.isPowerOf2(capacity);</span>
-<span class="fc" id="L151">        maxSize = maxSize(capacity);</span>
-<span class="fc" id="L152">        allocateArrays(capacity);</span>
-<span class="fc" id="L153">    }</span>
+<span class="pc bpc" id="L465" title="2 of 4 branches missed.">        assert Maths.isPowerOf2(capacity);</span>
+<span class="fc" id="L466">        maxSize = maxSize(capacity);</span>
+<span class="fc" id="L467">        allocateArrays(capacity);</span>
+<span class="fc" id="L468">    }</span>
+
+    public boolean forEachWhile(LongPredicate predicate) {
+<span class="nc bnc" id="L471" title="All 2 branches missed.">        if (predicate == null)</span>
+<span class="nc" id="L472">            throw new NullPointerException();</span>
+        
+<span class="nc bnc" id="L474" title="All 2 branches missed.">        if (KolobokeLongLongMap.this.isEmpty())</span>
+<span class="nc" id="L475">            return true;</span>
+        
+<span class="nc" id="L477">        boolean terminated = false;</span>
+<span class="nc" id="L478">        int mc = modCount();</span>
+<span class="nc" id="L479">        long free = freeValue;</span>
+<span class="nc" id="L480">        long[] tab = table;</span>
+<span class="nc bnc" id="L481" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L483" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc bnc" id="L484" title="All 2 branches missed.">                if (!(predicate.test(key))) {</span>
+<span class="nc" id="L485">                    terminated = true;</span>
+<span class="nc" id="L486">                    break;</span>
+                } 
+            } 
+        }
+<span class="nc bnc" id="L490" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L491">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc bnc" id="L493" title="All 2 branches missed.">        return !terminated;</span>
+    }
 
     private int maxSize(int capacity) {
-<span class="pc bpc" id="L156" title="1 of 2 branches missed.">        return !(isMaxCapacity(capacity)) ? configWrapper.maxSize(capacity) : capacity - 1;</span>
+<span class="pc bpc" id="L497" title="1 of 2 branches missed.">        return !(isMaxCapacity(capacity)) ? configWrapper.maxSize(capacity) : capacity - 1;</span>
     }
 
     @Override
     public long get(long key) {
-<span class="nc" id="L161">        int index = index(key);</span>
-<span class="nc bnc" id="L162" title="All 2 branches missed.">        if (index &gt;= 0) {</span>
-<span class="nc" id="L163">            return table[(index + 1)];</span>
+<span class="fc" id="L502">        int index = index(key);</span>
+<span class="pc bpc" id="L503" title="1 of 2 branches missed.">        if (index &gt;= 0) {</span>
+<span class="fc" id="L504">            return table[(index + 1)];</span>
         } else {
-<span class="nc" id="L165">            return defaultValue();</span>
+<span class="nc" id="L506">            return defaultValue();</span>
         }
     }
 
     private long findNewFreeOrRemoved() {
-<span class="nc" id="L170">        long free = KolobokeLongLongMap.this.freeValue;</span>
-<span class="nc" id="L171">        Random random = ThreadLocalRandom.current();</span>
+<span class="nc" id="L511">        long free = KolobokeLongLongMap.this.freeValue;</span>
+<span class="nc" id="L512">        Random random = ThreadLocalRandom.current();</span>
         long newFree;
         {
             do {
-<span class="nc" id="L175">                newFree = ((long) (random.nextLong()));</span>
-<span class="nc bnc" id="L176" title="All 4 branches missed.">            } while ((newFree == free) || ((index(newFree)) &gt;= 0) );</span>
+<span class="nc" id="L516">                newFree = ((long) (random.nextLong()));</span>
+<span class="nc bnc" id="L517" title="All 4 branches missed.">            } while ((newFree == free) || ((index(newFree)) &gt;= 0) );</span>
         }
-<span class="nc" id="L178">        return newFree;</span>
+<span class="nc" id="L519">        return newFree;</span>
+    }
+
+    public boolean allContainingIn(LongCollection c) {
+<span class="nc bnc" id="L523" title="All 2 branches missed.">        if (KolobokeLongLongMap.this.isEmpty())</span>
+<span class="nc" id="L524">            return true;</span>
+        
+<span class="nc" id="L526">        boolean containsAll = true;</span>
+<span class="nc" id="L527">        int mc = modCount();</span>
+<span class="nc" id="L528">        long free = freeValue;</span>
+<span class="nc" id="L529">        long[] tab = table;</span>
+<span class="nc bnc" id="L530" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L532" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc bnc" id="L533" title="All 2 branches missed.">                if (!(c.contains(key))) {</span>
+<span class="nc" id="L534">                    containsAll = false;</span>
+<span class="nc" id="L535">                    break;</span>
+                } 
+            } 
+        }
+<span class="nc bnc" id="L539" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L540">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L542">        return containsAll;</span>
     }
 
     @Override
     public long getOrDefault(long key, long defaultValue) {
-<span class="fc" id="L183">        int index = index(key);</span>
-<span class="fc bfc" id="L184" title="All 2 branches covered.">        if (index &gt;= 0) {</span>
-<span class="fc" id="L185">            return table[(index + 1)];</span>
+<span class="fc" id="L547">        int index = index(key);</span>
+<span class="fc bfc" id="L548" title="All 2 branches covered.">        if (index &gt;= 0) {</span>
+<span class="fc" id="L549">            return table[(index + 1)];</span>
         } else {
-<span class="fc" id="L187">            return defaultValue;</span>
+<span class="fc" id="L551">            return defaultValue;</span>
         }
     }
 
     long changeFree() {
-<span class="nc" id="L192">        int mc = modCount();</span>
-<span class="nc" id="L193">        long newFree = findNewFreeOrRemoved();</span>
-<span class="nc" id="L194">        incrementModCount();</span>
-<span class="nc" id="L195">        mc++;</span>
-<span class="nc" id="L196">        LongArrays.replaceAllKeys(table, freeValue, newFree);</span>
-<span class="nc" id="L197">        KolobokeLongLongMap.this.freeValue = newFree;</span>
-<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (mc != (modCount()))</span>
-<span class="nc" id="L199">            throw new ConcurrentModificationException();</span>
+<span class="nc" id="L556">        int mc = modCount();</span>
+<span class="nc" id="L557">        long newFree = findNewFreeOrRemoved();</span>
+<span class="nc" id="L558">        incrementModCount();</span>
+<span class="nc" id="L559">        mc++;</span>
+<span class="nc" id="L560">        LongArrays.replaceAllKeys(table, freeValue, newFree);</span>
+<span class="nc" id="L561">        KolobokeLongLongMap.this.freeValue = newFree;</span>
+<span class="nc bnc" id="L562" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L563">            throw new ConcurrentModificationException();</span>
         
-<span class="nc" id="L201">        return newFree;</span>
+<span class="nc" id="L565">        return newFree;</span>
     }
 
     final void initForRehash(int newCapacity) {
-<span class="nc" id="L205">        (modCount)++;</span>
-<span class="nc" id="L206">        internalInit(newCapacity);</span>
-<span class="nc" id="L207">    }</span>
+<span class="nc" id="L569">        (modCount)++;</span>
+<span class="nc" id="L570">        internalInit(newCapacity);</span>
+<span class="nc" id="L571">    }</span>
+
+    public boolean reverseAddAllTo(LongCollection c) {
+<span class="nc bnc" id="L574" title="All 2 branches missed.">        if (KolobokeLongLongMap.this.isEmpty())</span>
+<span class="nc" id="L575">            return false;</span>
+        
+<span class="nc" id="L577">        boolean changed = false;</span>
+<span class="nc" id="L578">        int mc = modCount();</span>
+<span class="nc" id="L579">        long free = freeValue;</span>
+<span class="nc" id="L580">        long[] tab = table;</span>
+<span class="nc bnc" id="L581" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L583" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc" id="L584">                changed |= c.add(key);</span>
+            } 
+        }
+<span class="nc bnc" id="L587" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L588">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L590">        return changed;</span>
+    }
 
     void allocateArrays(int capacity) {
-<span class="fc" id="L210">        table = new long[capacity * 2];</span>
-<span class="pc bpc" id="L211" title="1 of 2 branches missed.">        if ((freeValue) != 0)</span>
-<span class="nc" id="L212">            LongArrays.fillKeys(table, freeValue);</span>
+<span class="fc" id="L594">        table = new long[capacity * 2];</span>
+<span class="pc bpc" id="L595" title="1 of 2 branches missed.">        if ((freeValue) != 0)</span>
+<span class="nc" id="L596">            LongArrays.fillKeys(table, freeValue);</span>
         
-<span class="fc" id="L214">    }</span>
+<span class="fc" id="L598">    }</span>
 
-    private void _UpdatableLHash_clear() {
-<span class="nc" id="L217">        (modCount)++;</span>
-<span class="nc" id="L218">        size = 0;</span>
-<span class="nc" id="L219">    }</span>
+    private void _MutableLHash_clear() {
+<span class="fc" id="L601">        (modCount)++;</span>
+<span class="fc" id="L602">        size = 0;</span>
+<span class="fc" id="L603">    }</span>
 
-    private void _UpdatableParallelKVLongLHashSO_clear() {
-<span class="nc" id="L222">        _UpdatableLHash_clear();</span>
-<span class="nc" id="L223">        LongArrays.fillKeys(table, freeValue);</span>
-<span class="nc" id="L224">    }</span>
+    private void _MutableParallelKVLongLHashSO_clear() {
+<span class="fc" id="L606">        _MutableLHash_clear();</span>
+<span class="fc" id="L607">        LongArrays.fillKeys(table, freeValue);</span>
+<span class="fc" id="L608">    }</span>
 
     @Override
     public void forEach(LongLongConsumer action) {
-<span class="pc bpc" id="L228" title="1 of 2 branches missed.">        if (action == null)</span>
-<span class="nc" id="L229">            throw new NullPointerException();</span>
+<span class="pc bpc" id="L612" title="1 of 2 branches missed.">        if (action == null)</span>
+<span class="nc" id="L613">            throw new NullPointerException();</span>
         
-<span class="pc bpc" id="L231" title="1 of 2 branches missed.">        if (KolobokeLongLongMap.this.isEmpty())</span>
-<span class="nc" id="L232">            return ;</span>
+<span class="pc bpc" id="L615" title="1 of 2 branches missed.">        if (KolobokeLongLongMap.this.isEmpty())</span>
+<span class="nc" id="L616">            return ;</span>
         
-<span class="fc" id="L234">        int mc = modCount();</span>
-<span class="fc" id="L235">        long free = freeValue;</span>
-<span class="fc" id="L236">        long[] tab = table;</span>
-<span class="fc bfc" id="L237" title="All 2 branches covered.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+<span class="fc" id="L618">        int mc = modCount();</span>
+<span class="fc" id="L619">        long free = freeValue;</span>
+<span class="fc" id="L620">        long[] tab = table;</span>
+<span class="fc bfc" id="L621" title="All 2 branches covered.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
             long key;
-<span class="fc bfc" id="L239" title="All 2 branches covered.">            if ((key = tab[i]) != free) {</span>
-<span class="fc" id="L240">                action.accept(key, tab[(i + 1)]);</span>
+<span class="fc bfc" id="L623" title="All 2 branches covered.">            if ((key = tab[i]) != free) {</span>
+<span class="fc" id="L624">                action.accept(key, tab[(i + 1)]);</span>
             } 
         }
-<span class="pc bpc" id="L243" title="1 of 2 branches missed.">        if (mc != (modCount()))</span>
-<span class="nc" id="L244">            throw new ConcurrentModificationException();</span>
+<span class="pc bpc" id="L627" title="1 of 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L628">            throw new ConcurrentModificationException();</span>
         
-<span class="fc" id="L246">    }</span>
+<span class="fc" id="L630">    }</span>
+
+    public boolean reverseRemoveAllFrom(LongSet s) {
+<span class="nc bnc" id="L633" title="All 4 branches missed.">        if ((KolobokeLongLongMap.this.isEmpty()) || (s.isEmpty()))</span>
+<span class="nc" id="L634">            return false;</span>
+        
+<span class="nc" id="L636">        boolean changed = false;</span>
+<span class="nc" id="L637">        int mc = modCount();</span>
+<span class="nc" id="L638">        long free = freeValue;</span>
+<span class="nc" id="L639">        long[] tab = table;</span>
+<span class="nc bnc" id="L640" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L642" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc" id="L643">                changed |= s.removeLong(key);</span>
+            } 
+        }
+<span class="nc bnc" id="L646" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L647">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L649">        return changed;</span>
+    }
+
+    public boolean shrink() {
+<span class="nc" id="L653">        int newCapacity = targetCapacity(size);</span>
+<span class="nc bnc" id="L654" title="All 2 branches missed.">        if (newCapacity &lt; (capacity())) {</span>
+<span class="nc" id="L655">            rehash(newCapacity);</span>
+<span class="nc" id="L656">            return true;</span>
+        } else {
+<span class="nc" id="L658">            return false;</span>
+        }
+    }
+
+    @Nonnull
+    public Object[] toArray() {
+<span class="nc" id="L664">        int size = size();</span>
+<span class="nc" id="L665">        Object[] result = new Object[size];</span>
+<span class="nc bnc" id="L666" title="All 2 branches missed.">        if (size == 0)</span>
+<span class="nc" id="L667">            return result;</span>
+        
+<span class="nc" id="L669">        int resultIndex = 0;</span>
+<span class="nc" id="L670">        int mc = modCount();</span>
+<span class="nc" id="L671">        long free = freeValue;</span>
+<span class="nc" id="L672">        long[] tab = table;</span>
+<span class="nc bnc" id="L673" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L675" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc" id="L676">                result[(resultIndex++)] = key;</span>
+            } 
+        }
+<span class="nc bnc" id="L679" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L680">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L682">        return result;</span>
+    }
+
+    final void postRemoveHook() {
+<span class="nc" id="L686">        (size)--;</span>
+<span class="nc" id="L687">    }</span>
 
     final void postInsertHook() {
-<span class="pc bpc" id="L249" title="1 of 2 branches missed.">        if ((++(size)) &gt; (maxSize)) {</span>
-<span class="nc" id="L250">            int capacity = capacity();</span>
-<span class="nc bnc" id="L251" title="All 2 branches missed.">            if (!(isMaxCapacity(capacity))) {</span>
-<span class="nc" id="L252">                rehash((capacity &lt;&lt; 1));</span>
+<span class="pc bpc" id="L690" title="1 of 2 branches missed.">        if ((++(size)) &gt; (maxSize)) {</span>
+<span class="nc" id="L691">            int capacity = capacity();</span>
+<span class="nc bnc" id="L692" title="All 2 branches missed.">            if (!(isMaxCapacity(capacity))) {</span>
+<span class="nc" id="L693">                rehash((capacity &lt;&lt; 1));</span>
             } 
         } 
-<span class="fc" id="L255">    }</span>
+<span class="fc" id="L696">    }</span>
+
+    @SuppressWarnings(value = &quot;unchecked&quot;)
+    @Nonnull
+    public &lt;T&gt;  T[] toArray(@Nonnull
+    T[] a) {
+<span class="nc" id="L702">        int size = size();</span>
+<span class="nc bnc" id="L703" title="All 2 branches missed.">        if ((a.length) &lt; size) {</span>
+<span class="nc" id="L704">            Class&lt;?&gt; elementType = a.getClass().getComponentType();</span>
+<span class="nc" id="L705">            a = ((T[]) (Array.newInstance(elementType, size)));</span>
+        } 
+<span class="nc bnc" id="L707" title="All 2 branches missed.">        if (size == 0) {</span>
+<span class="nc bnc" id="L708" title="All 2 branches missed.">            if ((a.length) &gt; 0)</span>
+<span class="nc" id="L709">                a[0] = null;</span>
+            
+<span class="nc" id="L711">            return a;</span>
+        } 
+<span class="nc" id="L713">        int resultIndex = 0;</span>
+<span class="nc" id="L714">        int mc = modCount();</span>
+<span class="nc" id="L715">        long free = freeValue;</span>
+<span class="nc" id="L716">        long[] tab = table;</span>
+<span class="nc bnc" id="L717" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L719" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc" id="L720">                a[(resultIndex++)] = ((T) (Long.valueOf(key)));</span>
+            } 
+        }
+<span class="nc bnc" id="L723" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L724">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc bnc" id="L726" title="All 2 branches missed.">        if ((a.length) &gt; resultIndex)</span>
+<span class="nc" id="L727">            a[resultIndex] = null;</span>
+        
+<span class="nc" id="L729">        return a;</span>
+    }
 
     private int targetCapacity(int size) {
-<span class="fc" id="L258">        return LHashCapacities.capacity(configWrapper, size, doubleSizedArrays());</span>
+<span class="fc" id="L733">        return LHashCapacities.capacity(configWrapper, size, doubleSizedArrays());</span>
     }
 
     private boolean isMaxCapacity(int capacity) {
-<span class="fc" id="L262">        return LHashCapacities.isMaxCapacity(capacity, doubleSizedArrays());</span>
+<span class="fc" id="L737">        return LHashCapacities.isMaxCapacity(capacity, doubleSizedArrays());</span>
+    }
+
+    @Nonnull
+    public long[] toLongArray() {
+<span class="fc" id="L742">        int size = size();</span>
+<span class="fc" id="L743">        long[] result = new long[size];</span>
+<span class="pc bpc" id="L744" title="1 of 2 branches missed.">        if (size == 0)</span>
+<span class="nc" id="L745">            return result;</span>
+        
+<span class="fc" id="L747">        int resultIndex = 0;</span>
+<span class="fc" id="L748">        int mc = modCount();</span>
+<span class="fc" id="L749">        long free = freeValue;</span>
+<span class="fc" id="L750">        long[] tab = table;</span>
+<span class="fc bfc" id="L751" title="All 2 branches covered.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="fc bfc" id="L753" title="All 2 branches covered.">            if ((key = tab[i]) != free) {</span>
+<span class="fc" id="L754">                result[(resultIndex++)] = key;</span>
+            } 
+        }
+<span class="pc bpc" id="L757" title="1 of 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L758">            throw new ConcurrentModificationException();</span>
+        
+<span class="fc" id="L760">        return result;</span>
+    }
+
+    @Nonnull
+    public long[] toArray(long[] a) {
+<span class="nc" id="L765">        int size = size();</span>
+<span class="nc bnc" id="L766" title="All 2 branches missed.">        if ((a.length) &lt; size)</span>
+<span class="nc" id="L767">            a = new long[size];</span>
+        
+<span class="nc bnc" id="L769" title="All 2 branches missed.">        if (size == 0) {</span>
+<span class="nc bnc" id="L770" title="All 2 branches missed.">            if ((a.length) &gt; 0)</span>
+<span class="nc" id="L771">                a[0] = 0L;</span>
+            
+<span class="nc" id="L773">            return a;</span>
+        } 
+<span class="nc" id="L775">        int resultIndex = 0;</span>
+<span class="nc" id="L776">        int mc = modCount();</span>
+<span class="nc" id="L777">        long free = freeValue;</span>
+<span class="nc" id="L778">        long[] tab = table;</span>
+<span class="nc bnc" id="L779" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L781" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc" id="L782">                a[(resultIndex++)] = key;</span>
+            } 
+        }
+<span class="nc bnc" id="L785" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L786">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc bnc" id="L788" title="All 2 branches missed.">        if ((a.length) &gt; resultIndex)</span>
+<span class="nc" id="L789">            a[resultIndex] = 0L;</span>
+        
+<span class="nc" id="L791">        return a;</span>
+    }
+
+    public int setHashCode() {
+<span class="nc" id="L795">        int hashCode = 0;</span>
+<span class="nc" id="L796">        int mc = modCount();</span>
+<span class="nc" id="L797">        long free = freeValue;</span>
+<span class="nc" id="L798">        long[] tab = table;</span>
+<span class="nc bnc" id="L799" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L801" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc" id="L802">                hashCode += ((int) (key ^ (key &gt;&gt;&gt; 32)));</span>
+            } 
+        }
+<span class="nc bnc" id="L805" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L806">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L808">        return hashCode;</span>
+    }
+
+    @SuppressFBWarnings(value = &quot;EC_UNRELATED_TYPES_USING_POINTER_EQUALITY&quot;)
+    public String setToString() {
+<span class="nc bnc" id="L813" title="All 2 branches missed.">        if (KolobokeLongLongMap.this.isEmpty())</span>
+<span class="nc" id="L814">            return &quot;[]&quot;;</span>
+        
+<span class="nc" id="L816">        StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L817">        int elementCount = 0;</span>
+<span class="nc" id="L818">        int mc = modCount();</span>
+<span class="nc" id="L819">        long free = freeValue;</span>
+<span class="nc" id="L820">        long[] tab = table;</span>
+<span class="nc bnc" id="L821" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L823" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc" id="L824">                sb.append(' ').append(key).append(',');</span>
+<span class="nc bnc" id="L825" title="All 2 branches missed.">                if ((++elementCount) == 8) {</span>
+<span class="nc" id="L826">                    int expectedLength = (sb.length()) * ((size()) / 8);</span>
+<span class="nc" id="L827">                    sb.ensureCapacity((expectedLength + (expectedLength / 2)));</span>
+                } 
+            } 
+        }
+<span class="nc bnc" id="L831" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L832">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L834">        sb.setCharAt(0, '[');</span>
+<span class="nc" id="L835">        sb.setCharAt(((sb.length()) - 1), ']');</span>
+<span class="nc" id="L836">        return sb.toString();</span>
     }
 
     void rehash(int newCapacity) {
-<span class="nc" id="L266">        int mc = modCount();</span>
-<span class="nc" id="L267">        long free = freeValue;</span>
-<span class="nc" id="L268">        long[] tab = table;</span>
-<span class="nc" id="L269">        initForRehash(newCapacity);</span>
-<span class="nc" id="L270">        mc++;</span>
-<span class="nc" id="L271">        long[] newTab = table;</span>
-<span class="nc" id="L272">        int capacityMask = (newTab.length) - 2;</span>
-<span class="nc bnc" id="L273" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+<span class="nc" id="L840">        int mc = modCount();</span>
+<span class="nc" id="L841">        long free = freeValue;</span>
+<span class="nc" id="L842">        long[] tab = table;</span>
+<span class="nc" id="L843">        initForRehash(newCapacity);</span>
+<span class="nc" id="L844">        mc++;</span>
+<span class="nc" id="L845">        long[] newTab = table;</span>
+<span class="nc" id="L846">        int capacityMask = (newTab.length) - 2;</span>
+<span class="nc bnc" id="L847" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
             long key;
-<span class="nc bnc" id="L275" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc bnc" id="L849" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
                 int index;
-<span class="nc bnc" id="L277" title="All 2 branches missed.">                if ((newTab[(index = (LHash.ParallelKVLongKeyMixing.mix(key)) &amp; capacityMask)]) != free) {</span>
+<span class="nc bnc" id="L851" title="All 2 branches missed.">                if ((newTab[(index = (LHash.ParallelKVLongKeyMixing.mix(key)) &amp; capacityMask)]) != free) {</span>
                     while (true) {
-<span class="nc bnc" id="L279" title="All 2 branches missed.">                        if ((newTab[(index = (index - 2) &amp; capacityMask)]) == free) {</span>
-<span class="nc" id="L280">                            break;</span>
+<span class="nc bnc" id="L853" title="All 2 branches missed.">                        if ((newTab[(index = (index - 2) &amp; capacityMask)]) == free) {</span>
+<span class="nc" id="L854">                            break;</span>
                         } 
                     }
                 } 
-<span class="nc" id="L284">                newTab[index] = key;</span>
-<span class="nc" id="L285">                newTab[(index + 1)] = tab[(i + 1)];</span>
+<span class="nc" id="L858">                newTab[index] = key;</span>
+<span class="nc" id="L859">                newTab[(index + 1)] = tab[(i + 1)];</span>
             } 
         }
-<span class="nc bnc" id="L288" title="All 2 branches missed.">        if (mc != (modCount()))</span>
-<span class="nc" id="L289">            throw new ConcurrentModificationException();</span>
+<span class="nc bnc" id="L862" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L863">            throw new ConcurrentModificationException();</span>
         
-<span class="nc" id="L291">    }</span>
+<span class="nc" id="L865">    }</span>
 
     @Override
     public void justPut(long key, long value) {
-<span class="fc" id="L295">        int index = insert(key, value);</span>
-<span class="fc bfc" id="L296" title="All 2 branches covered.">        if (index &lt; 0) {</span>
-<span class="fc" id="L297">            return ;</span>
+<span class="fc" id="L869">        int index = insert(key, value);</span>
+<span class="pc bpc" id="L870" title="1 of 2 branches missed.">        if (index &lt; 0) {</span>
+<span class="fc" id="L871">            return ;</span>
         } else {
-<span class="fc" id="L299">            table[(index + 1)] = value;</span>
-<span class="fc" id="L300">            return ;</span>
+<span class="nc" id="L873">            table[(index + 1)] = value;</span>
+<span class="nc" id="L874">            return ;</span>
         }
+    }
+
+    class NoRemovedIterator implements LongIterator {
+        long[] tab;
+
+        final long free;
+
+        final int capacityMask;
+
+        int expectedModCount;
+
+<span class="nc" id="L887">        int index = -1;</span>
+
+        int nextIndex;
+
+        long next;
+
+<span class="nc" id="L893">        NoRemovedIterator(int mc) {</span>
+<span class="nc" id="L894">            expectedModCount = mc;</span>
+<span class="nc" id="L895">            long[] tab = KolobokeLongLongMap.NoRemovedIterator.this.tab = table;</span>
+<span class="nc" id="L896">            capacityMask = (tab.length) - 2;</span>
+<span class="nc" id="L897">            long free = this.free = freeValue;</span>
+<span class="nc" id="L898">            int nextI = tab.length;</span>
+<span class="nc bnc" id="L899" title="All 2 branches missed.">            while ((nextI -= 2) &gt;= 0) {</span>
+                long key;
+<span class="nc bnc" id="L901" title="All 2 branches missed.">                if ((key = tab[nextI]) != free) {</span>
+<span class="nc" id="L902">                    next = key;</span>
+<span class="nc" id="L903">                    break;</span>
+                } 
+<span class="nc" id="L905">            }</span>
+<span class="nc" id="L906">            nextIndex = nextI;</span>
+<span class="nc" id="L907">        }</span>
+
+        @Override
+        public long nextLong() {
+<span class="nc bnc" id="L911" title="All 2 branches missed.">            if ((expectedModCount) == (modCount())) {</span>
+                int nextI;
+<span class="nc bnc" id="L913" title="All 2 branches missed.">                if ((nextI = nextIndex) &gt;= 0) {</span>
+<span class="nc" id="L914">                    index = nextI;</span>
+<span class="nc" id="L915">                    long[] tab = KolobokeLongLongMap.NoRemovedIterator.this.tab;</span>
+<span class="nc" id="L916">                    long free = KolobokeLongLongMap.NoRemovedIterator.this.free;</span>
+<span class="nc" id="L917">                    long prev = next;</span>
+<span class="nc bnc" id="L918" title="All 2 branches missed.">                    while ((nextI -= 2) &gt;= 0) {</span>
+                        long key;
+<span class="nc bnc" id="L920" title="All 2 branches missed.">                        if ((key = tab[nextI]) != free) {</span>
+<span class="nc" id="L921">                            next = key;</span>
+<span class="nc" id="L922">                            break;</span>
+                        } 
+<span class="nc" id="L924">                    }</span>
+<span class="nc" id="L925">                    nextIndex = nextI;</span>
+<span class="nc" id="L926">                    return prev;</span>
+                } else {
+<span class="nc" id="L928">                    throw new NoSuchElementException();</span>
+                }
+            } else {
+<span class="nc" id="L931">                throw new ConcurrentModificationException();</span>
+            }
+        }
+
+        @Override
+        public void forEachRemaining(Consumer&lt;? super Long&gt; action) {
+<span class="nc bnc" id="L937" title="All 2 branches missed.">            if (action == null)</span>
+<span class="nc" id="L938">                throw new NullPointerException();</span>
+            
+<span class="nc" id="L940">            int mc = expectedModCount;</span>
+<span class="nc" id="L941">            long[] tab = KolobokeLongLongMap.NoRemovedIterator.this.tab;</span>
+<span class="nc" id="L942">            long free = KolobokeLongLongMap.NoRemovedIterator.this.free;</span>
+<span class="nc" id="L943">            int nextI = nextIndex;</span>
+<span class="nc bnc" id="L944" title="All 2 branches missed.">            for (int i = nextI; i &gt;= 0; i -= 2) {</span>
+                long key;
+<span class="nc bnc" id="L946" title="All 2 branches missed.">                if ((key = tab[i]) != free) {</span>
+<span class="nc" id="L947">                    action.accept(key);</span>
+                } 
+            }
+<span class="nc bnc" id="L950" title="All 4 branches missed.">            if ((nextI != (nextIndex)) || (mc != (modCount()))) {</span>
+<span class="nc" id="L951">                throw new ConcurrentModificationException();</span>
+            } 
+<span class="nc" id="L953">            index = nextIndex = -1;</span>
+<span class="nc" id="L954">        }</span>
+
+        @Override
+        public void forEachRemaining(LongConsumer action) {
+<span class="nc bnc" id="L958" title="All 2 branches missed.">            if (action == null)</span>
+<span class="nc" id="L959">                throw new NullPointerException();</span>
+            
+<span class="nc" id="L961">            int mc = expectedModCount;</span>
+<span class="nc" id="L962">            long[] tab = KolobokeLongLongMap.NoRemovedIterator.this.tab;</span>
+<span class="nc" id="L963">            long free = KolobokeLongLongMap.NoRemovedIterator.this.free;</span>
+<span class="nc" id="L964">            int nextI = nextIndex;</span>
+<span class="nc bnc" id="L965" title="All 2 branches missed.">            for (int i = nextI; i &gt;= 0; i -= 2) {</span>
+                long key;
+<span class="nc bnc" id="L967" title="All 2 branches missed.">                if ((key = tab[i]) != free) {</span>
+<span class="nc" id="L968">                    action.accept(key);</span>
+                } 
+            }
+<span class="nc bnc" id="L971" title="All 4 branches missed.">            if ((nextI != (nextIndex)) || (mc != (modCount()))) {</span>
+<span class="nc" id="L972">                throw new ConcurrentModificationException();</span>
+            } 
+<span class="nc" id="L974">            index = nextIndex = -1;</span>
+<span class="nc" id="L975">        }</span>
+
+        @Override
+        public boolean hasNext() {
+<span class="nc bnc" id="L979" title="All 2 branches missed.">            return (nextIndex) &gt;= 0;</span>
+        }
+
+        @Override
+        public Long next() {
+<span class="nc" id="L984">            return nextLong();</span>
+        }
+
+        @Override
+        public void remove() {
+            int index;
+<span class="nc bnc" id="L990" title="All 2 branches missed.">            if ((index = KolobokeLongLongMap.NoRemovedIterator.this.index) &gt;= 0) {</span>
+<span class="nc bnc" id="L991" title="All 2 branches missed.">                if (((expectedModCount)++) == (modCount())) {</span>
+<span class="nc" id="L992">                    KolobokeLongLongMap.NoRemovedIterator.this.index = -1;</span>
+<span class="nc" id="L993">                    long[] tab = KolobokeLongLongMap.NoRemovedIterator.this.tab;</span>
+<span class="nc bnc" id="L994" title="All 2 branches missed.">                    if (tab == (table)) {</span>
+<span class="nc" id="L995">                        int capacityMask = KolobokeLongLongMap.NoRemovedIterator.this.capacityMask;</span>
+<span class="nc" id="L996">                        incrementModCount();</span>
+<span class="nc" id="L997">                        int indexToRemove = index;</span>
+<span class="nc" id="L998">                        int indexToShift = indexToRemove;</span>
+<span class="nc" id="L999">                        int shiftDistance = 2;</span>
+                        while (true) {
+<span class="nc" id="L1001">                            indexToShift = (indexToShift - 2) &amp; capacityMask;</span>
+                            long keyToShift;
+<span class="nc bnc" id="L1003" title="All 2 branches missed.">                            if ((keyToShift = tab[indexToShift]) == (free)) {</span>
+<span class="nc" id="L1004">                                break;</span>
+                            } 
+<span class="nc bnc" id="L1006" title="All 2 branches missed.">                            if ((((LHash.ParallelKVLongKeyMixing.mix(keyToShift)) - indexToShift) &amp; capacityMask) &gt;= shiftDistance) {</span>
+<span class="nc bnc" id="L1007" title="All 2 branches missed.">                                if ((KolobokeLongLongMap.NoRemovedIterator.this.tab) == tab) {</span>
+<span class="nc bnc" id="L1008" title="All 2 branches missed.">                                    if (indexToShift &gt; indexToRemove) {</span>
+                                        int slotsToCopy;
+<span class="nc bnc" id="L1010" title="All 2 branches missed.">                                        if ((slotsToCopy = (nextIndex) + 2) &gt; 0) {</span>
+<span class="nc" id="L1011">                                            KolobokeLongLongMap.NoRemovedIterator.this.tab = Arrays.copyOf(tab, slotsToCopy);</span>
+<span class="nc bnc" id="L1012" title="All 2 branches missed.">                                            if (indexToRemove &lt; slotsToCopy) {</span>
+<span class="nc" id="L1013">                                                KolobokeLongLongMap.NoRemovedIterator.this.tab[indexToRemove] = free;</span>
+                                            } 
+                                        } 
+<span class="nc bnc" id="L1016" title="All 2 branches missed.">                                    } else if (indexToRemove == index) {</span>
+<span class="nc" id="L1017">                                        KolobokeLongLongMap.NoRemovedIterator.this.nextIndex = index;</span>
+<span class="nc bnc" id="L1018" title="All 2 branches missed.">                                        if (indexToShift &lt; (index - 2)) {</span>
+<span class="nc" id="L1019">                                            KolobokeLongLongMap.NoRemovedIterator.this.next = keyToShift;</span>
+                                        } 
+                                    } 
+                                } 
+<span class="nc" id="L1023">                                tab[indexToRemove] = keyToShift;</span>
+<span class="nc" id="L1024">                                indexToRemove = indexToShift;</span>
+<span class="nc" id="L1025">                                shiftDistance = 2;</span>
+                            } else {
+<span class="nc" id="L1027">                                shiftDistance += 2;</span>
+<span class="nc bnc" id="L1028" title="All 2 branches missed.">                                if (indexToShift == (2 + index)) {</span>
+<span class="nc" id="L1029">                                    throw new ConcurrentModificationException();</span>
+                                } 
+                            }
+<span class="nc" id="L1032">                        }</span>
+<span class="nc" id="L1033">                        tab[indexToRemove] = free;</span>
+<span class="nc" id="L1034">                        postRemoveHook();</span>
+<span class="nc" id="L1035">                    } else {</span>
+<span class="nc" id="L1036">                        justRemove(tab[index]);</span>
+                    }
+<span class="nc" id="L1038">                } else {</span>
+<span class="nc" id="L1039">                    throw new ConcurrentModificationException();</span>
+                }
+            } else {
+<span class="nc" id="L1042">                throw new IllegalStateException();</span>
+            }
+<span class="nc" id="L1044">        }</span>
+    }
+
+    class NoRemovedCursor implements LongCursor {
+        long[] tab;
+
+        final long free;
+
+        final int capacityMask;
+
+        int expectedModCount;
+
+        int index;
+
+        long curKey;
+
+<span class="nc" id="L1060">        NoRemovedCursor(int mc) {</span>
+<span class="nc" id="L1061">            expectedModCount = mc;</span>
+<span class="nc" id="L1062">            long[] tab = KolobokeLongLongMap.NoRemovedCursor.this.tab = table;</span>
+<span class="nc" id="L1063">            capacityMask = (tab.length) - 2;</span>
+<span class="nc" id="L1064">            index = tab.length;</span>
+<span class="nc" id="L1065">            long free = this.free = freeValue;</span>
+<span class="nc" id="L1066">            curKey = free;</span>
+<span class="nc" id="L1067">        }</span>
+
+        @Override
+        public void forEachForward(LongConsumer action) {
+<span class="nc bnc" id="L1071" title="All 2 branches missed.">            if (action == null)</span>
+<span class="nc" id="L1072">                throw new NullPointerException();</span>
+            
+<span class="nc" id="L1074">            int mc = expectedModCount;</span>
+<span class="nc" id="L1075">            long[] tab = KolobokeLongLongMap.NoRemovedCursor.this.tab;</span>
+<span class="nc" id="L1076">            long free = KolobokeLongLongMap.NoRemovedCursor.this.free;</span>
+<span class="nc" id="L1077">            int index = KolobokeLongLongMap.NoRemovedCursor.this.index;</span>
+<span class="nc bnc" id="L1078" title="All 2 branches missed.">            for (int i = index - 2; i &gt;= 0; i -= 2) {</span>
+                long key;
+<span class="nc bnc" id="L1080" title="All 2 branches missed.">                if ((key = tab[i]) != free) {</span>
+<span class="nc" id="L1081">                    action.accept(key);</span>
+                } 
+            }
+<span class="nc bnc" id="L1084" title="All 4 branches missed.">            if ((index != (KolobokeLongLongMap.NoRemovedCursor.this.index)) || (mc != (modCount()))) {</span>
+<span class="nc" id="L1085">                throw new ConcurrentModificationException();</span>
+            } 
+<span class="nc" id="L1087">            KolobokeLongLongMap.NoRemovedCursor.this.index = -1;</span>
+<span class="nc" id="L1088">            curKey = free;</span>
+<span class="nc" id="L1089">        }</span>
+
+        @Override
+        public long elem() {
+            long curKey;
+<span class="nc bnc" id="L1094" title="All 2 branches missed.">            if ((curKey = KolobokeLongLongMap.NoRemovedCursor.this.curKey) != (free)) {</span>
+<span class="nc" id="L1095">                return curKey;</span>
+            } else {
+<span class="nc" id="L1097">                throw new IllegalStateException();</span>
+            }
+        }
+
+        @Override
+        public boolean moveNext() {
+<span class="nc bnc" id="L1103" title="All 2 branches missed.">            if ((expectedModCount) == (modCount())) {</span>
+<span class="nc" id="L1104">                long[] tab = KolobokeLongLongMap.NoRemovedCursor.this.tab;</span>
+<span class="nc" id="L1105">                long free = KolobokeLongLongMap.NoRemovedCursor.this.free;</span>
+<span class="nc bnc" id="L1106" title="All 2 branches missed.">                for (int i = (index) - 2; i &gt;= 0; i -= 2) {</span>
+                    long key;
+<span class="nc bnc" id="L1108" title="All 2 branches missed.">                    if ((key = tab[i]) != free) {</span>
+<span class="nc" id="L1109">                        index = i;</span>
+<span class="nc" id="L1110">                        curKey = key;</span>
+<span class="nc" id="L1111">                        return true;</span>
+                    } 
+                }
+<span class="nc" id="L1114">                curKey = free;</span>
+<span class="nc" id="L1115">                index = -1;</span>
+<span class="nc" id="L1116">                return false;</span>
+            } else {
+<span class="nc" id="L1118">                throw new ConcurrentModificationException();</span>
+            }
+        }
+
+        @Override
+        public void remove() {
+            long curKey;
+            long free;
+<span class="nc bnc" id="L1126" title="All 2 branches missed.">            if ((curKey = KolobokeLongLongMap.NoRemovedCursor.this.curKey) != (free = KolobokeLongLongMap.NoRemovedCursor.this.free)) {</span>
+<span class="nc bnc" id="L1127" title="All 2 branches missed.">                if (((expectedModCount)++) == (modCount())) {</span>
+<span class="nc" id="L1128">                    KolobokeLongLongMap.NoRemovedCursor.this.curKey = free;</span>
+<span class="nc" id="L1129">                    int index = KolobokeLongLongMap.NoRemovedCursor.this.index;</span>
+<span class="nc" id="L1130">                    long[] tab = KolobokeLongLongMap.NoRemovedCursor.this.tab;</span>
+<span class="nc bnc" id="L1131" title="All 2 branches missed.">                    if (tab == (table)) {</span>
+<span class="nc" id="L1132">                        int capacityMask = KolobokeLongLongMap.NoRemovedCursor.this.capacityMask;</span>
+<span class="nc" id="L1133">                        incrementModCount();</span>
+<span class="nc" id="L1134">                        int indexToRemove = index;</span>
+<span class="nc" id="L1135">                        int indexToShift = indexToRemove;</span>
+<span class="nc" id="L1136">                        int shiftDistance = 2;</span>
+                        while (true) {
+<span class="nc" id="L1138">                            indexToShift = (indexToShift - 2) &amp; capacityMask;</span>
+                            long keyToShift;
+<span class="nc bnc" id="L1140" title="All 2 branches missed.">                            if ((keyToShift = tab[indexToShift]) == free) {</span>
+<span class="nc" id="L1141">                                break;</span>
+                            } 
+<span class="nc bnc" id="L1143" title="All 2 branches missed.">                            if ((((LHash.ParallelKVLongKeyMixing.mix(keyToShift)) - indexToShift) &amp; capacityMask) &gt;= shiftDistance) {</span>
+<span class="nc bnc" id="L1144" title="All 2 branches missed.">                                if ((KolobokeLongLongMap.NoRemovedCursor.this.tab) == tab) {</span>
+<span class="nc bnc" id="L1145" title="All 2 branches missed.">                                    if (indexToShift &gt; indexToRemove) {</span>
+                                        int slotsToCopy;
+<span class="nc bnc" id="L1147" title="All 2 branches missed.">                                        if ((slotsToCopy = index) &gt; 0) {</span>
+<span class="nc" id="L1148">                                            KolobokeLongLongMap.NoRemovedCursor.this.tab = Arrays.copyOf(tab, slotsToCopy);</span>
+<span class="nc bnc" id="L1149" title="All 2 branches missed.">                                            if (indexToRemove &lt; slotsToCopy) {</span>
+<span class="nc" id="L1150">                                                KolobokeLongLongMap.NoRemovedCursor.this.tab[indexToRemove] = free;</span>
+                                            } 
+                                        } 
+<span class="nc bnc" id="L1153" title="All 2 branches missed.">                                    } else if (indexToRemove == index) {</span>
+<span class="nc" id="L1154">                                        KolobokeLongLongMap.NoRemovedCursor.this.index = index += 2;</span>
+                                    } 
+                                } 
+<span class="nc" id="L1157">                                tab[indexToRemove] = keyToShift;</span>
+<span class="nc" id="L1158">                                indexToRemove = indexToShift;</span>
+<span class="nc" id="L1159">                                shiftDistance = 2;</span>
+                            } else {
+<span class="nc" id="L1161">                                shiftDistance += 2;</span>
+<span class="nc bnc" id="L1162" title="All 2 branches missed.">                                if (indexToShift == (2 + index)) {</span>
+<span class="nc" id="L1163">                                    throw new ConcurrentModificationException();</span>
+                                } 
+                            }
+<span class="nc" id="L1166">                        }</span>
+<span class="nc" id="L1167">                        tab[indexToRemove] = free;</span>
+<span class="nc" id="L1168">                        postRemoveHook();</span>
+<span class="nc" id="L1169">                    } else {</span>
+<span class="nc" id="L1170">                        justRemove(curKey);</span>
+                    }
+<span class="nc" id="L1172">                } else {</span>
+<span class="nc" id="L1173">                    throw new ConcurrentModificationException();</span>
+                }
+            } else {
+<span class="nc" id="L1176">                throw new IllegalStateException();</span>
+            }
+<span class="nc" id="L1178">        }</span>
     }
 
     @Override
     public void clear() {
-<span class="nc" id="L306">        doClear();</span>
-<span class="nc" id="L307">    }</span>
+<span class="fc" id="L1183">        doClear();</span>
+<span class="fc" id="L1184">    }</span>
 
     private void doClear() {
-<span class="nc" id="L310">        int mc = (modCount()) + 1;</span>
-<span class="nc" id="L311">        _UpdatableParallelKVLongLHashSO_clear();</span>
-<span class="nc bnc" id="L312" title="All 2 branches missed.">        if (mc != (modCount()))</span>
-<span class="nc" id="L313">            throw new ConcurrentModificationException();</span>
+<span class="fc" id="L1187">        int mc = (modCount()) + 1;</span>
+<span class="fc" id="L1188">        _MutableParallelKVLongLHashSO_clear();</span>
+<span class="pc bpc" id="L1189" title="1 of 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L1190">            throw new ConcurrentModificationException();</span>
         
-<span class="nc" id="L315">    }</span>
+<span class="fc" id="L1192">    }</span>
 
-<span class="nc" id="L317">    KolobokeLongLongMap(HashConfig hashConfig, int expectedSize) {</span>
-<span class="nc" id="L318">        this.init(new HashConfigWrapper(hashConfig), expectedSize);</span>
-<span class="nc" id="L319">    }</span>
+    public boolean justRemove(long key) {
+        long free;
+<span class="nc bnc" id="L1196" title="All 2 branches missed.">        if (key != (free = freeValue)) {</span>
+<span class="nc" id="L1197">            long[] tab = table;</span>
+<span class="nc" id="L1198">            int capacityMask = (tab.length) - 2;</span>
+            int index;
+            long cur;
+<span class="nc bnc" id="L1201" title="All 2 branches missed.">            keyPresent : if ((cur = tab[(index = (LHash.ParallelKVLongKeyMixing.mix(key)) &amp; capacityMask)]) != key) {</span>
+<span class="nc bnc" id="L1202" title="All 2 branches missed.">                if (cur == free) {</span>
+<span class="nc" id="L1203">                    return false;</span>
+                } else {
+                    while (true) {
+<span class="nc bnc" id="L1206" title="All 2 branches missed.">                        if ((cur = tab[(index = (index - 2) &amp; capacityMask)]) == key) {</span>
+<span class="nc" id="L1207">                            break keyPresent;</span>
+<span class="nc bnc" id="L1208" title="All 2 branches missed.">                        } else if (cur == free) {</span>
+<span class="nc" id="L1209">                            return false;</span>
+                        } 
+                    }
+                }
+            } 
+<span class="nc" id="L1214">            incrementModCount();</span>
+<span class="nc" id="L1215">            int indexToRemove = index;</span>
+<span class="nc" id="L1216">            int indexToShift = indexToRemove;</span>
+<span class="nc" id="L1217">            int shiftDistance = 2;</span>
+            while (true) {
+<span class="nc" id="L1219">                indexToShift = (indexToShift - 2) &amp; capacityMask;</span>
+                long keyToShift;
+<span class="nc bnc" id="L1221" title="All 2 branches missed.">                if ((keyToShift = tab[indexToShift]) == free) {</span>
+<span class="nc" id="L1222">                    break;</span>
+                } 
+<span class="nc bnc" id="L1224" title="All 2 branches missed.">                if ((((LHash.ParallelKVLongKeyMixing.mix(keyToShift)) - indexToShift) &amp; capacityMask) &gt;= shiftDistance) {</span>
+<span class="nc" id="L1225">                    tab[indexToRemove] = keyToShift;</span>
+<span class="nc" id="L1226">                    tab[(indexToRemove + 1)] = tab[(indexToShift + 1)];</span>
+<span class="nc" id="L1227">                    indexToRemove = indexToShift;</span>
+<span class="nc" id="L1228">                    shiftDistance = 2;</span>
+                } else {
+<span class="nc" id="L1230">                    shiftDistance += 2;</span>
+<span class="nc bnc" id="L1231" title="All 2 branches missed.">                    if (indexToShift == (2 + index)) {</span>
+<span class="nc" id="L1232">                        throw new ConcurrentModificationException();</span>
+                    } 
+                }
+<span class="nc" id="L1235">            }</span>
+<span class="nc" id="L1236">            tab[indexToRemove] = free;</span>
+<span class="nc" id="L1237">            postRemoveHook();</span>
+<span class="nc" id="L1238">            return true;</span>
+        } else {
+<span class="nc" id="L1240">            return false;</span>
+        }
+    }
 
-<span class="nc" id="L321">    static class Support {    }</span>
+    public boolean removeIf(Predicate&lt;? super Long&gt; filter) {
+<span class="nc bnc" id="L1245" title="All 2 branches missed.">        if (filter == null)</span>
+<span class="nc" id="L1246">            throw new NullPointerException();</span>
+        
+<span class="nc bnc" id="L1248" title="All 2 branches missed.">        if (KolobokeLongLongMap.this.isEmpty())</span>
+<span class="nc" id="L1249">            return false;</span>
+        
+<span class="nc" id="L1251">        boolean changed = false;</span>
+<span class="nc" id="L1252">        int mc = modCount();</span>
+<span class="nc" id="L1253">        long free = freeValue;</span>
+<span class="nc" id="L1254">        long[] tab = table;</span>
+<span class="nc" id="L1255">        int capacityMask = (tab.length) - 2;</span>
+<span class="nc" id="L1256">        int firstDelayedRemoved = -1;</span>
+<span class="nc" id="L1257">        long delayedRemoved = 0L;</span>
+<span class="nc bnc" id="L1258" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L1260" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc bnc" id="L1261" title="All 2 branches missed.">                if (filter.test(key)) {</span>
+<span class="nc" id="L1262">                    incrementModCount();</span>
+<span class="nc" id="L1263">                    mc++;</span>
+<span class="nc bnc" id="L1264" title="All 2 branches missed.">                    closeDeletion : if (firstDelayedRemoved &lt; 0) {</span>
+<span class="nc" id="L1265">                        int indexToRemove = i;</span>
+<span class="nc" id="L1266">                        int indexToShift = indexToRemove;</span>
+<span class="nc" id="L1267">                        int shiftDistance = 2;</span>
+                        while (true) {
+<span class="nc" id="L1269">                            indexToShift = (indexToShift - 2) &amp; capacityMask;</span>
+                            long keyToShift;
+<span class="nc bnc" id="L1271" title="All 2 branches missed.">                            if ((keyToShift = tab[indexToShift]) == free) {</span>
+<span class="nc" id="L1272">                                break;</span>
+                            } 
+<span class="nc bnc" id="L1274" title="All 2 branches missed.">                            if ((((LHash.ParallelKVLongKeyMixing.mix(keyToShift)) - indexToShift) &amp; capacityMask) &gt;= shiftDistance) {</span>
+<span class="nc bnc" id="L1275" title="All 2 branches missed.">                                if (indexToShift &gt; indexToRemove) {</span>
+<span class="nc" id="L1276">                                    firstDelayedRemoved = i;</span>
+<span class="nc" id="L1277">                                    delayedRemoved = key;</span>
+<span class="nc" id="L1278">                                    tab[indexToRemove] = key;</span>
+<span class="nc" id="L1279">                                    break closeDeletion;</span>
+                                } 
+<span class="nc bnc" id="L1281" title="All 2 branches missed.">                                if (indexToRemove == i) {</span>
+<span class="nc" id="L1282">                                    i += 2;</span>
+                                } 
+<span class="nc" id="L1284">                                tab[indexToRemove] = keyToShift;</span>
+<span class="nc" id="L1285">                                tab[(indexToRemove + 1)] = tab[(indexToShift + 1)];</span>
+<span class="nc" id="L1286">                                indexToRemove = indexToShift;</span>
+<span class="nc" id="L1287">                                shiftDistance = 2;</span>
+                            } else {
+<span class="nc" id="L1289">                                shiftDistance += 2;</span>
+<span class="nc bnc" id="L1290" title="All 2 branches missed.">                                if (indexToShift == (2 + i)) {</span>
+<span class="nc" id="L1291">                                    throw new ConcurrentModificationException();</span>
+                                } 
+                            }
+<span class="nc" id="L1294">                        }</span>
+<span class="nc" id="L1295">                        tab[indexToRemove] = free;</span>
+<span class="nc" id="L1296">                        postRemoveHook();</span>
+<span class="nc" id="L1297">                    } else {</span>
+<span class="nc" id="L1298">                        tab[i] = delayedRemoved;</span>
+                    }
+<span class="nc" id="L1300">                    changed = true;</span>
+                } 
+            } 
+        }
+<span class="nc bnc" id="L1304" title="All 2 branches missed.">        if (firstDelayedRemoved &gt;= 0) {</span>
+<span class="nc" id="L1305">            closeDelayedRemoved(firstDelayedRemoved, delayedRemoved);</span>
+        } 
+<span class="nc bnc" id="L1307" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L1308">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L1310">        return changed;</span>
+    }
 
-<span class="fc" id="L323">    static final HashConfigWrapper DEFAULT_CONFIG_WRAPPER = new HashConfigWrapper(HashConfig.getDefault());</span>
+    public boolean removeIf(LongPredicate filter) {
+<span class="nc bnc" id="L1314" title="All 2 branches missed.">        if (filter == null)</span>
+<span class="nc" id="L1315">            throw new NullPointerException();</span>
+        
+<span class="nc bnc" id="L1317" title="All 2 branches missed.">        if (KolobokeLongLongMap.this.isEmpty())</span>
+<span class="nc" id="L1318">            return false;</span>
+        
+<span class="nc" id="L1320">        boolean changed = false;</span>
+<span class="nc" id="L1321">        int mc = modCount();</span>
+<span class="nc" id="L1322">        long free = freeValue;</span>
+<span class="nc" id="L1323">        long[] tab = table;</span>
+<span class="nc" id="L1324">        int capacityMask = (tab.length) - 2;</span>
+<span class="nc" id="L1325">        int firstDelayedRemoved = -1;</span>
+<span class="nc" id="L1326">        long delayedRemoved = 0L;</span>
+<span class="nc bnc" id="L1327" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L1329" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc bnc" id="L1330" title="All 2 branches missed.">                if (filter.test(key)) {</span>
+<span class="nc" id="L1331">                    incrementModCount();</span>
+<span class="nc" id="L1332">                    mc++;</span>
+<span class="nc bnc" id="L1333" title="All 2 branches missed.">                    closeDeletion : if (firstDelayedRemoved &lt; 0) {</span>
+<span class="nc" id="L1334">                        int indexToRemove = i;</span>
+<span class="nc" id="L1335">                        int indexToShift = indexToRemove;</span>
+<span class="nc" id="L1336">                        int shiftDistance = 2;</span>
+                        while (true) {
+<span class="nc" id="L1338">                            indexToShift = (indexToShift - 2) &amp; capacityMask;</span>
+                            long keyToShift;
+<span class="nc bnc" id="L1340" title="All 2 branches missed.">                            if ((keyToShift = tab[indexToShift]) == free) {</span>
+<span class="nc" id="L1341">                                break;</span>
+                            } 
+<span class="nc bnc" id="L1343" title="All 2 branches missed.">                            if ((((LHash.ParallelKVLongKeyMixing.mix(keyToShift)) - indexToShift) &amp; capacityMask) &gt;= shiftDistance) {</span>
+<span class="nc bnc" id="L1344" title="All 2 branches missed.">                                if (indexToShift &gt; indexToRemove) {</span>
+<span class="nc" id="L1345">                                    firstDelayedRemoved = i;</span>
+<span class="nc" id="L1346">                                    delayedRemoved = key;</span>
+<span class="nc" id="L1347">                                    tab[indexToRemove] = key;</span>
+<span class="nc" id="L1348">                                    break closeDeletion;</span>
+                                } 
+<span class="nc bnc" id="L1350" title="All 2 branches missed.">                                if (indexToRemove == i) {</span>
+<span class="nc" id="L1351">                                    i += 2;</span>
+                                } 
+<span class="nc" id="L1353">                                tab[indexToRemove] = keyToShift;</span>
+<span class="nc" id="L1354">                                tab[(indexToRemove + 1)] = tab[(indexToShift + 1)];</span>
+<span class="nc" id="L1355">                                indexToRemove = indexToShift;</span>
+<span class="nc" id="L1356">                                shiftDistance = 2;</span>
+                            } else {
+<span class="nc" id="L1358">                                shiftDistance += 2;</span>
+<span class="nc bnc" id="L1359" title="All 2 branches missed.">                                if (indexToShift == (2 + i)) {</span>
+<span class="nc" id="L1360">                                    throw new ConcurrentModificationException();</span>
+                                } 
+                            }
+<span class="nc" id="L1363">                        }</span>
+<span class="nc" id="L1364">                        tab[indexToRemove] = free;</span>
+<span class="nc" id="L1365">                        postRemoveHook();</span>
+<span class="nc" id="L1366">                    } else {</span>
+<span class="nc" id="L1367">                        tab[i] = delayedRemoved;</span>
+                    }
+<span class="nc" id="L1369">                    changed = true;</span>
+                } 
+            } 
+        }
+<span class="nc bnc" id="L1373" title="All 2 branches missed.">        if (firstDelayedRemoved &gt;= 0) {</span>
+<span class="nc" id="L1374">            closeDelayedRemoved(firstDelayedRemoved, delayedRemoved);</span>
+        } 
+<span class="nc bnc" id="L1376" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L1377">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L1379">        return changed;</span>
+    }
+
+    @SuppressFBWarnings(value = &quot;EC_UNRELATED_TYPES_USING_POINTER_EQUALITY&quot;)
+    public boolean removeAll(@Nonnull
+    HashLongSet thisC, @Nonnull
+    Collection&lt;?&gt; c) {
+<span class="nc bnc" id="L1386" title="All 2 branches missed.">        if (thisC == ((Object) (c)))</span>
+<span class="nc" id="L1387">            throw new IllegalArgumentException();</span>
+        
+<span class="nc bnc" id="L1389" title="All 4 branches missed.">        if ((KolobokeLongLongMap.this.isEmpty()) || (c.isEmpty()))</span>
+<span class="nc" id="L1390">            return false;</span>
+        
+<span class="nc" id="L1392">        boolean changed = false;</span>
+<span class="nc" id="L1393">        int mc = modCount();</span>
+<span class="nc" id="L1394">        long free = freeValue;</span>
+<span class="nc" id="L1395">        long[] tab = table;</span>
+<span class="nc" id="L1396">        int capacityMask = (tab.length) - 2;</span>
+<span class="nc" id="L1397">        int firstDelayedRemoved = -1;</span>
+<span class="nc" id="L1398">        long delayedRemoved = 0L;</span>
+<span class="nc bnc" id="L1399" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L1401" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc bnc" id="L1402" title="All 2 branches missed.">                if (c.contains(key)) {</span>
+<span class="nc" id="L1403">                    incrementModCount();</span>
+<span class="nc" id="L1404">                    mc++;</span>
+<span class="nc bnc" id="L1405" title="All 2 branches missed.">                    closeDeletion : if (firstDelayedRemoved &lt; 0) {</span>
+<span class="nc" id="L1406">                        int indexToRemove = i;</span>
+<span class="nc" id="L1407">                        int indexToShift = indexToRemove;</span>
+<span class="nc" id="L1408">                        int shiftDistance = 2;</span>
+                        while (true) {
+<span class="nc" id="L1410">                            indexToShift = (indexToShift - 2) &amp; capacityMask;</span>
+                            long keyToShift;
+<span class="nc bnc" id="L1412" title="All 2 branches missed.">                            if ((keyToShift = tab[indexToShift]) == free) {</span>
+<span class="nc" id="L1413">                                break;</span>
+                            } 
+<span class="nc bnc" id="L1415" title="All 2 branches missed.">                            if ((((LHash.ParallelKVLongKeyMixing.mix(keyToShift)) - indexToShift) &amp; capacityMask) &gt;= shiftDistance) {</span>
+<span class="nc bnc" id="L1416" title="All 2 branches missed.">                                if (indexToShift &gt; indexToRemove) {</span>
+<span class="nc" id="L1417">                                    firstDelayedRemoved = i;</span>
+<span class="nc" id="L1418">                                    delayedRemoved = key;</span>
+<span class="nc" id="L1419">                                    tab[indexToRemove] = key;</span>
+<span class="nc" id="L1420">                                    break closeDeletion;</span>
+                                } 
+<span class="nc bnc" id="L1422" title="All 2 branches missed.">                                if (indexToRemove == i) {</span>
+<span class="nc" id="L1423">                                    i += 2;</span>
+                                } 
+<span class="nc" id="L1425">                                tab[indexToRemove] = keyToShift;</span>
+<span class="nc" id="L1426">                                tab[(indexToRemove + 1)] = tab[(indexToShift + 1)];</span>
+<span class="nc" id="L1427">                                indexToRemove = indexToShift;</span>
+<span class="nc" id="L1428">                                shiftDistance = 2;</span>
+                            } else {
+<span class="nc" id="L1430">                                shiftDistance += 2;</span>
+<span class="nc bnc" id="L1431" title="All 2 branches missed.">                                if (indexToShift == (2 + i)) {</span>
+<span class="nc" id="L1432">                                    throw new ConcurrentModificationException();</span>
+                                } 
+                            }
+<span class="nc" id="L1435">                        }</span>
+<span class="nc" id="L1436">                        tab[indexToRemove] = free;</span>
+<span class="nc" id="L1437">                        postRemoveHook();</span>
+<span class="nc" id="L1438">                    } else {</span>
+<span class="nc" id="L1439">                        tab[i] = delayedRemoved;</span>
+                    }
+<span class="nc" id="L1441">                    changed = true;</span>
+                } 
+            } 
+        }
+<span class="nc bnc" id="L1445" title="All 2 branches missed.">        if (firstDelayedRemoved &gt;= 0) {</span>
+<span class="nc" id="L1446">            closeDelayedRemoved(firstDelayedRemoved, delayedRemoved);</span>
+        } 
+<span class="nc bnc" id="L1448" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L1449">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L1451">        return changed;</span>
+    }
+
+    boolean removeAll(@Nonnull
+    HashLongSet thisC, @Nonnull
+    LongCollection c) {
+<span class="nc bnc" id="L1457" title="All 2 branches missed.">        if (thisC == ((Object) (c)))</span>
+<span class="nc" id="L1458">            throw new IllegalArgumentException();</span>
+        
+<span class="nc bnc" id="L1460" title="All 4 branches missed.">        if ((KolobokeLongLongMap.this.isEmpty()) || (c.isEmpty()))</span>
+<span class="nc" id="L1461">            return false;</span>
+        
+<span class="nc" id="L1463">        boolean changed = false;</span>
+<span class="nc" id="L1464">        int mc = modCount();</span>
+<span class="nc" id="L1465">        long free = freeValue;</span>
+<span class="nc" id="L1466">        long[] tab = table;</span>
+<span class="nc" id="L1467">        int capacityMask = (tab.length) - 2;</span>
+<span class="nc" id="L1468">        int firstDelayedRemoved = -1;</span>
+<span class="nc" id="L1469">        long delayedRemoved = 0L;</span>
+<span class="nc bnc" id="L1470" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L1472" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc bnc" id="L1473" title="All 2 branches missed.">                if (c.contains(key)) {</span>
+<span class="nc" id="L1474">                    incrementModCount();</span>
+<span class="nc" id="L1475">                    mc++;</span>
+<span class="nc bnc" id="L1476" title="All 2 branches missed.">                    closeDeletion : if (firstDelayedRemoved &lt; 0) {</span>
+<span class="nc" id="L1477">                        int indexToRemove = i;</span>
+<span class="nc" id="L1478">                        int indexToShift = indexToRemove;</span>
+<span class="nc" id="L1479">                        int shiftDistance = 2;</span>
+                        while (true) {
+<span class="nc" id="L1481">                            indexToShift = (indexToShift - 2) &amp; capacityMask;</span>
+                            long keyToShift;
+<span class="nc bnc" id="L1483" title="All 2 branches missed.">                            if ((keyToShift = tab[indexToShift]) == free) {</span>
+<span class="nc" id="L1484">                                break;</span>
+                            } 
+<span class="nc bnc" id="L1486" title="All 2 branches missed.">                            if ((((LHash.ParallelKVLongKeyMixing.mix(keyToShift)) - indexToShift) &amp; capacityMask) &gt;= shiftDistance) {</span>
+<span class="nc bnc" id="L1487" title="All 2 branches missed.">                                if (indexToShift &gt; indexToRemove) {</span>
+<span class="nc" id="L1488">                                    firstDelayedRemoved = i;</span>
+<span class="nc" id="L1489">                                    delayedRemoved = key;</span>
+<span class="nc" id="L1490">                                    tab[indexToRemove] = key;</span>
+<span class="nc" id="L1491">                                    break closeDeletion;</span>
+                                } 
+<span class="nc bnc" id="L1493" title="All 2 branches missed.">                                if (indexToRemove == i) {</span>
+<span class="nc" id="L1494">                                    i += 2;</span>
+                                } 
+<span class="nc" id="L1496">                                tab[indexToRemove] = keyToShift;</span>
+<span class="nc" id="L1497">                                tab[(indexToRemove + 1)] = tab[(indexToShift + 1)];</span>
+<span class="nc" id="L1498">                                indexToRemove = indexToShift;</span>
+<span class="nc" id="L1499">                                shiftDistance = 2;</span>
+                            } else {
+<span class="nc" id="L1501">                                shiftDistance += 2;</span>
+<span class="nc bnc" id="L1502" title="All 2 branches missed.">                                if (indexToShift == (2 + i)) {</span>
+<span class="nc" id="L1503">                                    throw new ConcurrentModificationException();</span>
+                                } 
+                            }
+<span class="nc" id="L1506">                        }</span>
+<span class="nc" id="L1507">                        tab[indexToRemove] = free;</span>
+<span class="nc" id="L1508">                        postRemoveHook();</span>
+<span class="nc" id="L1509">                    } else {</span>
+<span class="nc" id="L1510">                        tab[i] = delayedRemoved;</span>
+                    }
+<span class="nc" id="L1512">                    changed = true;</span>
+                } 
+            } 
+        }
+<span class="nc bnc" id="L1516" title="All 2 branches missed.">        if (firstDelayedRemoved &gt;= 0) {</span>
+<span class="nc" id="L1517">            closeDelayedRemoved(firstDelayedRemoved, delayedRemoved);</span>
+        } 
+<span class="nc bnc" id="L1519" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L1520">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L1522">        return changed;</span>
+    }
+
+    @SuppressFBWarnings(value = &quot;EC_UNRELATED_TYPES_USING_POINTER_EQUALITY&quot;)
+    public boolean retainAll(@Nonnull
+    HashLongSet thisC, @Nonnull
+    Collection&lt;?&gt; c) {
+<span class="nc bnc" id="L1529" title="All 2 branches missed.">        if (c instanceof LongCollection)</span>
+<span class="nc" id="L1530">            return retainAll(thisC, ((LongCollection) (c)));</span>
+        
+<span class="nc bnc" id="L1532" title="All 2 branches missed.">        if (thisC == ((Object) (c)))</span>
+<span class="nc" id="L1533">            throw new IllegalArgumentException();</span>
+        
+<span class="nc bnc" id="L1535" title="All 2 branches missed.">        if (KolobokeLongLongMap.this.isEmpty())</span>
+<span class="nc" id="L1536">            return false;</span>
+        
+<span class="nc bnc" id="L1538" title="All 2 branches missed.">        if (c.isEmpty()) {</span>
+<span class="nc" id="L1539">            clear();</span>
+<span class="nc" id="L1540">            return true;</span>
+        } 
+<span class="nc" id="L1542">        boolean changed = false;</span>
+<span class="nc" id="L1543">        int mc = modCount();</span>
+<span class="nc" id="L1544">        long free = freeValue;</span>
+<span class="nc" id="L1545">        long[] tab = table;</span>
+<span class="nc" id="L1546">        int capacityMask = (tab.length) - 2;</span>
+<span class="nc" id="L1547">        int firstDelayedRemoved = -1;</span>
+<span class="nc" id="L1548">        long delayedRemoved = 0L;</span>
+<span class="nc bnc" id="L1549" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L1551" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc bnc" id="L1552" title="All 2 branches missed.">                if (!(c.contains(key))) {</span>
+<span class="nc" id="L1553">                    incrementModCount();</span>
+<span class="nc" id="L1554">                    mc++;</span>
+<span class="nc bnc" id="L1555" title="All 2 branches missed.">                    closeDeletion : if (firstDelayedRemoved &lt; 0) {</span>
+<span class="nc" id="L1556">                        int indexToRemove = i;</span>
+<span class="nc" id="L1557">                        int indexToShift = indexToRemove;</span>
+<span class="nc" id="L1558">                        int shiftDistance = 2;</span>
+                        while (true) {
+<span class="nc" id="L1560">                            indexToShift = (indexToShift - 2) &amp; capacityMask;</span>
+                            long keyToShift;
+<span class="nc bnc" id="L1562" title="All 2 branches missed.">                            if ((keyToShift = tab[indexToShift]) == free) {</span>
+<span class="nc" id="L1563">                                break;</span>
+                            } 
+<span class="nc bnc" id="L1565" title="All 2 branches missed.">                            if ((((LHash.ParallelKVLongKeyMixing.mix(keyToShift)) - indexToShift) &amp; capacityMask) &gt;= shiftDistance) {</span>
+<span class="nc bnc" id="L1566" title="All 2 branches missed.">                                if (indexToShift &gt; indexToRemove) {</span>
+<span class="nc" id="L1567">                                    firstDelayedRemoved = i;</span>
+<span class="nc" id="L1568">                                    delayedRemoved = key;</span>
+<span class="nc" id="L1569">                                    tab[indexToRemove] = key;</span>
+<span class="nc" id="L1570">                                    break closeDeletion;</span>
+                                } 
+<span class="nc bnc" id="L1572" title="All 2 branches missed.">                                if (indexToRemove == i) {</span>
+<span class="nc" id="L1573">                                    i += 2;</span>
+                                } 
+<span class="nc" id="L1575">                                tab[indexToRemove] = keyToShift;</span>
+<span class="nc" id="L1576">                                tab[(indexToRemove + 1)] = tab[(indexToShift + 1)];</span>
+<span class="nc" id="L1577">                                indexToRemove = indexToShift;</span>
+<span class="nc" id="L1578">                                shiftDistance = 2;</span>
+                            } else {
+<span class="nc" id="L1580">                                shiftDistance += 2;</span>
+<span class="nc bnc" id="L1581" title="All 2 branches missed.">                                if (indexToShift == (2 + i)) {</span>
+<span class="nc" id="L1582">                                    throw new ConcurrentModificationException();</span>
+                                } 
+                            }
+<span class="nc" id="L1585">                        }</span>
+<span class="nc" id="L1586">                        tab[indexToRemove] = free;</span>
+<span class="nc" id="L1587">                        postRemoveHook();</span>
+<span class="nc" id="L1588">                    } else {</span>
+<span class="nc" id="L1589">                        tab[i] = delayedRemoved;</span>
+                    }
+<span class="nc" id="L1591">                    changed = true;</span>
+                } 
+            } 
+        }
+<span class="nc bnc" id="L1595" title="All 2 branches missed.">        if (firstDelayedRemoved &gt;= 0) {</span>
+<span class="nc" id="L1596">            closeDelayedRemoved(firstDelayedRemoved, delayedRemoved);</span>
+        } 
+<span class="nc bnc" id="L1598" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L1599">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L1601">        return changed;</span>
+    }
+
+    private boolean retainAll(@Nonnull
+    HashLongSet thisC, @Nonnull
+    LongCollection c) {
+<span class="nc bnc" id="L1607" title="All 2 branches missed.">        if (thisC == ((Object) (c)))</span>
+<span class="nc" id="L1608">            throw new IllegalArgumentException();</span>
+        
+<span class="nc bnc" id="L1610" title="All 2 branches missed.">        if (KolobokeLongLongMap.this.isEmpty())</span>
+<span class="nc" id="L1611">            return false;</span>
+        
+<span class="nc bnc" id="L1613" title="All 2 branches missed.">        if (c.isEmpty()) {</span>
+<span class="nc" id="L1614">            clear();</span>
+<span class="nc" id="L1615">            return true;</span>
+        } 
+<span class="nc" id="L1617">        boolean changed = false;</span>
+<span class="nc" id="L1618">        int mc = modCount();</span>
+<span class="nc" id="L1619">        long free = freeValue;</span>
+<span class="nc" id="L1620">        long[] tab = table;</span>
+<span class="nc" id="L1621">        int capacityMask = (tab.length) - 2;</span>
+<span class="nc" id="L1622">        int firstDelayedRemoved = -1;</span>
+<span class="nc" id="L1623">        long delayedRemoved = 0L;</span>
+<span class="nc bnc" id="L1624" title="All 2 branches missed.">        for (int i = (tab.length) - 2; i &gt;= 0; i -= 2) {</span>
+            long key;
+<span class="nc bnc" id="L1626" title="All 2 branches missed.">            if ((key = tab[i]) != free) {</span>
+<span class="nc bnc" id="L1627" title="All 2 branches missed.">                if (!(c.contains(key))) {</span>
+<span class="nc" id="L1628">                    incrementModCount();</span>
+<span class="nc" id="L1629">                    mc++;</span>
+<span class="nc bnc" id="L1630" title="All 2 branches missed.">                    closeDeletion : if (firstDelayedRemoved &lt; 0) {</span>
+<span class="nc" id="L1631">                        int indexToRemove = i;</span>
+<span class="nc" id="L1632">                        int indexToShift = indexToRemove;</span>
+<span class="nc" id="L1633">                        int shiftDistance = 2;</span>
+                        while (true) {
+<span class="nc" id="L1635">                            indexToShift = (indexToShift - 2) &amp; capacityMask;</span>
+                            long keyToShift;
+<span class="nc bnc" id="L1637" title="All 2 branches missed.">                            if ((keyToShift = tab[indexToShift]) == free) {</span>
+<span class="nc" id="L1638">                                break;</span>
+                            } 
+<span class="nc bnc" id="L1640" title="All 2 branches missed.">                            if ((((LHash.ParallelKVLongKeyMixing.mix(keyToShift)) - indexToShift) &amp; capacityMask) &gt;= shiftDistance) {</span>
+<span class="nc bnc" id="L1641" title="All 2 branches missed.">                                if (indexToShift &gt; indexToRemove) {</span>
+<span class="nc" id="L1642">                                    firstDelayedRemoved = i;</span>
+<span class="nc" id="L1643">                                    delayedRemoved = key;</span>
+<span class="nc" id="L1644">                                    tab[indexToRemove] = key;</span>
+<span class="nc" id="L1645">                                    break closeDeletion;</span>
+                                } 
+<span class="nc bnc" id="L1647" title="All 2 branches missed.">                                if (indexToRemove == i) {</span>
+<span class="nc" id="L1648">                                    i += 2;</span>
+                                } 
+<span class="nc" id="L1650">                                tab[indexToRemove] = keyToShift;</span>
+<span class="nc" id="L1651">                                tab[(indexToRemove + 1)] = tab[(indexToShift + 1)];</span>
+<span class="nc" id="L1652">                                indexToRemove = indexToShift;</span>
+<span class="nc" id="L1653">                                shiftDistance = 2;</span>
+                            } else {
+<span class="nc" id="L1655">                                shiftDistance += 2;</span>
+<span class="nc bnc" id="L1656" title="All 2 branches missed.">                                if (indexToShift == (2 + i)) {</span>
+<span class="nc" id="L1657">                                    throw new ConcurrentModificationException();</span>
+                                } 
+                            }
+<span class="nc" id="L1660">                        }</span>
+<span class="nc" id="L1661">                        tab[indexToRemove] = free;</span>
+<span class="nc" id="L1662">                        postRemoveHook();</span>
+<span class="nc" id="L1663">                    } else {</span>
+<span class="nc" id="L1664">                        tab[i] = delayedRemoved;</span>
+                    }
+<span class="nc" id="L1666">                    changed = true;</span>
+                } 
+            } 
+        }
+<span class="nc bnc" id="L1670" title="All 2 branches missed.">        if (firstDelayedRemoved &gt;= 0) {</span>
+<span class="nc" id="L1671">            closeDelayedRemoved(firstDelayedRemoved, delayedRemoved);</span>
+        } 
+<span class="nc bnc" id="L1673" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="nc" id="L1674">            throw new ConcurrentModificationException();</span>
+        
+<span class="nc" id="L1676">        return changed;</span>
+    }
+
+    void closeDelayedRemoved(int firstDelayedRemoved, long delayedRemoved) {
+<span class="nc" id="L1680">        long free = freeValue;</span>
+<span class="nc" id="L1681">        long[] tab = table;</span>
+<span class="nc" id="L1682">        int capacityMask = (tab.length) - 2;</span>
+<span class="nc bnc" id="L1683" title="All 2 branches missed.">        for (int i = firstDelayedRemoved; i &gt;= 0; i -= 2) {</span>
+<span class="nc bnc" id="L1684" title="All 2 branches missed.">            if ((tab[i]) == delayedRemoved) {</span>
+<span class="nc" id="L1685">                int indexToRemove = i;</span>
+<span class="nc" id="L1686">                int indexToShift = indexToRemove;</span>
+<span class="nc" id="L1687">                int shiftDistance = 2;</span>
+                while (true) {
+<span class="nc" id="L1689">                    indexToShift = (indexToShift - 2) &amp; capacityMask;</span>
+                    long keyToShift;
+<span class="nc bnc" id="L1691" title="All 2 branches missed.">                    if ((keyToShift = tab[indexToShift]) == free) {</span>
+<span class="nc" id="L1692">                        break;</span>
+                    } 
+<span class="nc bnc" id="L1694" title="All 4 branches missed.">                    if ((keyToShift != delayedRemoved) &amp;&amp; ((((LHash.ParallelKVLongKeyMixing.mix(keyToShift)) - indexToShift) &amp; capacityMask) &gt;= shiftDistance)) {</span>
+<span class="nc" id="L1695">                        tab[indexToRemove] = keyToShift;</span>
+<span class="nc" id="L1696">                        tab[(indexToRemove + 1)] = tab[(indexToShift + 1)];</span>
+<span class="nc" id="L1697">                        indexToRemove = indexToShift;</span>
+<span class="nc" id="L1698">                        shiftDistance = 2;</span>
+                    } else {
+<span class="nc" id="L1700">                        shiftDistance += 2;</span>
+<span class="nc bnc" id="L1701" title="All 2 branches missed.">                        if (indexToShift == (2 + i)) {</span>
+<span class="nc" id="L1702">                            throw new ConcurrentModificationException();</span>
+                        } 
+                    }
+<span class="nc" id="L1705">                }</span>
+<span class="nc" id="L1706">                tab[indexToRemove] = free;</span>
+<span class="nc" id="L1707">                postRemoveHook();</span>
+            } 
+        }
+<span class="nc" id="L1710">    }</span>
+
+    public LongIterator iterator() {
+<span class="nc" id="L1713">        int mc = modCount();</span>
+<span class="nc" id="L1714">        return new KolobokeLongLongMap.NoRemovedKeyIterator(mc);</span>
+    }
+
+    public LongCursor setCursor() {
+<span class="nc" id="L1718">        int mc = modCount();</span>
+<span class="nc" id="L1719">        return new KolobokeLongLongMap.NoRemovedKeyCursor(mc);</span>
+    }
+
+    class NoRemovedKeyIterator extends KolobokeLongLongMap.NoRemovedIterator {
+<span class="nc" id="L1723">        private NoRemovedKeyIterator(int mc) {</span>
+<span class="nc" id="L1724">            super(mc);</span>
+<span class="nc" id="L1725">        }</span>
+
+        @Override
+        public void remove() {
+            int index;
+<span class="nc bnc" id="L1730" title="All 2 branches missed.">            if ((index = KolobokeLongLongMap.NoRemovedKeyIterator.this.index) &gt;= 0) {</span>
+<span class="nc bnc" id="L1731" title="All 2 branches missed.">                if (((expectedModCount)++) == (modCount())) {</span>
+<span class="nc" id="L1732">                    KolobokeLongLongMap.NoRemovedKeyIterator.this.index = -1;</span>
+<span class="nc" id="L1733">                    long[] tab = KolobokeLongLongMap.NoRemovedKeyIterator.this.tab;</span>
+<span class="nc bnc" id="L1734" title="All 2 branches missed.">                    if (tab == (table)) {</span>
+<span class="nc" id="L1735">                        int capacityMask = KolobokeLongLongMap.NoRemovedKeyIterator.this.capacityMask;</span>
+<span class="nc" id="L1736">                        incrementModCount();</span>
+<span class="nc" id="L1737">                        int indexToRemove = index;</span>
+<span class="nc" id="L1738">                        int indexToShift = indexToRemove;</span>
+<span class="nc" id="L1739">                        int shiftDistance = 2;</span>
+                        while (true) {
+<span class="nc" id="L1741">                            indexToShift = (indexToShift - 2) &amp; capacityMask;</span>
+                            long keyToShift;
+<span class="nc bnc" id="L1743" title="All 2 branches missed.">                            if ((keyToShift = tab[indexToShift]) == (free)) {</span>
+<span class="nc" id="L1744">                                break;</span>
+                            } 
+<span class="nc bnc" id="L1746" title="All 2 branches missed.">                            if ((((LHash.ParallelKVLongKeyMixing.mix(keyToShift)) - indexToShift) &amp; capacityMask) &gt;= shiftDistance) {</span>
+<span class="nc bnc" id="L1747" title="All 2 branches missed.">                                if ((KolobokeLongLongMap.NoRemovedKeyIterator.this.tab) == tab) {</span>
+<span class="nc bnc" id="L1748" title="All 2 branches missed.">                                    if (indexToShift &gt; indexToRemove) {</span>
+                                        int slotsToCopy;
+<span class="nc bnc" id="L1750" title="All 2 branches missed.">                                        if ((slotsToCopy = (nextIndex) + 2) &gt; 0) {</span>
+<span class="nc" id="L1751">                                            KolobokeLongLongMap.NoRemovedKeyIterator.this.tab = Arrays.copyOf(tab, slotsToCopy);</span>
+<span class="nc bnc" id="L1752" title="All 2 branches missed.">                                            if (indexToRemove &lt; slotsToCopy) {</span>
+<span class="nc" id="L1753">                                                KolobokeLongLongMap.NoRemovedKeyIterator.this.tab[indexToRemove] = free;</span>
+                                            } 
+                                        } 
+<span class="nc bnc" id="L1756" title="All 2 branches missed.">                                    } else if (indexToRemove == index) {</span>
+<span class="nc" id="L1757">                                        KolobokeLongLongMap.NoRemovedKeyIterator.this.nextIndex = index;</span>
+<span class="nc bnc" id="L1758" title="All 2 branches missed.">                                        if (indexToShift &lt; (index - 2)) {</span>
+<span class="nc" id="L1759">                                            KolobokeLongLongMap.NoRemovedKeyIterator.this.next = keyToShift;</span>
+                                        } 
+                                    } 
+                                } 
+<span class="nc" id="L1763">                                tab[indexToRemove] = keyToShift;</span>
+<span class="nc" id="L1764">                                tab[(indexToRemove + 1)] = tab[(indexToShift + 1)];</span>
+<span class="nc" id="L1765">                                indexToRemove = indexToShift;</span>
+<span class="nc" id="L1766">                                shiftDistance = 2;</span>
+                            } else {
+<span class="nc" id="L1768">                                shiftDistance += 2;</span>
+<span class="nc bnc" id="L1769" title="All 2 branches missed.">                                if (indexToShift == (2 + index)) {</span>
+<span class="nc" id="L1770">                                    throw new ConcurrentModificationException();</span>
+                                } 
+                            }
+<span class="nc" id="L1773">                        }</span>
+<span class="nc" id="L1774">                        tab[indexToRemove] = free;</span>
+<span class="nc" id="L1775">                        postRemoveHook();</span>
+<span class="nc" id="L1776">                    } else {</span>
+<span class="nc" id="L1777">                        justRemove(tab[index]);</span>
+                    }
+<span class="nc" id="L1779">                } else {</span>
+<span class="nc" id="L1780">                    throw new ConcurrentModificationException();</span>
+                }
+            } else {
+<span class="nc" id="L1783">                throw new IllegalStateException();</span>
+            }
+<span class="nc" id="L1785">        }</span>
+    }
+
+    class NoRemovedKeyCursor extends KolobokeLongLongMap.NoRemovedCursor {
+<span class="nc" id="L1789">        private NoRemovedKeyCursor(int mc) {</span>
+<span class="nc" id="L1790">            super(mc);</span>
+<span class="nc" id="L1791">        }</span>
+
+        @Override
+        public void remove() {
+            long curKey;
+            long free;
+<span class="nc bnc" id="L1797" title="All 2 branches missed.">            if ((curKey = KolobokeLongLongMap.NoRemovedKeyCursor.this.curKey) != (free = KolobokeLongLongMap.NoRemovedKeyCursor.this.free)) {</span>
+<span class="nc bnc" id="L1798" title="All 2 branches missed.">                if (((expectedModCount)++) == (modCount())) {</span>
+<span class="nc" id="L1799">                    KolobokeLongLongMap.NoRemovedKeyCursor.this.curKey = free;</span>
+<span class="nc" id="L1800">                    int index = KolobokeLongLongMap.NoRemovedKeyCursor.this.index;</span>
+<span class="nc" id="L1801">                    long[] tab = KolobokeLongLongMap.NoRemovedKeyCursor.this.tab;</span>
+<span class="nc bnc" id="L1802" title="All 2 branches missed.">                    if (tab == (table)) {</span>
+<span class="nc" id="L1803">                        int capacityMask = KolobokeLongLongMap.NoRemovedKeyCursor.this.capacityMask;</span>
+<span class="nc" id="L1804">                        incrementModCount();</span>
+<span class="nc" id="L1805">                        int indexToRemove = index;</span>
+<span class="nc" id="L1806">                        int indexToShift = indexToRemove;</span>
+<span class="nc" id="L1807">                        int shiftDistance = 2;</span>
+                        while (true) {
+<span class="nc" id="L1809">                            indexToShift = (indexToShift - 2) &amp; capacityMask;</span>
+                            long keyToShift;
+<span class="nc bnc" id="L1811" title="All 2 branches missed.">                            if ((keyToShift = tab[indexToShift]) == free) {</span>
+<span class="nc" id="L1812">                                break;</span>
+                            } 
+<span class="nc bnc" id="L1814" title="All 2 branches missed.">                            if ((((LHash.ParallelKVLongKeyMixing.mix(keyToShift)) - indexToShift) &amp; capacityMask) &gt;= shiftDistance) {</span>
+<span class="nc bnc" id="L1815" title="All 2 branches missed.">                                if ((KolobokeLongLongMap.NoRemovedKeyCursor.this.tab) == tab) {</span>
+<span class="nc bnc" id="L1816" title="All 2 branches missed.">                                    if (indexToShift &gt; indexToRemove) {</span>
+                                        int slotsToCopy;
+<span class="nc bnc" id="L1818" title="All 2 branches missed.">                                        if ((slotsToCopy = index) &gt; 0) {</span>
+<span class="nc" id="L1819">                                            KolobokeLongLongMap.NoRemovedKeyCursor.this.tab = Arrays.copyOf(tab, slotsToCopy);</span>
+<span class="nc bnc" id="L1820" title="All 2 branches missed.">                                            if (indexToRemove &lt; slotsToCopy) {</span>
+<span class="nc" id="L1821">                                                KolobokeLongLongMap.NoRemovedKeyCursor.this.tab[indexToRemove] = free;</span>
+                                            } 
+                                        } 
+<span class="nc bnc" id="L1824" title="All 2 branches missed.">                                    } else if (indexToRemove == index) {</span>
+<span class="nc" id="L1825">                                        KolobokeLongLongMap.NoRemovedKeyCursor.this.index = index += 2;</span>
+                                    } 
+                                } 
+<span class="nc" id="L1828">                                tab[indexToRemove] = keyToShift;</span>
+<span class="nc" id="L1829">                                tab[(indexToRemove + 1)] = tab[(indexToShift + 1)];</span>
+<span class="nc" id="L1830">                                indexToRemove = indexToShift;</span>
+<span class="nc" id="L1831">                                shiftDistance = 2;</span>
+                            } else {
+<span class="nc" id="L1833">                                shiftDistance += 2;</span>
+<span class="nc bnc" id="L1834" title="All 2 branches missed.">                                if (indexToShift == (2 + index)) {</span>
+<span class="nc" id="L1835">                                    throw new ConcurrentModificationException();</span>
+                                } 
+                            }
+<span class="nc" id="L1838">                        }</span>
+<span class="nc" id="L1839">                        tab[indexToRemove] = free;</span>
+<span class="nc" id="L1840">                        postRemoveHook();</span>
+<span class="nc" id="L1841">                    } else {</span>
+<span class="nc" id="L1842">                        justRemove(curKey);</span>
+                    }
+<span class="nc" id="L1844">                } else {</span>
+<span class="nc" id="L1845">                    throw new ConcurrentModificationException();</span>
+                }
+            } else {
+<span class="nc" id="L1848">                throw new IllegalStateException();</span>
+            }
+<span class="nc" id="L1850">        }</span>
+    }
+
+<span class="nc" id="L1853">    KolobokeLongLongMap(HashConfig hashConfig, int expectedSize) {</span>
+<span class="nc" id="L1854">        this.init(new HashConfigWrapper(hashConfig), expectedSize);</span>
+<span class="nc" id="L1855">    }</span>
+
+<span class="nc" id="L1857">    static class Support {</span>
+        static interface LongHash extends Hash {
+            long freeValue();
+
+            boolean supportRemoved();
+
+            long removedValue();
+        }
+
+        static interface ParallelKVLongLHash extends LHash , KolobokeLongLongMap.Support.ParallelKVLongHash {        }
+
+        static interface ParallelKVLongHash extends KolobokeLongLongMap.Support.LongHash {
+            @Nonnull
+            long[] table();
+        }
+    }
+
+<span class="fc" id="L1874">    static final HashConfigWrapper DEFAULT_CONFIG_WRAPPER = new HashConfigWrapper(HashConfig.getDefault());</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

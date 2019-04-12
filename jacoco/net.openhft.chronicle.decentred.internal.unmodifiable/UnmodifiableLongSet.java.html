@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UnmodifiableLongSet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenHFT/Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.internal.unmodifiable</a> &gt; <span class="el_source">UnmodifiableLongSet.java</span></div><h1>UnmodifiableLongSet.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.internal.unmodifiable;
+
+import com.koloboke.collect.LongCursor;
+import com.koloboke.collect.LongIterator;
+import com.koloboke.collect.set.LongSet;
+import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+import java.util.function.LongConsumer;
+import java.util.function.LongPredicate;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+import static net.openhft.chronicle.decentred.internal.unmodifiable.ThrowUtil.newUnsupportedOperationException;
+
+public final class UnmodifiableLongSet implements LongSet {
+
+    private final LongSet inner;
+
+<span class="nc" id="L23">    public UnmodifiableLongSet(@NotNull LongSet inner) {</span>
+<span class="nc" id="L24">        this.inner = inner;</span>
+<span class="nc" id="L25">    }</span>
+
+<span class="nc" id="L27">    @Override @Deprecated public boolean add(@Nonnull Long e) { throw newUnsupportedOperationException(); }</span>
+<span class="nc" id="L28">    @Override @Nonnull @Deprecated public LongIterator iterator() { return inner.iterator(); } // The iterator returned does not support remove()</span>
+<span class="nc" id="L29">    @Override @Deprecated public boolean contains(Object o) { return inner.contains(o); }</span>
+<span class="nc" id="L30">    @Override public boolean contains(long v) { return inner.contains(v); }</span>
+<span class="nc" id="L31">    @Override @Nonnull @Deprecated public Object[] toArray() { return inner.toArray(); }</span>
+<span class="nc" id="L32">    @Override @Nonnull @Deprecated public &lt;T&gt; T[] toArray(@Nonnull T[] array) { return inner.toArray(array); }</span>
+<span class="nc" id="L33">    @Override @Nonnull public long[] toLongArray() { return inner.toLongArray(); }</span>
+<span class="nc" id="L34">    @Override @Nonnull public long[] toArray(@Nonnull long[] a) { return inner.toArray(a); }</span>
+<span class="nc" id="L35">    @Override @Nonnull public LongCursor cursor() { return new UnmodifiableLongCursor(inner.cursor()); }</span>
+<span class="nc" id="L36">    @Override @Deprecated public void forEach(@Nonnull Consumer&lt;? super Long&gt; action) { inner.forEach(action); }</span>
+<span class="nc" id="L37">    @Override public void forEach(@Nonnull LongConsumer action) { inner.forEach(action); }</span>
+<span class="nc" id="L38">    @Override public boolean forEachWhile(@Nonnull LongPredicate predicate) { return inner.forEachWhile(predicate); }</span>
+<span class="nc" id="L39">    @Override public boolean add(long e) { throw newUnsupportedOperationException(); }</span>
+<span class="nc" id="L40">    @Override @Deprecated public boolean remove(Object o) { throw newUnsupportedOperationException(); }</span>
+<span class="nc" id="L41">    @Override public boolean removeLong(long v) { throw newUnsupportedOperationException(); }</span>
+<span class="nc" id="L42">    @Override @Deprecated public boolean removeIf(@Nonnull Predicate&lt;? super Long&gt; filter) { throw newUnsupportedOperationException(); }</span>
+<span class="nc" id="L43">    @Override public boolean removeIf(@Nonnull LongPredicate filter) { throw newUnsupportedOperationException(); }</span>
+<span class="nc" id="L44">    @Override public int size() { return inner.size(); }</span>
+<span class="nc" id="L45">    @Override public boolean isEmpty() { return inner.isEmpty(); }</span>
+<span class="nc" id="L46">    @Override public boolean containsAll(@NotNull Collection&lt;?&gt; c) { return inner.containsAll(c); }</span>
+<span class="nc" id="L47">    @Override public boolean addAll(@NotNull Collection&lt;? extends Long&gt; c) { throw newUnsupportedOperationException(); }</span>
+<span class="nc" id="L48">    @Override public boolean removeAll(@NotNull Collection&lt;?&gt; c) { throw newUnsupportedOperationException(); }</span>
+<span class="nc" id="L49">    @Override public boolean retainAll(@NotNull Collection&lt;?&gt; c) { throw newUnsupportedOperationException(); }</span>
+<span class="nc" id="L50">    @Override public void clear() { throw newUnsupportedOperationException(); }</span>
+<span class="nc" id="L51">    @Override public boolean equals(Object o) { return inner.equals(o); }</span>
+<span class="nc" id="L52">    @Override public int hashCode() { return inner.hashCode(); }</span>
+<span class="nc" id="L53">    @Override public Spliterator&lt;Long&gt; spliterator() { return inner.spliterator(); }</span>
+<span class="nc" id="L54">    @Override public Stream&lt;Long&gt; stream() { return inner.stream(); }</span>
+<span class="nc" id="L55">    @Override public Stream&lt;Long&gt; parallelStream() { return inner.parallelStream(); }</span>
+<span class="nc" id="L56">    @Override public long sizeAsLong() { return inner.sizeAsLong(); }</span>
+<span class="nc" id="L57">    @Override public boolean ensureCapacity(long minSize) { throw newUnsupportedOperationException(); }</span>
+<span class="nc" id="L58">    @Override public boolean shrink() { throw newUnsupportedOperationException(); }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

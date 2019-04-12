@@ -2,11 +2,11 @@
 
 import net.openhft.chronicle.bytes.BytesIn;
 import net.openhft.chronicle.core.util.ObjectUtils;
-import net.openhft.chronicle.decentred.dto.SignedMessage;
-import net.openhft.chronicle.decentred.dto.VanillaSignedMessage;
+import net.openhft.chronicle.decentred.dto.base.VanillaSignedMessage;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 class DtoParselet&lt;T&gt; {
     private final Method method;
@@ -15,7 +15,7 @@ class DtoParselet&lt;T&gt; {
     private final VanillaSignedMessage vsm;
 
 <span class="fc" id="L17">    public DtoParselet(Method method, int protocol, int midValue) {</span>
-<span class="fc" id="L18">        this.method = method;</span>
+<span class="fc" id="L18">        this.method = Objects.requireNonNull(method);</span>
 <span class="fc" id="L19">        this.protocol = protocol;</span>
 <span class="fc" id="L20">        this.midValue = midValue;</span>
 <span class="fc" id="L21">        this.vsm = createVSM(method, protocol, midValue);</span>
@@ -43,29 +43,30 @@ class DtoParselet&lt;T&gt; {
     public void parse(BytesIn bytes, T listener) {
 <span class="fc" id="L44">        vsm.readMarshallable(bytes);</span>
         try {
-<span class="fc" id="L46">            method.invoke(listener, vsm);</span>
-<span class="nc" id="L47">        } catch (Exception e) {</span>
-<span class="nc" id="L48">            throw new IllegalStateException(e);</span>
-<span class="fc" id="L49">        }</span>
-<span class="fc" id="L50">    }</span>
+            /* System.out.println(String.format(&quot;Parslet invoking %s.%s(%s)%n&quot;,
+                listener.getClass().getName(),
+                method.getName(),
+                method.getParameterTypes()[0].getSimpleName())
+            ); */
+<span class="fc" id="L51">            method.invoke(listener, vsm);</span>
+<span class="nc" id="L52">        } catch (Exception e) {</span>
+<span class="nc" id="L53">            throw new IllegalStateException(e);</span>
+<span class="fc" id="L54">        }</span>
+<span class="fc" id="L55">    }</span>
 
-    public SignedMessage parse(BytesIn bytes) {
-<span class="fc" id="L53">        vsm.readMarshallable(bytes);</span>
-<span class="fc" id="L54">        return vsm;</span>
+    public Object parse(BytesIn bytes) {
+<span class="fc" id="L58">        vsm.readMarshallable(bytes);</span>
+<span class="fc" id="L59">        return vsm;</span>
     }
 
     @Override
     public String toString() {
-<span class="nc" id="L59">        return &quot;DtoParselet{&quot; +</span>
+<span class="nc" id="L64">        return &quot;DtoParselet{&quot; +</span>
                 &quot;method=&quot; + method +
                 &quot;, protocol=&quot; + protocol +
                 &quot;, midValue=&quot; + midValue +
                 &quot;, vsm=&quot; + vsm +
                 '}';
     }
-
-    public void dtoRegistry(DtoRegistry dtoRegistry) {
-<span class="fc" id="L68">        vsm.dtoRegistry(dtoRegistry);</span>
-<span class="fc" id="L69">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

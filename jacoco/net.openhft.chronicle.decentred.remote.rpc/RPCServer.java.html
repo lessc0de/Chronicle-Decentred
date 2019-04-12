@@ -6,8 +6,8 @@ import net.openhft.chronicle.core.Jvm;
 import net.openhft.chronicle.core.io.Closeable;
 import net.openhft.chronicle.core.io.IORuntimeException;
 import net.openhft.chronicle.decentred.api.SystemMessageListener;
-import net.openhft.chronicle.decentred.dto.SignedMessage;
-import net.openhft.chronicle.decentred.dto.VanillaSignedMessage;
+import net.openhft.chronicle.decentred.dto.base.SignedMessage;
+import net.openhft.chronicle.decentred.dto.base.VanillaSignedMessage;
 import net.openhft.chronicle.decentred.remote.net.TCPConnection;
 import net.openhft.chronicle.decentred.remote.net.TCPServer;
 import net.openhft.chronicle.decentred.remote.net.TCPServerConnectionListener;
@@ -24,62 +24,67 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-public class RPCServer&lt;T&gt; implements DecentredServer&lt;T&gt;, Closeable {
+public class RPCServer&lt;U extends T, T&gt; implements DecentredServer&lt;U&gt;, Closeable {
 <span class="fc" id="L28">    private static final ThreadLocal&lt;TCPConnection&gt; DEFAULT_CONNECTION_TL = new ThreadLocal&lt;&gt;();</span>
 <span class="fc" id="L29">    private final LongObjMap&lt;TCPConnection&gt; connections = LongObjMap.withExpectedSize(TCPConnection.class, 128);</span>
 <span class="fc" id="L30">    private final LongObjMap&lt;TCPConnection&gt; remoteMap = LongObjMap.withExpectedSize(TCPConnection.class, 128);</span>
-<span class="fc" id="L31">    private final Map&lt;Long, T&gt; allMessagesMap = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L31">    private final Map&lt;Long, U&gt; allMessagesMap = new ConcurrentHashMap&lt;&gt;();</span>
 <span class="fc" id="L32">    private final PublicKeyRegistry publicKeyRegistry = new VanillaPublicKeyRegistry();</span>
     private final TCPServer tcpServer;
     private final long address;
     private final BytesStore publicKey;
     private final BytesStore secretKey;
     private final Class&lt;T&gt; tClass;
-    private final DtoRegistry&lt;T&gt; dtoRegistry;
+    private final DtoRegistry&lt;U&gt; dtoRegistry;
     private final T serverComponent;
 
     public RPCServer(String name,
                      int port,
                      KeyPair keyPair,
                      Class&lt;T&gt; tClass,
-                     DtoRegistry&lt;T&gt; dtoRegistry,
-                     Function&lt;DecentredServer&lt;T&gt;, T&gt; serverComponentBuilder) throws IOException {
+                     DtoRegistry&lt;U&gt; dtoRegistry,
+                     Function&lt;DecentredServer&lt;U&gt;, T&gt; serverComponentBuilder) throws IOException {
 <span class="fc" id="L47">        this(name, port, keyPair.address(), keyPair.publicKey, keyPair.secretKey, tClass, dtoRegistry, serverComponentBuilder);</span>
 <span class="fc" id="L48">    }</span>
+
     public RPCServer(String name,
                      int port,
                      long address,
                      BytesStore publicKey,
                      BytesStore secretKey,
                      Class&lt;T&gt; tClass,
-                     DtoRegistry&lt;T&gt; dtoRegistry,
-<span class="fc" id="L56">                     Function&lt;DecentredServer&lt;T&gt;, T&gt; serverComponentBuilder) throws IOException {</span>
-<span class="fc" id="L57">        this.address = address;</span>
-<span class="fc" id="L58">        this.publicKey = publicKey;</span>
-<span class="fc" id="L59">        this.secretKey = secretKey;</span>
-<span class="fc" id="L60">        this.tClass = tClass;</span>
-<span class="fc" id="L61">        this.dtoRegistry = dtoRegistry;</span>
-<span class="fc" id="L62">        tcpServer = new VanillaTCPServer(name, port, new XCLConnectionListener(dtoRegistry.get()));</span>
+                     DtoRegistry&lt;U&gt; dtoRegistry,
+<span class="fc" id="L57">                     Function&lt;DecentredServer&lt;U&gt;, T&gt; serverComponentBuilder) throws IOException {</span>
+<span class="fc" id="L58">        this.address = address;</span>
+<span class="fc" id="L59">        this.publicKey = publicKey;</span>
+<span class="fc" id="L60">        this.secretKey = secretKey;</span>
+<span class="fc" id="L61">        this.tClass = tClass;</span>
+<span class="fc" id="L62">        this.dtoRegistry = dtoRegistry;</span>
 <span class="fc" id="L63">        this.serverComponent = serverComponentBuilder.apply(this);</span>
-<span class="fc" id="L64">    }</span>
+<span class="fc" id="L64">        tcpServer = new VanillaTCPServer(name, port, new XCLConnectionListener(dtoRegistry.get(tClass)));</span>
+<span class="fc" id="L65">    }</span>
+
+    public int getPort() {
+<span class="nc" id="L68">        return tcpServer.getPort();</span>
+    }
 
     @Override
     public void register(long address, BytesStore publicKey) {
-<span class="fc" id="L68">        publicKeyRegistry.register(address, publicKey);</span>
-<span class="fc" id="L69">    }</span>
+<span class="fc" id="L73">        publicKeyRegistry.register(address, publicKey);</span>
+<span class="fc" id="L74">    }</span>
 
     @Override
     public Boolean verify(long address, BytesStore sigAndMsg) {
-<span class="nc" id="L73">        return publicKeyRegistry.verify(address, sigAndMsg);</span>
+<span class="nc" id="L78">        return publicKeyRegistry.verify(address, sigAndMsg);</span>
     }
 
     public boolean internal() {
-<span class="nc" id="L77">        return publicKeyRegistry.internal();</span>
+<span class="nc" id="L82">        return publicKeyRegistry.internal();</span>
     }
 
-    public RPCServer internal(boolean internal) {
-<span class="fc" id="L81">        publicKeyRegistry.internal(internal);</span>
-<span class="fc" id="L82">        return this;</span>
+    public RPCServer&lt;U, T&gt; internal(boolean internal) {
+<span class="fc" id="L86">        publicKeyRegistry.internal(internal);</span>
+<span class="fc" id="L87">        return this;</span>
     }
 
     /**
@@ -89,138 +94,143 @@ public class RPCServer&lt;T&gt; implements DecentredServer&lt;T&gt;, Closeable {
      * @param tcpConnection   to connect to.
      */
     public void addTCPConnection(long addressOrRegion, TCPConnection tcpConnection) {
-<span class="fc" id="L92">        System.out.println(&quot;Registered &quot; + DecentredUtil.toAddressString(addressOrRegion) + &quot; as &quot; + tcpConnection);</span>
-<span class="fc" id="L93">        synchronized (remoteMap) {</span>
-<span class="fc" id="L94">            remoteMap.justPut(addressOrRegion, tcpConnection);</span>
-<span class="fc" id="L95">        }</span>
-<span class="fc" id="L96">    }</span>
-
-    @Override
-    public void subscribe(long address) {
-<span class="fc" id="L100">        addTCPConnection(address, DEFAULT_CONNECTION_TL.get());</span>
+<span class="fc" id="L97">        System.out.println(&quot;Registered &quot; + DecentredUtil.toAddressString(addressOrRegion) + &quot; as &quot; + tcpConnection);</span>
+<span class="fc" id="L98">        synchronized (remoteMap) {</span>
+<span class="fc" id="L99">            remoteMap.justPut(addressOrRegion, tcpConnection);</span>
+<span class="fc" id="L100">        }</span>
 <span class="fc" id="L101">    }</span>
 
     @Override
-    public T to(long addressOrRegion) {
-<span class="fc" id="L105">        InvocationHandler handler = new ServerInvocationHandler(addressOrRegion);</span>
+    public void subscribe(long address) {
+<span class="fc" id="L105">        addTCPConnection(address, DEFAULT_CONNECTION_TL.get());</span>
+<span class="fc" id="L106">    }</span>
+
+    @Override
+    public U to(long addressOrRegion) {
+<span class="fc" id="L110">        InvocationHandler handler = new ServerInvocationHandler(addressOrRegion);</span>
+<span class="fc" id="L111">        Class&lt;U&gt; uClass = dtoRegistry.superInterface();</span>
         //noinspection unchecked
-<span class="fc" id="L107">        T proxy = (T) Proxy.newProxyInstance(tClass.getClassLoader(),</span>
-                new Class[]{tClass, SystemMessageListener.class},
+<span class="fc" id="L113">        U proxy = (U) Proxy.newProxyInstance(uClass.getClassLoader(),</span>
+                new Class[]{uClass, SystemMessageListener.class},
                 handler);
-<span class="fc" id="L110">        return proxy;</span>
+<span class="fc" id="L116">        return proxy;</span>
     }
 
     private long address() {
-<span class="nc" id="L114">        return address;</span>
+<span class="nc" id="L120">        return address;</span>
     }
 
     @Override
     public void close() {
-<span class="fc" id="L119">        synchronized (connections) {</span>
-<span class="fc" id="L120">            connections.forEach((k, connection) -&gt;</span>
-<span class="nc" id="L121">                    Closeable.closeQuietly(connection));</span>
-<span class="fc" id="L122">            connections.clear();</span>
-<span class="fc" id="L123">        }</span>
-<span class="fc" id="L124">        synchronized (remoteMap) {</span>
-<span class="fc" id="L125">            remoteMap.forEach((k, connection) -&gt;</span>
-<span class="fc" id="L126">                    Closeable.closeQuietly(connection));</span>
-<span class="fc" id="L127">            remoteMap.clear();</span>
-<span class="fc" id="L128">        }</span>
-<span class="fc" id="L129">        tcpServer.close();</span>
-<span class="fc" id="L130">    }</span>
+<span class="fc" id="L125">        synchronized (connections) {</span>
+<span class="fc" id="L126">            connections.forEach((k, connection) -&gt;</span>
+<span class="nc" id="L127">                    Closeable.closeQuietly(connection));</span>
+<span class="fc" id="L128">            connections.clear();</span>
+<span class="fc" id="L129">        }</span>
+<span class="fc" id="L130">        synchronized (remoteMap) {</span>
+<span class="fc" id="L131">            remoteMap.forEach((k, connection) -&gt;</span>
+<span class="fc" id="L132">                    Closeable.closeQuietly(connection));</span>
+<span class="fc" id="L133">            remoteMap.clear();</span>
+<span class="fc" id="L134">        }</span>
+<span class="fc" id="L135">        tcpServer.close();</span>
+<span class="fc" id="L136">    }</span>
 
     @Override
     public synchronized void onMessageTo(long address, SignedMessage message) {
-<span class="nc" id="L134">        System.out.println(Thread.currentThread().getName() + &quot; to &quot; + DecentredUtil.toAddressString(address) + &quot; &quot; + message);</span>
-<span class="nc" id="L135">        write(address, message);</span>
-<span class="nc" id="L136">    }</span>
+        //System.out.println(Thread.currentThread().getName() + &quot; to &quot; + DecentredUtil.toAddressString(address) + &quot; &quot; + message);
+<span class="nc" id="L141">        write(address, message);</span>
+<span class="nc" id="L142">    }</span>
 
     void write(long toAddress, SignedMessage message) {
         TCPConnection tcpConnection;
-<span class="fc bfc" id="L140" title="All 2 branches covered.">        if (toAddress == 0) {</span>
-<span class="fc" id="L141">            tcpConnection = DEFAULT_CONNECTION_TL.get();</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        if (toAddress == 0) {</span>
+<span class="fc" id="L147">            tcpConnection = DEFAULT_CONNECTION_TL.get();</span>
         } else {
-<span class="fc" id="L143">            synchronized (connections) {</span>
-<span class="fc" id="L144">                tcpConnection = connections.get(toAddress);</span>
-<span class="fc" id="L145">            }</span>
-<span class="pc bpc" id="L146" title="1 of 2 branches missed.">            if (tcpConnection == null) {</span>
-<span class="fc" id="L147">                synchronized (remoteMap) {</span>
-<span class="fc" id="L148">                    tcpConnection = remoteMap.get(toAddress);</span>
-<span class="fc" id="L149">                }</span>
+<span class="fc" id="L149">            synchronized (connections) {</span>
+<span class="fc" id="L150">                tcpConnection = connections.get(toAddress);</span>
+<span class="fc" id="L151">            }</span>
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">            if (tcpConnection == null) {</span>
+<span class="fc" id="L153">                synchronized (remoteMap) {</span>
+<span class="fc" id="L154">                    tcpConnection = remoteMap.get(toAddress);</span>
+<span class="fc" id="L155">                }</span>
             }
         }
 
-<span class="pc bpc" id="L153" title="1 of 2 branches missed.">        if (tcpConnection == null) {</span>
-<span class="nc" id="L154">            String addressString = DecentredUtil.toAddressString(toAddress);</span>
-<span class="nc" id="L155">            System.out.println(address + &quot; - No connection to address &quot; + addressString + &quot; to send &quot; + message);</span>
-<span class="nc" id="L156">            return;</span>
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">        if (tcpConnection == null) {</span>
+<span class="nc" id="L160">            String addressString = DecentredUtil.toAddressString(toAddress);</span>
+<span class="nc" id="L161">            System.out.println(address + &quot; - No connection to address &quot; + addressString + &quot; to send &quot; + message);</span>
+<span class="nc" id="L162">            return;</span>
         }
 
         try {
 
-<span class="fc bfc" id="L161" title="All 2 branches covered.">            if (!message.signed()) {</span>
-<span class="pc bpc" id="L162" title="1 of 2 branches missed.">                if (message.protocol() == 0) {</span>
-<span class="fc" id="L163">                    int protocol = dtoRegistry.protocolFor(message.getClass());</span>
-<span class="fc" id="L164">                    int messageType = dtoRegistry.messageTypeFor(message.getClass());</span>
-<span class="fc" id="L165">                    ((VanillaSignedMessage) message).protocol(protocol).messageType(messageType);</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">            if (!message.signed()) {</span>
+<span class="pc bpc" id="L168" title="1 of 2 branches missed.">                if (message.protocol() == 0) {</span>
+<span class="fc" id="L169">                    int protocol = dtoRegistry.protocolFor(message.getClass());</span>
+<span class="fc" id="L170">                    int messageType = dtoRegistry.messageTypeFor(message.getClass());</span>
+<span class="fc" id="L171">                    ((VanillaSignedMessage) message).protocol(protocol).messageType(messageType);</span>
                 }
-<span class="fc" id="L167">                message.sign(secretKey);</span>
+<span class="fc" id="L173">                message.sign(secretKey);</span>
             }
-<span class="fc" id="L169">            tcpConnection.write(((VanillaSignedMessage) message).byteBuffer());</span>
+<span class="fc" id="L175">            tcpConnection.write(((VanillaSignedMessage) message).byteBuffer());</span>
 
-<span class="nc" id="L171">        } catch (IllegalStateException e2) {</span>
-<span class="nc" id="L172">            e2.printStackTrace();</span>
-<span class="nc" id="L173">            System.err.println(&quot;Failed to marshall object &quot; + e2.toString());</span>
+<span class="nc" id="L177">        } catch (IllegalStateException e2) {</span>
+<span class="nc" id="L178">            e2.printStackTrace();</span>
+<span class="nc" id="L179">            System.err.println(&quot;Failed to marshall object &quot; + e2.toString());</span>
             // we should never get IllegalStateException exceptions, but if we do,
             // rethrow the exception so that the LocalPostBlockChainProcessor can send a RequestFailedEvent back to the Client
-<span class="nc" id="L176">            throw e2;</span>
-<span class="nc" id="L177">        } catch (Exception e) {</span>
-<span class="nc" id="L178">            e.printStackTrace();</span>
+<span class="nc" id="L182">            throw e2;</span>
+<span class="nc" id="L183">        } catch (Exception e) {</span>
+<span class="nc" id="L184">            e.printStackTrace();</span>
             // assume it's dead.
-<span class="nc" id="L180">            Closeable.closeQuietly(tcpConnection);</span>
-<span class="nc" id="L181">            synchronized (connections) {</span>
-<span class="nc" id="L182">                connections.justRemove(toAddress);</span>
-<span class="nc" id="L183">            }</span>
-<span class="nc" id="L184">            Jvm.warn().on(getClass(), &quot;Exception while sending message to: &quot; + toAddress + &quot;, message: &quot; + message, e);</span>
-<span class="fc" id="L185">        }</span>
-<span class="fc" id="L186">    }</span>
+<span class="nc" id="L186">            Closeable.closeQuietly(tcpConnection);</span>
+<span class="nc" id="L187">            synchronized (connections) {</span>
+<span class="nc" id="L188">                connections.justRemove(toAddress);</span>
+<span class="nc" id="L189">            }</span>
+<span class="nc" id="L190">            Jvm.warn().on(getClass(), &quot;Exception while sending message to: &quot; + toAddress + &quot;, message: &quot; + message, e);</span>
+<span class="fc" id="L191">        }</span>
+<span class="fc" id="L192">    }</span>
+
+    public void setRoute(long address, TCPConnection connection) {
+<span class="nc" id="L195">        synchronized (connections) {</span>
+<span class="nc" id="L196">            connections.justPut(address, connection);</span>
+<span class="nc" id="L197">        }</span>
+<span class="nc" id="L198">    }</span>
 
     class XCLConnectionListener implements TCPServerConnectionListener {
         final DtoParser&lt;T&gt; dtoParser;
 
-<span class="fc" id="L191">        XCLConnectionListener(DtoParser&lt;T&gt; dtoParser) {</span>
-<span class="fc" id="L192">            this.dtoParser = dtoParser;</span>
-<span class="fc" id="L193">        }</span>
+<span class="fc" id="L203">        XCLConnectionListener(DtoParser&lt;T&gt; dtoParser) {</span>
+<span class="fc" id="L204">            this.dtoParser = dtoParser;</span>
+<span class="fc" id="L205">        }</span>
 
         @Override
         public void onMessage(TCPServer server, TCPConnection channel, Bytes bytes) throws IOException {
-<span class="fc" id="L197">            DEFAULT_CONNECTION_TL.set(channel);</span>
-<span class="fc" id="L198">            bytes.readSkip(-4);</span>
+<span class="fc" id="L209">            DEFAULT_CONNECTION_TL.set(channel);</span>
+<span class="fc" id="L210">            bytes.readSkip(-4);</span>
             try {
-
-<span class="fc" id="L201">                dtoParser.parseOne(bytes, serverComponent);</span>
-
-<span class="nc" id="L203">            } catch (IORuntimeException iore) {</span>
-<span class="nc bnc" id="L204" title="All 2 branches missed.">                if (iore.getCause() instanceof IOException)</span>
-<span class="nc" id="L205">                    throw (IOException) iore.getCause();</span>
-<span class="nc" id="L206">                throw iore;</span>
-<span class="fc" id="L207">            }</span>
-<span class="fc" id="L208">        }</span>
+<span class="fc" id="L212">                dtoParser.parseOne(bytes, serverComponent);</span>
+<span class="nc" id="L213">            } catch (IORuntimeException iore) {</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">                if (iore.getCause() instanceof IOException)</span>
+<span class="nc" id="L215">                    throw (IOException) iore.getCause();</span>
+<span class="nc" id="L216">                throw iore;</span>
+<span class="fc" id="L217">            }</span>
+<span class="fc" id="L218">        }</span>
     }
 
-<span class="pc bpc" id="L211" title="1 of 2 branches missed.">    class ServerInvocationHandler extends AbstractMethodWriterInvocationHandler {</span>
+<span class="pc bpc" id="L221" title="1 of 2 branches missed.">    class ServerInvocationHandler extends AbstractMethodWriterInvocationHandler {</span>
         final long addressOrRegion;
 
-<span class="fc" id="L214">        ServerInvocationHandler(long addressOrRegion) {</span>
-<span class="fc" id="L215">            this.addressOrRegion = addressOrRegion;</span>
-<span class="fc" id="L216">        }</span>
+<span class="fc" id="L224">        ServerInvocationHandler(long addressOrRegion) {</span>
+<span class="fc" id="L225">            this.addressOrRegion = addressOrRegion;</span>
+<span class="fc" id="L226">        }</span>
 
         @Override
         protected void handleInvoke(Method method, Object[] args) {
-<span class="pc bpc" id="L220" title="2 of 4 branches missed.">            assert args.length == 1;</span>
-<span class="fc" id="L221">            VanillaSignedMessage vsm = (VanillaSignedMessage) args[0];</span>
-<span class="fc" id="L222">            write(addressOrRegion, vsm);</span>
-<span class="fc" id="L223">        }</span>
+<span class="pc bpc" id="L230" title="2 of 4 branches missed.">            assert args.length == 1;</span>
+<span class="fc" id="L231">            VanillaSignedMessage vsm = (VanillaSignedMessage) args[0];</span>
+<span class="fc" id="L232">            write(addressOrRegion, vsm);</span>
+<span class="fc" id="L233">        }</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

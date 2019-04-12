@@ -1,6 +1,16 @@
 net.openhft.chronicle.decentred.api
 net.openhft.chronicle.decentred.dto
+net.openhft.chronicle.decentred.dto.address
+net.openhft.chronicle.decentred.dto.base
+net.openhft.chronicle.decentred.dto.base.trait
+net.openhft.chronicle.decentred.dto.blockevent
+net.openhft.chronicle.decentred.dto.chainlifecycle
+net.openhft.chronicle.decentred.dto.error
+net.openhft.chronicle.decentred.internal.server
+net.openhft.chronicle.decentred.internal.unmodifiable
+net.openhft.chronicle.decentred.internal.util
 net.openhft.chronicle.decentred.remote.net
 net.openhft.chronicle.decentred.remote.rpc
 net.openhft.chronicle.decentred.server
+net.openhft.chronicle.decentred.server.trait
 net.openhft.chronicle.decentred.util

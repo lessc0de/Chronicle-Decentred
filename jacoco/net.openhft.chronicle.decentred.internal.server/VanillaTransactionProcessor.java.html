@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VanillaTransactionProcessor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenHFT/Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.internal.server</a> &gt; <span class="el_source">VanillaTransactionProcessor.java</span></div><h1>VanillaTransactionProcessor.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.internal.server;
+
+import net.openhft.chronicle.decentred.api.BlockchainPhase;
+import net.openhft.chronicle.decentred.api.MessageRouter;
+import net.openhft.chronicle.decentred.api.SystemMessages;
+import net.openhft.chronicle.decentred.api.TransactionProcessor;
+import net.openhft.chronicle.decentred.dto.VerificationEvent;
+import net.openhft.chronicle.decentred.dto.address.CreateAddressEvent;
+import net.openhft.chronicle.decentred.dto.address.CreateAddressRequest;
+import net.openhft.chronicle.decentred.dto.address.InvalidationEvent;
+import net.openhft.chronicle.decentred.dto.blockevent.EndOfRoundBlockEvent;
+import net.openhft.chronicle.decentred.dto.blockevent.TransactionBlockEvent;
+import net.openhft.chronicle.decentred.dto.blockevent.TransactionBlockGossipEvent;
+import net.openhft.chronicle.decentred.dto.blockevent.TransactionBlockVoteEvent;
+import net.openhft.chronicle.decentred.dto.chainlifecycle.AssignDelegatesRequest;
+import net.openhft.chronicle.decentred.dto.chainlifecycle.CreateChainRequest;
+import net.openhft.chronicle.decentred.dto.chainlifecycle.CreateTokenRequest;
+
+<span class="fc" id="L19">public class VanillaTransactionProcessor implements SystemMessages, TransactionProcessor {</span>
+    private MessageRouter&lt;SystemMessages&gt; router;
+    private BlockchainPhase blockchainPhase;
+
+    @Override
+    public void messageRouter(MessageRouter messageRouter) {
+<span class="fc" id="L25">        this.router = messageRouter;</span>
+<span class="fc" id="L26">    }</span>
+
+    @Override
+    public void blockchainPhase(BlockchainPhase blockchainPhase) {
+<span class="fc" id="L30">        this.blockchainPhase = blockchainPhase;</span>
+<span class="fc" id="L31">    }</span>
+
+    @Override
+    public void createChainRequest(CreateChainRequest createChainRequest) {
+        // TODO
+<span class="fc" id="L36">    }</span>
+
+    @Override
+    public void createTokenRequest(CreateTokenRequest createTokenRequest) {
+//        System.out.println(createTokenRequest);
+        // TODO
+<span class="fc" id="L42">    }</span>
+
+    @Override
+    public void assignDelegatesRequest(AssignDelegatesRequest assignDelegatesRequest) {
+        // TODO
+<span class="nc" id="L47">    }</span>
+
+    @Override
+    public void createAddressRequest(CreateAddressRequest createAddressRequest) {
+<span class="fc" id="L51">        router.to(createAddressRequest.address())</span>
+<span class="fc" id="L52">                .createAddressEvent(new CreateAddressEvent()</span>
+<span class="fc" id="L53">                        .createAddressRequest(createAddressRequest));</span>
+<span class="fc" id="L54">    }</span>
+
+    @Override
+    public void verificationEvent(VerificationEvent verificationEvent) {
+<span class="nc" id="L58">        throw new UnsupportedOperationException();</span>
+    }
+
+    @Override
+    public void invalidationEvent(InvalidationEvent invalidationEvent) {
+<span class="nc" id="L63">        throw new UnsupportedOperationException();</span>
+    }
+
+    @Override
+    public void transactionBlockEvent(TransactionBlockEvent transactionBlockEvent) {
+<span class="nc" id="L68">        throw new UnsupportedOperationException();</span>
+    }
+
+    @Override
+    public void transactionBlockGossipEvent(TransactionBlockGossipEvent transactionBlockGossipEvent) {
+<span class="nc" id="L73">        throw new UnsupportedOperationException();</span>
+    }
+
+    @Override
+    public void transactionBlockVoteEvent(TransactionBlockVoteEvent transactionBlockVoteEvent) {
+<span class="nc" id="L78">        throw new UnsupportedOperationException();</span>
+    }
+
+    @Override
+    public void endOfRoundBlockEvent(EndOfRoundBlockEvent endOfRoundBlockEvent) {
+<span class="nc" id="L83">        throw new UnsupportedOperationException();</span>
+    }
+
+    @Override
+    public void createAddressEvent(CreateAddressEvent createAddressEvent) {
+<span class="nc" id="L88">        throw new UnsupportedOperationException();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

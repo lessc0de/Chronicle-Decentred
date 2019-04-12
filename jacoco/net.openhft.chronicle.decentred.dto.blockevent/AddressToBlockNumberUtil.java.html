@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AddressToBlockNumberUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenHFT/Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.dto.blockevent</a> &gt; <span class="el_source">AddressToBlockNumberUtil.java</span></div><h1>AddressToBlockNumberUtil.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.dto.blockevent;
+
+import net.openhft.chronicle.bytes.BytesIn;
+import net.openhft.chronicle.bytes.BytesOut;
+import net.openhft.chronicle.decentred.util.DecentredUtil;
+import net.openhft.chronicle.decentred.util.LongLongMap;
+import net.openhft.chronicle.wire.WireIn;
+import net.openhft.chronicle.wire.WireOut;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Arrays;
+import java.util.function.Consumer;
+
+<span class="fc" id="L14">enum AddressToBlockNumberUtil {;</span>
+
+    public static final String ADDRESS_TO_BLOCK_NUMBER_MAP_NAME = &quot;addressToBlockNumberMap&quot;;
+
+    static void copy(LongLongMap source, @NotNull Consumer&lt;LongLongMap&gt; setter) {
+<span class="nc bnc" id="L19" title="All 2 branches missed.">        if (source == null) {</span>
+<span class="nc" id="L20">            setter.accept(null);</span>
+        } else {
+<span class="nc" id="L22">            final LongLongMap map = LongLongMap.withExpectedSize(source.size());</span>
+<span class="nc" id="L23">            map.putAll(source);</span>
+<span class="nc" id="L24">            setter.accept(map);</span>
+        }
+<span class="nc" id="L26">    }</span>
+
+    static void writeMap(@NotNull WireOut wire, @NotNull String name, LongLongMap map) {
+<span class="pc bpc" id="L29" title="1 of 4 branches missed.">        if (map == null || map.size() == 0) {</span>
+<span class="fc" id="L30">            return;</span>
+        }
+<span class="fc" id="L32">        wire.write(name).marshallable(out -&gt; {</span>
+<span class="fc" id="L33">            long[] keys = map.keySet().toLongArray();</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">            for (int i = 0; i &lt; keys.length; i++) keys[i] -= Long.MIN_VALUE;</span>
+<span class="fc" id="L35">            Arrays.sort(keys);</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">            for (int i = 0; i &lt; keys.length; i++) keys[i] += Long.MIN_VALUE;</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">            for (long key : keys) {</span>
+<span class="fc" id="L38">                out.write(DecentredUtil.toAddressString(key)).int64(map.get(key));</span>
+            }
+<span class="fc" id="L40">        });</span>
+<span class="fc" id="L41">    }</span>
+
+    static void readMap(@NotNull WireIn wire, @NotNull String name, @NotNull LongLongMap map) {
+<span class="fc" id="L44">        map.clear();</span>
+<span class="fc" id="L45">        wire.read(name).marshallable(in -&gt; {</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">            while (in.hasMore()) {</span>
+<span class="fc" id="L47">                final String key = in.readEvent(String.class);</span>
+<span class="pc bpc" id="L48" title="2 of 4 branches missed.">                if (key == null || key.length() == 0)</span>
+<span class="nc" id="L49">                    return;</span>
+<span class="fc" id="L50">                final long addr = DecentredUtil.parseAddress(key);</span>
+<span class="fc" id="L51">                final long value = in.getValueIn().int64();</span>
+<span class="fc" id="L52">                map.justPut(addr, value);</span>
+<span class="fc" id="L53">            }</span>
+<span class="fc" id="L54">        });</span>
+<span class="fc" id="L55">    }</span>
+
+    static void writeMap(@NotNull BytesOut bytes, @NotNull String name, LongLongMap map) {
+<span class="pc bpc" id="L58" title="1 of 4 branches missed.">        if (map == null || map.size() == 0) {</span>
+<span class="fc" id="L59">            bytes.writeStopBit(0);</span>
+        } else {
+<span class="fc" id="L61">            bytes.writeStopBit(map.size());</span>
+<span class="fc" id="L62">            map.forEach((address, blockNumber) -&gt; bytes.writeLong(address).writeLong(blockNumber));</span>
+        }
+<span class="fc" id="L64">    }</span>
+
+    static void readMap(@NotNull BytesIn bytes, @NotNull String name, @NotNull Consumer&lt;LongLongMap&gt; setter) {
+<span class="fc" id="L67">        final int entries = (int) bytes.readStopBit();</span>
+<span class="fc" id="L68">        final LongLongMap map = LongLongMap.withExpectedSize(entries);</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        for (int i = 0; i &lt; entries; i++) {</span>
+<span class="fc" id="L70">            map.justPut(bytes.readLong(), bytes.readLong());</span>
+        }
+<span class="fc" id="L72">        setter.accept(map);</span>
+<span class="fc" id="L73">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

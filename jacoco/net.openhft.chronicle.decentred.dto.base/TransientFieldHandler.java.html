@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransientFieldHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenHFT/Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.dto.base</a> &gt; <span class="el_source">TransientFieldHandler.java</span></div><h1>TransientFieldHandler.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.dto.base;
+
+import net.openhft.chronicle.bytes.BytesIn;
+import net.openhft.chronicle.bytes.BytesOut;
+import net.openhft.chronicle.wire.WireIn;
+import net.openhft.chronicle.wire.WireOut;
+import org.jetbrains.annotations.NotNull;
+
+public interface TransientFieldHandler&lt;T extends VanillaSignedMessage&lt;T&gt;&gt; {
+
+    /**
+     * Resets any transient fields in the provided original message.
+     *
+     * @param original message
+     */
+    void reset(@NotNull T original);
+
+    /***
+     * Copies any transient and non-marshalled fields that from the provided original
+     * to the provided target.
+     *
+     * @param original message (source)
+     * @param target   mesaage (destination)
+     *
+     */
+    void copyNonMarshalled(@NotNull T original, @NotNull T target);
+
+//    /***
+//     * Copies any transient fields from the provided original to the provided
+//     * target whereby elements are re-created and are thus not shared between
+//     * the original and target.
+//     *
+//     * @param original message (source)
+//     * @param target   mesaage (destination)
+//     *
+//     */
+//    void deepCopy(@NotNull T original, @NotNull T target);
+
+
+//   void dereference(T target) ;
+
+    // Wire
+
+    /**
+     * Writes any transient fields from the provided original to the provided
+     * wire.
+     *
+     * @param original to read transient fields from
+     * @param wire to write transient fields into
+     */
+     void writeMarshallable(@NotNull T original, @NotNull WireOut wire);
+
+    /**
+     * Reads any transient fields into the provided original from the provided
+     * wire.
+     *
+     * @param original to write transient fields into
+     * @param wire     to read transient fields from
+     */
+    void readMarshallable(@NotNull T original, @NotNull WireIn wire);
+
+    // Bytes
+
+    /**
+     * Writes any transient fields from the provided original into the provided
+     * bytes.
+     * &lt;p&gt;
+     * This method is used when writing internal fields into the internal
+     * byte store.
+     *
+     * @param original to read transient fields from
+     * @param bytes    to write transient fields into
+     */
+    void writeMarshallableInternal(@NotNull T original, @NotNull BytesOut bytes);
+
+    /**
+     * Reads any transient fields into the provided original message from the
+     * provided bytes.
+     *
+     * @param original to write transient fields into
+     * @param bytes    to read transient fields from
+     */
+    void readMarshallable(@NotNull T original, @NotNull BytesIn bytes);
+
+    static &lt;T extends VanillaSignedMessage&lt;T&gt;&gt; TransientFieldHandler&lt;T&gt; empty() {
+<span class="fc" id="L86">        return EmptyTransientFieldHandler.instance();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

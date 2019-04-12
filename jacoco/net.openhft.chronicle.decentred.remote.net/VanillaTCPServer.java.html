@@ -28,33 +28,42 @@ public class VanillaTCPServer implements TCPServer {
 <span class="fc" id="L28">        pool.submit(this::run);</span>
 <span class="fc" id="L29">    }</span>
 
+    @Override
+    public int getPort() {
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        if (serverChannel == null) {</span>
+<span class="nc" id="L34">            throw new IllegalStateException(&quot;Not yet bound&quot;);</span>
+        }
+<span class="nc" id="L36">        return serverChannel.socket().getLocalPort();</span>
+    }
+
     private void run() {
         try {
-<span class="pc bpc" id="L33" title="1 of 2 branches missed.">            while (running) {</span>
-<span class="fc" id="L34">                SocketChannel accept = serverChannel.accept();</span>
-<span class="fc" id="L35">                TCPConnection connection = connectionListener.createConnection(this, accept);</span>
-<span class="fc" id="L36">                connections.add(connection);</span>
-<span class="fc" id="L37">                pool.submit(((Runnable) connection));</span>
-<span class="fc" id="L38">            }</span>
-<span class="fc" id="L39">        } catch (Throwable t) {</span>
-<span class="pc bpc" id="L40" title="1 of 2 branches missed.">            if (running)</span>
-<span class="nc" id="L41">                t.printStackTrace();</span>
-<span class="fc" id="L42">            close();</span>
-<span class="nc" id="L43">        }</span>
-<span class="fc" id="L44">    }</span>
-
-    @Override
-    public void close() {
-<span class="fc" id="L48">        running = false;</span>
-<span class="fc" id="L49">        pool.shutdown();</span>
-
-<span class="fc" id="L51">        Closeable.closeQuietly(connections);</span>
-<span class="fc" id="L52">        Closeable.closeQuietly(serverChannel);</span>
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">            while (running) {</span>
+<span class="fc" id="L42">                SocketChannel accept = serverChannel.accept();</span>
+<span class="fc" id="L43">                TCPConnection connection = connectionListener.createConnection(this, accept);</span>
+<span class="fc" id="L44">                System.out.println(&quot;server connection = &quot; + connection);</span>
+<span class="fc" id="L45">                connections.add(connection);</span>
+<span class="fc" id="L46">                pool.submit(((Runnable) connection));</span>
+<span class="fc" id="L47">            }</span>
+<span class="fc" id="L48">        } catch (Throwable t) {</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">            if (running)</span>
+<span class="nc" id="L50">                t.printStackTrace();</span>
+<span class="fc" id="L51">            close();</span>
+<span class="nc" id="L52">        }</span>
 <span class="fc" id="L53">    }</span>
 
     @Override
+    public void close() {
+<span class="fc" id="L57">        running = false;</span>
+<span class="fc" id="L58">        pool.shutdown();</span>
+
+<span class="fc" id="L60">        Closeable.closeQuietly(connections);</span>
+<span class="fc" id="L61">        Closeable.closeQuietly(serverChannel);</span>
+<span class="fc" id="L62">    }</span>
+
+    @Override
     public TCPServerConnectionListener connectionListener() {
-<span class="fc" id="L57">        return connectionListener;</span>
+<span class="fc" id="L66">        return connectionListener;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

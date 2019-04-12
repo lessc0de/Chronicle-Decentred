@@ -33,7 +33,7 @@ import java.nio.channels.SocketChannel;
     }
 
     public AbstractTCPConnection channel(SocketChannel channel) {
-<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        iSocketChannel = channel == null ? null : ISocketChannel.wrap(channel);</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        iSocketChannel = channel == null ? null : ISocketChannel.wrap(channel);</span>
 <span class="fc" id="L37">        this.channel = channel;</span>
 <span class="fc" id="L38">        return this;</span>
     }
@@ -58,84 +58,85 @@ import java.nio.channels.SocketChannel;
 <span class="nc" id="L58">        buffer.position(Math.toIntExact(bytes.readPosition()));</span>
 <span class="nc" id="L59">        ByteBuffer[] headerBytes = headerBytesTL.get();</span>
 <span class="nc" id="L60">        headerBytes[0].clear();</span>
-<span class="nc" id="L61">        headerBytes[0].putInt(0, HEADER_LENGTH + buffer.remaining());</span>
-<span class="nc" id="L62">        headerBytes[1] = buffer;</span>
+<span class="nc" id="L61">        int length = HEADER_LENGTH + buffer.remaining();</span>
+<span class="nc" id="L62">        headerBytes[0].putInt(0, length);</span>
+<span class="nc" id="L63">        headerBytes[1] = buffer;</span>
 
-<span class="nc bnc" id="L64" title="All 4 branches missed.">        while (buffer.remaining() &gt; 0 &amp;&amp; running) {</span>
-<span class="nc bnc" id="L65" title="All 2 branches missed.">            if (iSocketChannel.write(headerBytes) &lt; 0) {</span>
-<span class="nc" id="L66">                channel.close();</span>
-<span class="nc" id="L67">                throw new EOFException(&quot;Failed to write&quot;);</span>
+<span class="nc bnc" id="L65" title="All 4 branches missed.">        while (buffer.remaining() &gt; 0 &amp;&amp; running) {</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">            if (iSocketChannel.write(headerBytes) &lt; 0) {</span>
+<span class="nc" id="L67">                channel.close();</span>
+<span class="nc" id="L68">                throw new EOFException(&quot;Failed to write&quot;);</span>
             }
         }
-<span class="nc" id="L70">    }</span>
+<span class="nc" id="L71">    }</span>
 
     @Override
     public void write(ByteBuffer buffer) throws IOException {
-<span class="pc bpc" id="L74" title="1 of 2 branches missed.">        if (!running)</span>
-<span class="nc" id="L75">            throw new IOException(&quot;closed&quot;);</span>
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">        if (!running)</span>
+<span class="nc" id="L76">            throw new IOException(&quot;closed&quot;);</span>
 
-<span class="fc" id="L77">        waitForReconnect();</span>
+<span class="fc" id="L78">        waitForReconnect();</span>
 
-<span class="pc bpc" id="L79" title="1 of 2 branches missed.">        if (buffer.remaining() &gt; MAX_MESSAGE_SIZE)</span>
-<span class="nc" id="L80">            throw new IOException(&quot;Message too long &quot; + buffer.remaining());</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (buffer.remaining() &gt; MAX_MESSAGE_SIZE)</span>
+<span class="nc" id="L81">            throw new IOException(&quot;Message too long &quot; + buffer.remaining());</span>
 
 
-<span class="pc bpc" id="L83" title="1 of 4 branches missed.">        while (buffer.remaining() &gt; 0 &amp;&amp; running) {</span>
-<span class="pc bpc" id="L84" title="1 of 2 branches missed.">            if (iSocketChannel.write(buffer) &lt; 0) {</span>
-<span class="nc" id="L85">                channel.close();</span>
-<span class="nc" id="L86">                throw new EOFException(&quot;Failed to write&quot;);</span>
+<span class="pc bpc" id="L84" title="1 of 4 branches missed.">        while (buffer.remaining() &gt; 0 &amp;&amp; running) {</span>
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">            if (iSocketChannel.write(buffer) &lt; 0) {</span>
+<span class="nc" id="L86">                channel.close();</span>
+<span class="nc" id="L87">                throw new EOFException(&quot;Failed to write&quot;);</span>
             }
         }
-<span class="fc" id="L89">    }</span>
+<span class="fc" id="L90">    }</span>
 
     protected abstract void waitForReconnect() throws IOException;
 
     protected void readChannel(Bytes&lt;ByteBuffer&gt; bytes) throws IOException {
-<span class="fc bfc" id="L94" title="All 2 branches covered.">        if (bytes.readRemaining() &gt;= HEADER_LENGTH) {</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        if (bytes.readRemaining() &gt;= HEADER_LENGTH) {</span>
             // length includes the header itself.
-<span class="fc" id="L96">            int length = bytes.readInt(bytes.readPosition());</span>
-<span class="pc bpc" id="L97" title="2 of 4 branches missed.">            if (length &lt; HEADER_LENGTH || length &gt; MAX_MESSAGE_SIZE)</span>
-<span class="nc" id="L98">                throw new StreamCorruptedException(&quot;length: &quot; + length);</span>
-<span class="pc bpc" id="L99" title="1 of 2 branches missed.">            if (bytes.readRemaining() &gt;= length) {</span>
-<span class="fc" id="L100">                processOneMessage(length, bytes);</span>
-<span class="fc" id="L101">                return;</span>
+<span class="fc" id="L97">            int length = bytes.readInt(bytes.readPosition());</span>
+<span class="pc bpc" id="L98" title="2 of 4 branches missed.">            if (length &lt; HEADER_LENGTH || length &gt; MAX_MESSAGE_SIZE)</span>
+<span class="nc" id="L99">                throw new StreamCorruptedException(&quot;length: &quot; + length);</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">            if (bytes.readRemaining() &gt;= length) {</span>
+<span class="fc" id="L101">                processOneMessage(length, bytes);</span>
+<span class="fc" id="L102">                return;</span>
             }
         }
-<span class="pc bpc" id="L104" title="1 of 2 branches missed.">        if (bytes.readRemaining() == 0)</span>
-<span class="fc" id="L105">            bytes.clear(); // reset the position</span>
-<span class="nc bnc" id="L106" title="All 2 branches missed.">        else if (bytes.readPosition() &gt; 32 &lt;&lt; 10)</span>
-<span class="nc" id="L107">            bytes.compact(); // shift the data down.</span>
-<span class="fc" id="L108">        ByteBuffer buffer = bytes.underlyingObject();</span>
-<span class="pc bpc" id="L109" title="2 of 4 branches missed.">        assert buffer != null;</span>
-<span class="fc" id="L110">        buffer.position(Math.toIntExact(bytes.writePosition()));</span>
-<span class="fc" id="L111">        buffer.limit(Math.toIntExact(bytes.realCapacity()));</span>
-<span class="fc bfc" id="L112" title="All 2 branches covered.">        if (iSocketChannel.read(buffer) &lt; 0)</span>
-<span class="fc" id="L113">            throw new EOFException();</span>
-<span class="fc" id="L114">        bytes.readLimit(buffer.position());</span>
-<span class="fc" id="L115">    }</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">        if (bytes.readRemaining() == 0)</span>
+<span class="fc" id="L106">            bytes.clear(); // reset the position</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        else if (bytes.readPosition() &gt; 32 &lt;&lt; 10)</span>
+<span class="nc" id="L108">            bytes.compact(); // shift the data down.</span>
+<span class="fc" id="L109">        ByteBuffer buffer = bytes.underlyingObject();</span>
+<span class="pc bpc" id="L110" title="2 of 4 branches missed.">        assert buffer != null;</span>
+<span class="fc" id="L111">        buffer.position(Math.toIntExact(bytes.writePosition()));</span>
+<span class="fc" id="L112">        buffer.limit(Math.toIntExact(bytes.realCapacity()));</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        if (iSocketChannel.read(buffer) &lt; 0)</span>
+<span class="fc" id="L114">            throw new EOFException();</span>
+<span class="fc" id="L115">        bytes.readLimit(buffer.position());</span>
+<span class="fc" id="L116">    }</span>
 
     private void processOneMessage(int length, Bytes&lt;ByteBuffer&gt; bytes) throws IOException {
-<span class="fc" id="L118">        long end = bytes.readPosition() + length;</span>
-<span class="fc" id="L119">        long limit = bytes.readLimit();</span>
+<span class="fc" id="L119">        long end = bytes.readPosition() + length;</span>
+<span class="fc" id="L120">        long limit = bytes.readLimit();</span>
         try {
-<span class="fc" id="L121">            bytes.readSkip(HEADER_LENGTH); // skip the header</span>
-<span class="fc" id="L122">            bytes.readLimit(end);</span>
-<span class="fc" id="L123">            onMessage(bytes);</span>
+<span class="fc" id="L122">            bytes.readSkip(HEADER_LENGTH); // skip the header</span>
+<span class="fc" id="L123">            bytes.readLimit(end);</span>
+<span class="fc" id="L124">            onMessage(bytes);</span>
 
         } finally {
-<span class="fc" id="L126">            bytes.readLimit(limit);</span>
-<span class="fc" id="L127">            bytes.readPosition(end);</span>
+<span class="fc" id="L127">            bytes.readLimit(limit);</span>
+<span class="fc" id="L128">            bytes.readPosition(end);</span>
         }
-<span class="fc" id="L129">    }</span>
+<span class="fc" id="L130">    }</span>
 
     protected abstract void onMessage(Bytes&lt;ByteBuffer&gt; bytes) throws IOException;
 
     @Override
     public final void close() {
-<span class="fc" id="L135">        running = false;</span>
-<span class="fc" id="L136">        close2();</span>
-<span class="fc" id="L137">        Closeable.closeQuietly(channel);</span>
-<span class="fc" id="L138">    }</span>
+<span class="fc" id="L136">        running = false;</span>
+<span class="fc" id="L137">        close2();</span>
+<span class="fc" id="L138">        Closeable.closeQuietly(channel);</span>
+<span class="fc" id="L139">    }</span>
 
     protected abstract void close2();
 }

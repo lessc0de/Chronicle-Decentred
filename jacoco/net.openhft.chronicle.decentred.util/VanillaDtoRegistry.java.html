@@ -5,8 +5,9 @@ import net.openhft.chronicle.core.Jvm;
 import net.openhft.chronicle.core.Maths;
 import net.openhft.chronicle.core.util.ObjectUtils;
 import net.openhft.chronicle.decentred.api.SystemMessages;
-import net.openhft.chronicle.decentred.dto.DtoAliases;
-import net.openhft.chronicle.decentred.dto.VanillaSignedMessage;
+import net.openhft.chronicle.decentred.dto.base.DtoAliases;
+import net.openhft.chronicle.decentred.dto.base.VanillaSignedMessage;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
@@ -21,96 +22,106 @@ import static net.openhft.chronicle.decentred.util.DecentredUtil.MASK_16;
  *
  * @param &lt;T&gt; the type of the super interface for all dto:s
  */
-<span class="pc bpc" id="L24" title="1 of 2 branches missed.">public final class VanillaDtoRegistry&lt;T&gt;  implements DtoRegistry&lt;T&gt; {</span>
+<span class="pc bpc" id="L25" title="1 of 2 branches missed.">public final class VanillaDtoRegistry&lt;T&gt;  implements DtoRegistry&lt;T&gt; {</span>
     static {
-<span class="fc" id="L26">        DtoAliases.addAliases();</span>
-<span class="fc" id="L27">    }</span>
+<span class="fc" id="L27">        DtoAliases.addAliases();</span>
+<span class="fc" id="L28">    }</span>
 
     private final Class&lt;T&gt; superInterface;
-<span class="fc" id="L30">    private final Map&lt;Class, Integer&gt; classToProtocolMessageType = new LinkedHashMap&lt;&gt;();</span>
-<span class="fc" id="L31">    private final IntObjMap&lt;DtoParselet&gt; parseletMap = IntObjMap.withExpectedSize(DtoParselet.class, 128);</span>
-<span class="fc" id="L32">    private final Map&lt;Class, Method&gt; classConsumerMap = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L31">    private final Map&lt;Class, Integer&gt; classToProtocolMessageType = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L32">    private final IntObjMap&lt;DtoParselet&gt; parseletMap = IntObjMap.withExpectedSize(DtoParselet.class, 128);</span>
+<span class="fc" id="L33">    private final Map&lt;Class, Method&gt; classConsumerMap = new LinkedHashMap&lt;&gt;();</span>
 
-<span class="fc" id="L34">    VanillaDtoRegistry(Class&lt;T&gt; superInterface) {</span>
-<span class="fc" id="L35">        this.superInterface = requireNonNull(superInterface);</span>
-<span class="fc" id="L36">        addProtocol(0xFFFF, (Class) SystemMessages.class); // Todo: T or super type?</span>
-<span class="fc" id="L37">    }</span>
+<span class="fc" id="L35">    VanillaDtoRegistry(Class&lt;T&gt; superInterface) {</span>
+<span class="fc" id="L36">        this.superInterface = requireNonNull(superInterface);</span>
+<span class="fc" id="L37">        addProtocol(0xFFFF, (Class) SystemMessages.class); // Todo: T or super type?</span>
+<span class="fc" id="L38">    }</span>
     @Override
     public VanillaDtoRegistry&lt;T&gt; addProtocol(int protocol, Class&lt;? super T&gt; pClass) {
-<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (protocol &lt; 0) {</span>
-<span class="nc" id="L41">            throw new IllegalArgumentException(&quot;protocol cannot be negative:&quot; + protocol);</span>
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">        if (protocol &lt; 0) {</span>
+<span class="nc" id="L42">            throw new IllegalArgumentException(&quot;protocol cannot be negative:&quot; + protocol);</span>
         }
-<span class="fc" id="L43">        requireNonNull(pClass);</span>
-<span class="fc bfc" id="L44" title="All 2 branches covered.">        for (Method method : pClass.getMethods()) {</span>
-<span class="fc" id="L45">            final MethodId mid = method.getAnnotation(MethodId.class);</span>
-<span class="fc bfc" id="L46" title="All 2 branches covered.">            if (mid != null) {</span>
-<span class="pc bpc" id="L47" title="2 of 4 branches missed.">                assert (mid.value() | MASK_16) == MASK_16;</span>
-<span class="fc" id="L48">                final int key = (int) ((protocol &lt;&lt; 16) + mid.value());</span>
+<span class="fc" id="L44">        requireNonNull(pClass);</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        for (Method method : pClass.getMethods()) {</span>
+<span class="fc" id="L46">            final MethodId mid = method.getAnnotation(MethodId.class);</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">            if (mid != null) {</span>
+<span class="pc bpc" id="L48" title="2 of 4 branches missed.">                assert (mid.value() | MASK_16) == MASK_16;</span>
+<span class="fc" id="L49">                final int key = (int) ((protocol &lt;&lt; 16) + mid.value());</span>
                 try {
-<span class="fc" id="L50">                    parseletMap.justPut(key,</span>
-<span class="fc" id="L51">                            new DtoParselet(method, protocol, Maths.toUInt16(mid.value())));</span>
-<span class="fc" id="L52">                    final Class&lt;?&gt;[] parameterTypes = method.getParameterTypes();</span>
-<span class="pc bpc" id="L53" title="1 of 2 branches missed.">                    if (parameterTypes.length != 1) {</span>
-<span class="nc" id="L54">                        Jvm.warn().on(getClass(), &quot;Methods must have 1 parameter &quot; + method);</span>
-<span class="nc" id="L55">                        continue;</span>
+<span class="fc" id="L51">                    parseletMap.justPut(key,</span>
+<span class="fc" id="L52">                            new DtoParselet(method, protocol, Maths.toUInt16(mid.value())));</span>
+<span class="fc" id="L53">                    final Class&lt;?&gt;[] parameterTypes = method.getParameterTypes();</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">                    if (parameterTypes.length != 1) {</span>
+<span class="nc" id="L55">                        Jvm.warn().on(getClass(), &quot;Methods must have 1 parameter &quot; + method);</span>
+<span class="nc" id="L56">                        continue;</span>
                     }
-<span class="fc" id="L57">                    final Class&lt;?&gt; parameterType = parameterTypes[0];</span>
-<span class="fc" id="L58">                    classToProtocolMessageType.put(parameterType, key);</span>
-<span class="fc" id="L59">                    classConsumerMap.putIfAbsent(parameterType, method);</span>
-<span class="nc" id="L60">                } catch (Exception e) {</span>
-<span class="nc" id="L61">                    throw new IllegalArgumentException(e);</span>
-<span class="fc" id="L62">                }</span>
+<span class="fc" id="L58">                    final Class&lt;?&gt; parameterType = parameterTypes[0];</span>
+<span class="fc" id="L59">                    classToProtocolMessageType.put(parameterType, key);</span>
+<span class="fc" id="L60">                    classConsumerMap.putIfAbsent(parameterType, method);</span>
+<span class="nc" id="L61">                } catch (Exception e) {</span>
+<span class="nc" id="L62">                    throw new IllegalArgumentException(e);</span>
+<span class="fc" id="L63">                }</span>
             }
         }
-<span class="fc" id="L65">        return this;</span>
+<span class="fc" id="L66">        return this;</span>
     }
 
     @Override
     public int protocolFor(Class clazz) {
-<span class="fc" id="L70">        return protocolMessageTypeFor(clazz) &gt;&gt;&gt; 16;</span>
+<span class="fc" id="L71">        return protocolMessageTypeFor(clazz) &gt;&gt;&gt; 16;</span>
     }
 
     @Override
     public int messageTypeFor(Class clazz) {
-<span class="fc" id="L75">        return protocolMessageTypeFor(clazz) &amp; MASK_16;</span>
+<span class="fc" id="L76">        return protocolMessageTypeFor(clazz) &amp; MASK_16;</span>
     }
 
     @Override
     public int protocolMessageTypeFor(Class clazz) {
-<span class="fc" id="L80">        requireNonNull(clazz);</span>
-<span class="fc" id="L81">        final Integer pmt = classToProtocolMessageType.get(clazz);</span>
-<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        if (pmt == null) {</span>
-<span class="nc" id="L83">            throw new IllegalStateException(clazz + &quot; not defined&quot;);</span>
+<span class="fc" id="L81">        requireNonNull(clazz);</span>
+<span class="fc" id="L82">        final Integer pmt = classToProtocolMessageType.get(clazz);</span>
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">        if (pmt == null) {</span>
+<span class="nc" id="L84">            throw new IllegalStateException(clazz + &quot; not defined&quot;);</span>
         }
-<span class="fc" id="L85">        return pmt;</span>
+<span class="fc" id="L86">        return pmt;</span>
     }
 
     @Override
     public DtoParser&lt;T&gt; get() {
-<span class="fc" id="L90">        final IntObjMap&lt;DtoParselet&gt; parseletMap2 = IntObjMap.withExpectedSize(DtoParselet.class, parseletMap.size() * 2);</span>
-<span class="fc" id="L91">        parseletMap.forEach((i, dp) -&gt; parseletMap2.justPut(i, new DtoParselet(dp)));</span>
-<span class="fc" id="L92">        VanillaDtoParser&lt;T&gt; dtoParser = new VanillaDtoParser&lt;&gt;(superInterface, parseletMap2, classConsumerMap);</span>
-<span class="fc" id="L93">        parseletMap2.forEach((i, p) -&gt; p.dtoRegistry(this));</span>
-<span class="fc" id="L94">        return dtoParser;</span>
+<span class="fc" id="L91">        return getTypedDtoParser(superInterface);</span>
+    }
+
+    @Override
+    public &lt;K&gt; DtoParser&lt;K&gt; get(Class&lt;K&gt; token) {
+<span class="pc bpc" id="L96" title="2 of 4 branches missed.">        assert token.isAssignableFrom(superInterface);</span>
+<span class="fc" id="L97">        return getTypedDtoParser(token);</span>
+    }
+
+    @NotNull
+    private &lt;K&gt; DtoParser&lt;K&gt; getTypedDtoParser(Class&lt;K&gt; listenerType) {
+<span class="fc" id="L102">        final IntObjMap&lt;DtoParselet&gt; parseletMap2 = IntObjMap.withExpectedSize(DtoParselet.class, parseletMap.size() * 2);</span>
+<span class="fc" id="L103">        parseletMap.forEach((i, dp) -&gt; parseletMap2.justPut(i, new DtoParselet(dp)));</span>
+        // parseletMap2.forEach((i, p) -&gt; p.dtoRegistry(this));
+<span class="fc" id="L105">        return new VanillaDtoParser&lt;&gt;(listenerType, parseletMap2, classConsumerMap);</span>
     }
 
     @Override
     public &lt;M extends VanillaSignedMessage&lt;M&gt;&gt; M create(Class&lt;M&gt; tClass) {
-<span class="fc" id="L99">        requireNonNull(tClass);</span>
-<span class="fc" id="L100">        final int pmt = protocolMessageTypeFor(tClass);</span>
+<span class="fc" id="L110">        requireNonNull(tClass);</span>
+<span class="fc" id="L111">        final int pmt = protocolMessageTypeFor(tClass);</span>
         try {
-<span class="fc" id="L102">            final int protocol = pmt &gt;&gt;&gt; 16;</span>
-<span class="fc" id="L103">            final int messageType = pmt &amp; MASK_16;</span>
-<span class="fc" id="L104">            final M vsm = ObjectUtils.newInstance(tClass);</span>
-<span class="fc" id="L105">            return vsm.protocol(protocol).messageType(messageType);</span>
-<span class="nc" id="L106">        } catch (Exception e) {</span>
-<span class="nc" id="L107">            throw new AssertionError(e);</span>
+<span class="fc" id="L113">            final int protocol = pmt &gt;&gt;&gt; 16;</span>
+<span class="fc" id="L114">            final int messageType = pmt &amp; MASK_16;</span>
+<span class="fc" id="L115">            final M vsm = ObjectUtils.newInstance(tClass);</span>
+<span class="fc" id="L116">            return vsm.protocol(protocol).messageType(messageType);</span>
+<span class="nc" id="L117">        } catch (Exception e) {</span>
+<span class="nc" id="L118">            throw new AssertionError(e);</span>
         }
     }
 
     @Override
     public Class&lt;T&gt; superInterface() {
-<span class="fc" id="L113">        return superInterface;</span>
+<span class="fc" id="L124">        return superInterface;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

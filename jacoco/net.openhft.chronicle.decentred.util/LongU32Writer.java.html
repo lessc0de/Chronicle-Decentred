@@ -3,32 +3,30 @@
 import com.koloboke.function.LongLongConsumer;
 import net.openhft.chronicle.bytes.BytesOut;
 
-import static java.util.Objects.requireNonNull;
-
 /**
  * Class used for writing a long and and an unsigned int to a ByteOut.
  *
- * This class is mutable and not thread safe.
  */
-<span class="fc" id="L13">public final class LongU32Writer implements LongLongConsumer {</span>
+public final class LongU32Writer implements LongLongConsumer {
 
-    private BytesOut&lt;?&gt; bytes;
+    private final BytesOut&lt;?&gt; bytes;
+
+<span class="nc" id="L14">    public LongU32Writer(BytesOut&lt;?&gt; bytes) {</span>
+<span class="nc" id="L15">        this.bytes = bytes;</span>
+<span class="nc" id="L16">    }</span>
 
     /**
-     * Writes the provided parameters into a previously set
-     * {@link #bytes}.
+     * Writes the provided parameters into an internal {@link #bytes}.
      *
      * @param k long to write
      * @param v unsigned int to write
-     * @throws NullPointerException if the method {@link #bytes(BytesOut)}
-     * was not invoked before this method.
      */
     @Override
     public void accept(long k, long v) {
-<span class="fc" id="L28">        bytes.writeLong(k).writeUnsignedInt(v);</span>
-<span class="fc" id="L29">    }</span>
+<span class="nc" id="L26">        bytes.writeLong(k).writeUnsignedInt(v);</span>
+<span class="nc" id="L27">    }</span>
 
-    /**
+/*    *//**
      * Sets the ByteOut to use for writing when subsequent calls
      * to the {@link #accept(long, long)} method are made.
      * &lt;p&gt;
@@ -38,10 +36,10 @@ import static java.util.Objects.requireNonNull;
      * @throws NullPointerException if the provided {@code bytes}
      * is {@code null}
      *
-     */
+     *//*
     public void bytes(BytesOut&lt;?&gt; bytes) {
-<span class="fc" id="L43">        this.bytes = requireNonNull(bytes);</span>
-<span class="fc" id="L44">    }</span>
+        this.bytes = requireNonNull(bytes);
+    }*/
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

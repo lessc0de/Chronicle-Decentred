@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UnmodifiableLongLongMap.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenHFT/Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.internal.unmodifiable</a> &gt; <span class="el_source">UnmodifiableLongLongMap.java</span></div><h1>UnmodifiableLongLongMap.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.internal.unmodifiable;
+
+import com.koloboke.collect.LongCursor;
+import com.koloboke.collect.set.LongSet;
+import com.koloboke.function.LongLongConsumer;
+import net.openhft.chronicle.bytes.BytesIn;
+import net.openhft.chronicle.bytes.BytesOut;
+import net.openhft.chronicle.core.io.IORuntimeException;
+import net.openhft.chronicle.decentred.util.LongLongMap;
+import net.openhft.chronicle.wire.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nonnull;
+import java.util.List;
+import java.util.Map;
+import java.util.function.*;
+
+import static net.openhft.chronicle.decentred.internal.unmodifiable.ThrowUtil.newUnsupportedOperationException;
+
+public final class UnmodifiableLongLongMap extends net.openhft.chronicle.decentred.util.LongLongMap {
+
+    private final net.openhft.chronicle.decentred.util.LongLongMap inner;
+
+<span class="fc" id="L25">    public UnmodifiableLongLongMap(@NotNull net.openhft.chronicle.decentred.util.LongLongMap inner) {</span>
+<span class="fc" id="L26">        this.inner = inner;</span>
+<span class="fc" id="L27">    }</span>
+
+<span class="fc" id="L29">    @Override public void justPut(long key, long value) { throw newUnsupportedOperationException(); }</span>
+<span class="fc" id="L30">    @Override public long get(long key) { return inner.get(key); }</span>
+<span class="fc" id="L31">    @Override public long getOrDefault(long key, long defau1t) { return inner.getOrDefault(key, defau1t); }</span>
+<span class="fc" id="L32">    @Override public int size() { return inner.size(); }</span>
+<span class="fc" id="L33">    @Override public boolean containsKey(long key) { return inner.containsKey(key); }</span>
+<span class="fc" id="L34">    @Override public void clear() { throw newUnsupportedOperationException(); }</span>
+<span class="fc" id="L35">    @Override public void forEach(@Nonnull LongLongConsumer var1) { inner.forEach(var1); }</span>
+<span class="fc" id="L36">    @Override public void putAll(net.openhft.chronicle.decentred.util.LongLongMap map) { throw newUnsupportedOperationException(); }</span>
+<span class="fc" id="L37">    @Override public void readMarshallable(@NotNull WireIn wire) throws IORuntimeException { throw newUnsupportedOperationException(); }</span>
+<span class="fc" id="L38">    @Override public void writeMarshallable(@NotNull WireOut wire) { inner.writeMarshallable(wire); }</span>
+<span class="nc" id="L39">    @Override @Nonnull public LongSet keySet() { return new UnmodifiableLongSet(inner.keySet()); }</span>
+    @Override public boolean equals(Object o) {
+<span class="pc bpc" id="L41" title="2 of 4 branches missed.">        if (o == this || o == inner) {</span>
+<span class="fc" id="L42">            return true;</span>
+        }
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        if (o instanceof LongLongMap) {</span>
+<span class="nc" id="L45">            final LongLongMap that = (LongLongMap)o;</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">            if (this.size() == that.size()) {</span>
+<span class="nc" id="L47">                final LongSet thisSet = this.keySet();</span>
+<span class="nc" id="L48">                final LongCursor cursor = thisSet.cursor();</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">                while (cursor.moveNext()) {</span>
+<span class="nc" id="L50">                    final long key = cursor.elem();</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">                    if (this.get(key) != that.get(key)) {</span>
+<span class="nc" id="L52">                        return false;</span>
+                    }
+<span class="nc" id="L54">                }</span>
+<span class="nc" id="L55">                return true;</span>
+            }
+        }
+<span class="nc" id="L58">        return false;</span>
+    }
+<span class="fc" id="L60">    @Override public int hashCode() { return inner.hashCode(); }</span>
+<span class="fc" id="L61">    @Override public String toString() { return inner.toString(); }</span>
+<span class="nc" id="L62">    @Override @Nullable public &lt;T&gt; T getField(String name, Class&lt;T&gt; tClass) throws NoSuchFieldException { return inner.getField(name, tClass); }</span>
+<span class="fc" id="L63">    @Override public void setField(String name, Object value) throws NoSuchFieldException { throw newUnsupportedOperationException(); }</span>
+<span class="nc" id="L64">    @Override @NotNull public &lt;T&gt; T deepCopy() { return inner.deepCopy(); }</span>
+<span class="nc" id="L65">    @Override @NotNull @Deprecated public &lt;T extends Marshallable&gt; T copyFrom(@NotNull T t) { return inner.copyFrom(t); }</span>
+<span class="nc" id="L66">    @Override public &lt;T extends Marshallable&gt; T copyTo(@NotNull T t) { return inner.copyTo(t); }</span>
+<span class="nc" id="L67">    @Override public &lt;K, T extends Marshallable&gt; T mergeToMap(@NotNull Map&lt;K, T&gt; map, @NotNull Function&lt;T, K&gt; getKey) { return inner.mergeToMap(map, getKey); }</span>
+<span class="nc" id="L68">    @Override @NotNull public List&lt;FieldInfo&gt; $fieldInfos() { return inner.$fieldInfos(); }</span>
+<span class="nc" id="L69">    @Override public String getClassName() { return inner.getClassName(); }</span>
+<span class="fc" id="L70">    @Override public void reset() { throw newUnsupportedOperationException(); }</span>
+<span class="nc" id="L71">    @Override public void writeValue(@NotNull ValueOut out) { inner.writeValue(out); }</span>
+<span class="nc" id="L72">    @Override public void unexpectedField(Object event, ValueIn valueIn) { inner.unexpectedField(event, valueIn); }</span>
+<span class="nc" id="L73">    @Override public void readMarshallable(BytesIn bytes) throws IORuntimeException { throw newUnsupportedOperationException(); }</span>
+<span class="nc" id="L74">    @Override public void writeMarshallable(BytesOut bytes) { inner.writeMarshallable(bytes); }</span>
+<span class="nc" id="L75">    @Override public String $toString() { return inner.$toString();}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

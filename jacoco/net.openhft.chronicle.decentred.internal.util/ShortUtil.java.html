@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ShortUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenHFT/Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.internal.util</a> &gt; <span class="el_source">ShortUtil.java</span></div><h1>ShortUtil.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.internal.util;
+
+<span class="fc" id="L3">public enum ShortUtil {;</span>
+
+<span class="fc" id="L5">    private static int MAX_UNSIGNED_VALUE = (1 &lt;&lt; Short.SIZE) - 1;</span>
+
+    /**
+     * Checks that the specified int can be represented by an unsigned short. This
+     * method is designed primarily for doing parameter validation in methods
+     * and constructors, as demonstrated below:
+     * &lt;blockquote&gt;&lt;pre&gt;
+     * public Foo(int bar) {
+     *     this.bar = ShortUtil.requireUnsignedShort(bar);
+     * }
+     * &lt;/pre&gt;&lt;/blockquote&gt;
+     *
+     * @param value the int value to check range for
+     * @return the int value if in range
+     * @throws ArithmeticException if {@code int} is out of range
+     */
+    public static int requireUnsignedShort(int value) {
+<span class="fc bfc" id="L22" title="All 4 branches covered.">        if (value &lt; 0 || value &gt; MAX_UNSIGNED_VALUE) {</span>
+<span class="fc" id="L23">            throw new ArithmeticException(&quot;unsigned short overflow&quot;);</span>
+        }
+<span class="fc" id="L25">        return value;</span>
+    }
+
+    /**
+     * Checks that the specified int can be represented by a positive unsigned short. This
+     * method is designed primarily for doing parameter validation in methods
+     * and constructors, as demonstrated below:
+     * &lt;blockquote&gt;&lt;pre&gt;
+     * public Foo(int bar) {
+     *     this.bar = ShortUtil.requirePositiveUnsignedShort(bar);
+     * }
+     * &lt;/pre&gt;&lt;/blockquote&gt;
+     *
+     * @param value the int value to check range for
+     * @return the int value if in range
+     * @throws ArithmeticException if {@code int} is out of range or
+     * not positive
+     */
+    public static int requirePositiveUnsignedShort(int value) {
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        if (value &lt;= 0) {</span>
+<span class="fc" id="L45">            throw new ArithmeticException(&quot;value is not positive&quot;);</span>
+        }
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        if (value &gt; MAX_UNSIGNED_VALUE) {</span>
+<span class="fc" id="L48">            throw new ArithmeticException(&quot;unsigned short overflow&quot;);</span>
+        }
+<span class="fc" id="L50">        return value;</span>
+    }
+
+
+    /**
+     * Returns the value of the {@code int} argument;
+     * throwing an exception if the value overflows a {@code short}.
+     *
+     * @param value the int value
+     * @return the argument as a short
+     * @throws ArithmeticException if the {@code argument} overflows a short
+     */
+    public static short toShortExact(int value) {
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        if ((short) value != value) {</span>
+<span class="fc" id="L64">            throw new ArithmeticException(&quot;short overflow&quot;);</span>
+        }
+<span class="fc" id="L66">        return (short) value;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

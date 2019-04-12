@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionBlockGossipEvent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenHFT/Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.dto.blockevent</a> &gt; <span class="el_source">TransactionBlockGossipEvent.java</span></div><h1>TransactionBlockGossipEvent.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.dto.blockevent;
+
+import net.openhft.chronicle.bytes.BytesIn;
+import net.openhft.chronicle.bytes.BytesOut;
+import net.openhft.chronicle.decentred.dto.base.TransientFieldHandler;
+import net.openhft.chronicle.decentred.dto.base.VanillaSignedMessage;
+import net.openhft.chronicle.decentred.dto.base.trait.HasAddressToBlockNumberMap;
+import net.openhft.chronicle.decentred.dto.base.trait.HasChainAddress;
+import net.openhft.chronicle.decentred.internal.unmodifiable.UnmodifiableLongLongMap;
+import net.openhft.chronicle.decentred.util.AddressLongConverter;
+import net.openhft.chronicle.decentred.util.LongLongMap;
+import net.openhft.chronicle.wire.LongConversion;
+import net.openhft.chronicle.wire.WireIn;
+import net.openhft.chronicle.wire.WireOut;
+import org.jetbrains.annotations.NotNull;
+
+
+import static net.openhft.chronicle.decentred.dto.blockevent.AddressToBlockNumberUtil.ADDRESS_TO_BLOCK_NUMBER_MAP_NAME;
+
+// Block number is N:th round in a week for the round.
+/**
+ * An TransactionBlockGossipEvent is a &lt;em&gt;chain event&lt;/em&gt; that ...
+ *
+ */
+<span class="fc" id="L25">public final class TransactionBlockGossipEvent extends VanillaSignedMessage&lt;TransactionBlockGossipEvent&gt; implements</span>
+    HasChainAddress&lt;TransactionBlockGossipEvent&gt;,
+    HasAddressToBlockNumberMap&lt;TransactionBlockGossipEvent&gt;
+{
+    @LongConversion(AddressLongConverter.class)
+    private long chainAddress;
+    private transient LongLongMap addressToBlockNumberMap;
+
+    @Override
+    public long chainAddress() {
+<span class="fc" id="L35">        return chainAddress;</span>
+    }
+
+    @Override
+    public TransactionBlockGossipEvent chainAddress(long chainAddress) {
+<span class="fc" id="L40">        assertNotSigned();</span>
+<span class="fc" id="L41">        this.chainAddress = chainAddress;</span>
+<span class="fc" id="L42">        return this;</span>
+    }
+
+    @Override
+    public LongLongMap addressToBlockNumberMap() {
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        if (signed()) {</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">            if (addressToBlockNumberMap == null) {</span>
+<span class="nc" id="L49">                return new UnmodifiableLongLongMap(LongLongMap.withExpectedSize(0));</span>
+            }
+<span class="fc" id="L51">            return new UnmodifiableLongLongMap(addressToBlockNumberMap);</span>
+        } else {
+<span class="fc bfc" id="L53" title="All 2 branches covered.">            if (addressToBlockNumberMap == null) {</span>
+<span class="fc" id="L54">                addressToBlockNumberMap = LongLongMap.withExpectedSize(16);</span>
+            }
+<span class="fc" id="L56">            return addressToBlockNumberMap;</span>
+        }
+    }
+
+    // Handling of transient fields
+
+<span class="fc" id="L62">    private static final TransientFieldHandler&lt;TransactionBlockGossipEvent&gt; TRANSIENT_FIELD_HANDLER = new CustomTransientFieldHandler();</span>
+
+    @Override
+    public TransientFieldHandler&lt;TransactionBlockGossipEvent&gt; transientFieldHandler() {
+<span class="fc" id="L66">        return TRANSIENT_FIELD_HANDLER;</span>
+    }
+
+    private static final class CustomTransientFieldHandler implements TransientFieldHandler&lt;TransactionBlockGossipEvent&gt; {
+
+        @Override
+        public void reset(TransactionBlockGossipEvent original) {
+<span class="fc" id="L73">            original.addressToBlockNumberMap = null;</span>
+<span class="fc" id="L74">        }</span>
+
+        @Override
+        public void copyNonMarshalled(@NotNull TransactionBlockGossipEvent original, @NotNull TransactionBlockGossipEvent target) {
+            // All transient fields are marshalled
+<span class="fc" id="L79">        }</span>
+
+        @Override
+        public void writeMarshallable(@NotNull TransactionBlockGossipEvent original, @NotNull WireOut wire) {
+<span class="fc" id="L83">            AddressToBlockNumberUtil.writeMap(wire, ADDRESS_TO_BLOCK_NUMBER_MAP_NAME, original.addressToBlockNumberMap);</span>
+<span class="fc" id="L84">        }</span>
+
+        @Override
+        public void readMarshallable(TransactionBlockGossipEvent original, WireIn wire) {
+<span class="nc" id="L88">            AddressToBlockNumberUtil.readMap(wire, ADDRESS_TO_BLOCK_NUMBER_MAP_NAME, original.addressToBlockNumberMap());</span>
+<span class="nc" id="L89">        }</span>
+
+        @Override
+        public void writeMarshallableInternal(TransactionBlockGossipEvent original, BytesOut bytes) {
+<span class="fc" id="L93">            AddressToBlockNumberUtil.writeMap(bytes, ADDRESS_TO_BLOCK_NUMBER_MAP_NAME, original.addressToBlockNumberMap);</span>
+<span class="fc" id="L94">        }</span>
+
+        @Override
+        public void readMarshallable(@NotNull TransactionBlockGossipEvent original, @NotNull BytesIn bytes) {
+<span class="fc" id="L98">            AddressToBlockNumberUtil.readMap(bytes, ADDRESS_TO_BLOCK_NUMBER_MAP_NAME, m -&gt; original.addressToBlockNumberMap = m);</span>
+<span class="fc" id="L99">        }</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

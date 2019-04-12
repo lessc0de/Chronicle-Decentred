@@ -18,7 +18,7 @@ public class KeyPair extends AbstractMarshallable {
 <span class="fc" id="L18">    }</span>
 
     /**
-     * Only use this for testing!
+     * Only use this for testing
      *
      * @param id to use as a private seed
      */
@@ -31,22 +31,17 @@ public class KeyPair extends AbstractMarshallable {
 <span class="fc" id="L31">        privateKey.release();</span>
 <span class="fc" id="L32">    }</span>
 
-    /**
-     * Only use this for testing!
-     *
-     * @param ch to use as a private seed
-     */
     @Deprecated
-<span class="fc" id="L40">    public KeyPair(char ch) {</span>
-<span class="fc" id="L41">        Bytes&lt;Void&gt; privateKey = Bytes.allocateDirect(Ed25519.PRIVATE_KEY_LENGTH);</span>
-<span class="fc bfc" id="L42" title="All 2 branches covered.">        while (privateKey.writeRemaining() &gt; 0)</span>
-<span class="fc" id="L43">            privateKey.append(ch);</span>
-<span class="fc" id="L44">        Ed25519.privateToPublicAndSecret((Bytes) publicKey, (Bytes) secretKey, privateKey);</span>
-<span class="fc" id="L45">        privateKey.release();</span>
-<span class="fc" id="L46">    }</span>
+<span class="fc" id="L35">    public KeyPair(char ch) {</span>
+<span class="fc" id="L36">        Bytes&lt;Void&gt; privateKey = Bytes.allocateDirect(Ed25519.PRIVATE_KEY_LENGTH);</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        while (privateKey.writeRemaining() &gt; 0)</span>
+<span class="fc" id="L38">            privateKey.append(ch);</span>
+<span class="fc" id="L39">        Ed25519.privateToPublicAndSecret((Bytes) publicKey, (Bytes) secretKey, privateKey);</span>
+<span class="fc" id="L40">        privateKey.release();</span>
+<span class="fc" id="L41">    }</span>
 
     public long address() {
-<span class="fc" id="L49">        return DecentredUtil.toAddress(publicKey);</span>
+<span class="fc" id="L44">        return DecentredUtil.toAddress(publicKey);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

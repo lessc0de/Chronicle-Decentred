@@ -1,52 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VerificationEvent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenHFT/Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.dto</a> &gt; <span class="el_source">VerificationEvent.java</span></div><h1>VerificationEvent.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.dto;
 
-import net.openhft.chronicle.bytes.Bytes;
-import net.openhft.chronicle.bytes.BytesStore;
+import net.openhft.chronicle.bytes.*;
+import net.openhft.chronicle.decentred.dto.base.SelfSignedMessage;
 import net.openhft.chronicle.decentred.util.AddressLongConverter;
 import net.openhft.chronicle.decentred.util.DecentredUtil;
 import net.openhft.chronicle.salt.Ed25519;
 import net.openhft.chronicle.wire.LongConversion;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * This message states this node verifies a given public key after connecting to it successfully.
+ *
  */
-<span class="fc" id="L14">public class VerificationEvent extends SelfSignedMessage&lt;VerificationEvent&gt; {</span>
+@Deprecated
+<span class="fc" id="L15">public class VerificationEvent extends SelfSignedMessage&lt;VerificationEvent&gt; {</span>
+
     @LongConversion(AddressLongConverter.class)
     private long addressVerified;
-<span class="fc" id="L17">    private Bytes keyVerified = Bytes.allocateElasticDirect(Ed25519.PUBLIC_KEY_LENGTH);</span>
+<span class="fc" id="L19">    private Bytes keyVerified = Bytes.allocateElasticDirect(Ed25519.PUBLIC_KEY_LENGTH);</span>
 
     public long addressVerified() {
-<span class="fc" id="L20">        return addressVerified;</span>
+<span class="nc" id="L22">        return addressVerified;</span>
     }
 
     public VerificationEvent addressVerified(long addressVerified) {
-<span class="fc" id="L24">        this.addressVerified = addressVerified;</span>
-<span class="fc" id="L25">        return this;</span>
+<span class="nc" id="L26">        this.addressVerified = addressVerified;</span>
+<span class="nc" id="L27">        return this;</span>
     }
 
     public VerificationEvent keyVerified(BytesStore key) {
-<span class="fc" id="L29">        keyVerified.clear().write(key);</span>
-<span class="fc" id="L30">        addressVerified = DecentredUtil.toAddress(key);</span>
-<span class="fc" id="L31">        return this;</span>
+<span class="fc" id="L31">        keyVerified.clear().write(key);</span>
+<span class="fc" id="L32">        addressVerified = DecentredUtil.toAddress(key);</span>
+<span class="fc" id="L33">        return this;</span>
     }
 
     public BytesStore keyVerified() {
-<span class="fc" id="L35">        return keyVerified;</span>
+<span class="fc" id="L37">        return keyVerified;</span>
     }
 
-    @NotNull
-    @Override
-    public &lt;T&gt; T deepCopy() {
-<span class="fc" id="L41">        VerificationEvent v2 = new VerificationEvent();</span>
-<span class="fc" id="L42">        v2.protocol(protocol());</span>
-<span class="fc" id="L43">        v2.messageType(messageType());</span>
-<span class="fc" id="L44">        v2.address(address());</span>
-<span class="fc" id="L45">        v2.timestampUS(timestampUS());</span>
-<span class="fc" id="L46">        v2.publicKey(publicKey());</span>
-<span class="fc" id="L47">        v2.keyVerified(keyVerified());</span>
-<span class="fc" id="L48">        v2.addressVerified(addressVerified());</span>
-<span class="fc" id="L49">        return (T) v2;</span>
-    }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

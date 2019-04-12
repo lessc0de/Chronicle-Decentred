@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VanillaBlockEngine.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenHFT/Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.internal.server</a> &gt; <span class="el_source">VanillaBlockEngine.java</span></div><h1>VanillaBlockEngine.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.internal.server;
+
+import net.openhft.chronicle.bytes.BytesStore;
+import net.openhft.chronicle.core.io.Closeable;
+import net.openhft.chronicle.core.time.SystemTimeProvider;
+import net.openhft.chronicle.core.time.TimeProvider;
+import net.openhft.chronicle.decentred.api.MessageToListener;
+import net.openhft.chronicle.decentred.dto.VerificationEvent;
+import net.openhft.chronicle.decentred.dto.address.CreateAddressRequest;
+import net.openhft.chronicle.decentred.dto.address.InvalidationEvent;
+import net.openhft.chronicle.decentred.dto.base.SignedMessage;
+import net.openhft.chronicle.decentred.dto.blockevent.EndOfRoundBlockEvent;
+import net.openhft.chronicle.decentred.dto.blockevent.TransactionBlockEvent;
+import net.openhft.chronicle.decentred.dto.blockevent.TransactionBlockGossipEvent;
+import net.openhft.chronicle.decentred.dto.blockevent.TransactionBlockVoteEvent;
+import net.openhft.chronicle.decentred.dto.chainlifecycle.AssignDelegatesRequest;
+import net.openhft.chronicle.decentred.dto.chainlifecycle.CreateChainRequest;
+import net.openhft.chronicle.decentred.dto.chainlifecycle.CreateTokenRequest;
+import net.openhft.chronicle.decentred.server.*;
+import net.openhft.chronicle.decentred.util.DecentredUtil;
+import net.openhft.chronicle.decentred.util.DtoRegistry;
+import net.openhft.chronicle.decentred.util.KeyPair;
+import net.openhft.chronicle.threads.NamedThreadFactory;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.LongStream;
+
+<span class="pc bpc" id="L30" title="1 of 2 branches missed.">public class VanillaBlockEngine&lt;T&gt; implements BlockEngine, Closeable {</span>
+    public static final int STEP_PAUSE_MILLIS = 25;
+
+    private final long address;
+    private final long chainAddress;
+    private final int periodUS;
+
+    private final Chainer chainer;
+    private final VanillaGossiper gossiper;
+    private final Voter voter;
+    private final VoteTaker voteTaker;
+    private final BlockReplayer blockReplayer;
+
+    private final ExecutorService votingSes;
+    private final ExecutorService processingSes;
+    //    private final ExecutorService writerSes;
+    private final long[] clusterAddresses;
+    private final BytesStore secretKey;
+
+<span class="fc" id="L49">    private long blockNumber = 0;</span>
+    private long nextSendUS;
+    private MessageToListener tcpMessageListener;
+
+    static {
+<span class="fc" id="L54">        System.out.println(&quot;Step pause millis: &quot; + STEP_PAUSE_MILLIS);</span>
+<span class="fc" id="L55">    }</span>
+
+    public &lt;U extends T&gt; VanillaBlockEngine(@NotNull DtoRegistry&lt;U&gt; dtoRegistry,
+                                            KeyPair keyPair,
+                                            long chainAddress,
+                                            int periodMS,
+                                            @NotNull T postBlockChainProcessor,
+                                            @NotNull long[] clusterAddresses,
+<span class="fc" id="L63">                                            @NotNull TimeProvider timeProvider) {</span>
+<span class="fc" id="L64">        this.address = keyPair.address();</span>
+<span class="fc" id="L65">        this.chainAddress = chainAddress;</span>
+<span class="fc" id="L66">        this.periodUS = periodMS * 1000;</span>
+<span class="fc" id="L67">        this.secretKey = keyPair.secretKey;</span>
+
+<span class="fc" id="L69">        nextSendUS = (SystemTimeProvider.INSTANCE.currentTimeMicros() / periodUS + 1) * periodUS;</span>
+<span class="fc" id="L70">        this.clusterAddresses = clusterAddresses;</span>
+<span class="pc bpc" id="L71" title="3 of 6 branches missed.">        assert LongStream.of(clusterAddresses).anyMatch(a -&gt; a == address);</span>
+<span class="fc" id="L72">        chainer = Chainer.createQueuing(chainAddress, dtoRegistry);</span>
+<span class="fc" id="L73">        blockReplayer = new VanillaBlockReplayer&lt;&gt;(address, dtoRegistry, postBlockChainProcessor);</span>
+<span class="fc" id="L74">        voteTaker = VoteTaker.create(address, chainAddress, clusterAddresses, blockReplayer, keyPair.secretKey, dtoRegistry);</span>
+<span class="fc" id="L75">        voter = Voter.createLastGossipVoter(address, clusterAddresses, voteTaker, keyPair.secretKey, dtoRegistry);</span>
+<span class="fc" id="L76">        gossiper = new VanillaGossiper(keyPair, dtoRegistry, chainAddress, clusterAddresses, voter, timeProvider);</span>
+<span class="fc" id="L77">        String regionStr = DecentredUtil.toAddressString(chainAddress);</span>
+<span class="fc" id="L78">        votingSes = Executors.newSingleThreadExecutor(new NamedThreadFactory(regionStr + &quot;-voter&quot;, true, Thread.MAX_PRIORITY));</span>
+<span class="fc" id="L79">        processingSes = Executors.newSingleThreadExecutor(new NamedThreadFactory(regionStr + &quot;-processor&quot;, true, Thread.MAX_PRIORITY));</span>
+//        writerSes = Executors.newCachedThreadPool(new NamedThreadFactory(regionStr + &quot;-writer&quot;, true, Thread.MIN_PRIORITY));
+<span class="fc" id="L81">    }</span>
+
+    @Override
+    public void start(MessageToListener tcpMessageListener) {
+<span class="fc" id="L85">        tcpMessageListener(tcpMessageListener);</span>
+<span class="fc" id="L86">        votingSes.submit(this::runVoter);</span>
+
+/*        for (Runnable runnable : tcpMessageListener.runnables()) {
+            writerSes.submit(runnable);
+        }*/
+<span class="fc" id="L91">    }</span>
+
+    @Override
+    public void tcpMessageListener(MessageToListener tcpMessageListener) {
+<span class="fc" id="L95">        this.tcpMessageListener = tcpMessageListener;</span>
+<span class="fc" id="L96">        voter.tcpMessageListener(tcpMessageListener);</span>
+<span class="fc" id="L97">        voteTaker.tcpMessageListener(tcpMessageListener);</span>
+<span class="fc" id="L98">        gossiper.tcpMessageToListener(tcpMessageListener);</span>
+<span class="fc" id="L99">    }</span>
+
+    @Override
+    public void transactionBlockEvent(TransactionBlockEvent transactionBlockEvent) {
+<span class="fc" id="L103">        blockReplayer.transactionBlockEvent(transactionBlockEvent);</span>
+<span class="fc" id="L104">        gossiper.transactionBlockEvent(transactionBlockEvent);</span>
+<span class="fc" id="L105">    }</span>
+
+    @Override
+    public void transactionBlockGossipEvent(TransactionBlockGossipEvent transactionBlockGossipEvent) {
+<span class="nc" id="L109">        voter.transactionBlockGossipEvent(transactionBlockGossipEvent);</span>
+<span class="nc" id="L110">    }</span>
+
+    @Override
+    public void transactionBlockVoteEvent(TransactionBlockVoteEvent transactionBlockVoteEvent) {
+<span class="nc" id="L114">        voteTaker.transactionBlockVoteEvent(transactionBlockVoteEvent);</span>
+<span class="nc" id="L115">    }</span>
+
+    @Override
+    public void endOfRoundBlockEvent(EndOfRoundBlockEvent endOfRoundBlockEvent) {
+<span class="nc" id="L119">        blockReplayer.endOfRoundBlockEvent(endOfRoundBlockEvent);</span>
+<span class="nc" id="L120">    }</span>
+
+    @Override
+    public void createChainRequest(CreateChainRequest createChainRequest) {
+<span class="nc" id="L124">        chainer.onMessage(createChainRequest);</span>
+<span class="nc" id="L125">    }</span>
+
+    @Override
+    public void assignDelegatesRequest(AssignDelegatesRequest assignDelegatesRequest) {
+<span class="nc" id="L129">        throw new UnsupportedOperationException();</span>
+    }
+
+    @Override
+    public void createTokenRequest(CreateTokenRequest createTokenRequest) {
+<span class="nc" id="L134">        chainer.onMessage(createTokenRequest);</span>
+<span class="nc" id="L135">    }</span>
+
+    @Override
+    public void createAddressRequest(CreateAddressRequest createAddressRequest) {
+<span class="nc" id="L139">        throw new UnsupportedOperationException();</span>
+    }
+
+    @Override
+    public void verificationEvent(VerificationEvent verificationEvent) {
+<span class="nc" id="L144">        throw new UnsupportedOperationException();</span>
+    }
+
+    @Override
+    public void invalidationEvent(InvalidationEvent invalidationEvent) {
+<span class="nc" id="L149">        throw new UnsupportedOperationException();</span>
+    }
+
+    @Override
+    public void processOneBlock() {
+        try {
+<span class="nc" id="L155">            doProcessOneBlock();</span>
+<span class="nc" id="L156">            blockReplayer.replayBlocks();</span>
+<span class="nc" id="L157">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L158">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L159">            throw new AssertionError(e);</span>
+<span class="nc" id="L160">        }</span>
+<span class="nc" id="L161">    }</span>
+
+    void runVoter() {
+        try {
+//            Histogram sample = new Histogram();
+//            Histogram two = new Histogram();
+//            Histogram three = new Histogram();
+//            Histogram four = new Histogram();
+//            int count = 0;
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">            while (!Thread.currentThread().isInterrupted()) {</span>
+//                long start = System.nanoTime();
+<span class="fc" id="L172">                doProcessOneBlock();</span>
+
+<span class="fc" id="L174">                processingSes.submit(blockReplayer::replayBlocks);</span>
+<span class="fc" id="L175">                nextSendUS += periodUS;</span>
+<span class="fc" id="L176">                long delay = nextSendUS - SystemTimeProvider.INSTANCE.currentTimeMicros();</span>
+//                four.sample(System.nanoTime() - start);
+
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">                if (delay &gt; 999)</span>
+<span class="fc" id="L180">                    Thread.sleep(delay / 1000);</span>
+//                if (delay &gt; 10) // minimum delay
+//                    LockSupport.parkNanos(delay * 1000);
+
+/*
+                if (++count % 100 == 0) {
+                    System.out.println(sample.toMicrosFormat());
+                    System.out.println(two.toMicrosFormat());
+                    System.out.println(three.toMicrosFormat());
+                    System.out.println(four.toMicrosFormat());
+                }
+*/
+
+<span class="fc" id="L193">            }</span>
+
+<span class="nc" id="L195">        } catch (Throwable t) {</span>
+<span class="nc" id="L196">            t.printStackTrace();</span>
+<span class="nc" id="L197">        }</span>
+<span class="nc" id="L198">    }</span>
+
+    private void doProcessOneBlock() throws InterruptedException {
+<span class="fc" id="L201">        final TransactionBlockEvent tbe = chainer.nextTransactionBlockEvent();</span>
+//                sample.sample(System.nanoTime() - start);
+//                start = System.nanoTime();
+        // tg System.out.println(&quot;TBE &quot;+tbe);
+<span class="fc bfc" id="L205" title="All 2 branches covered.">        if (tbe != null) {</span>
+<span class="fc" id="L206">            tbe.address(address);</span>
+<span class="fc" id="L207">            tbe.sign(secretKey);</span>
+<span class="fc bfc" id="L208" title="All 2 branches covered.">            for (long clusterAddress : clusterAddresses) {</span>
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">                if (clusterAddress == address) {</span>
+<span class="fc" id="L210">                    transactionBlockEvent(tbe);</span>
+                } else {
+<span class="nc" id="L212">                    tcpMessageListener.onMessageTo(clusterAddress, tbe);</span>
+                }
+            }
+<span class="fc" id="L215">            blockNumber++;</span>
+        }
+
+//                int subRound = Math.max(100_000, periodUS * 100);
+//                two.sample(System.nanoTime() - start);
+<span class="fc" id="L220">        Thread.sleep(STEP_PAUSE_MILLIS);</span>
+//                LockSupport.parkNanos(subRound);
+<span class="fc" id="L222">        gossiper.sendGossip(blockNumber);</span>
+<span class="fc" id="L223">        Thread.sleep(STEP_PAUSE_MILLIS);</span>
+//                LockSupport.parkNanos(subRound);
+
+//                start = System.nanoTime();
+<span class="fc" id="L227">        voter.sendVote(blockNumber);</span>
+//                three.sample(System.nanoTime() - start);
+
+<span class="fc" id="L230">        Thread.sleep(STEP_PAUSE_MILLIS);</span>
+//                LockSupport.parkNanos(subRound);
+//                start = System.nanoTime();
+        //System.out.println(address + &quot; &quot; + blockNumber);
+<span class="pc bpc" id="L234" title="1 of 2 branches missed.">        if (voteTaker.hasMajority()) {</span>
+<span class="fc bfc" id="L235" title="All 2 branches covered.">            if (voteTaker.sendEndOfRoundBlock(blockNumber))</span>
+<span class="fc" id="L236">                blockNumber++;</span>
+        }
+<span class="fc" id="L238">    }</span>
+
+    @Override
+    public void close() {
+<span class="nc" id="L242">        votingSes.shutdownNow();</span>
+<span class="nc" id="L243">    }</span>
+
+    @Override
+    public void onMessage(SignedMessage message) {
+<span class="fc" id="L247">        chainer.onMessage(message);</span>
+<span class="fc" id="L248">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>
