@@ -45,7 +45,7 @@ public abstract class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;
 <span class="fc" id="L45">            .map(Object::toString)</span>
 <span class="fc" id="L46">            .collect(toSet());</span>
 
-    private static final boolean ENFORCE_TRANSIENT_OVERRIDE_INVARIANT = true;
+    private static final boolean ENFORCE_TRANSIENT_OVERRIDE_INVARIANT = false;
 
     @LongConversion(MicroTimestampLongConverter.class)
     private long timestampUS;
@@ -76,15 +76,15 @@ public abstract class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;
 
 
         if (ENFORCE_TRANSIENT_OVERRIDE_INVARIANT) {
-<span class="fc" id="L79">            final Set&lt;String&gt; newTransientFields = Stream.of(getClass().getDeclaredFields())</span>
-<span class="fc" id="L80">                .filter(f -&gt; Modifier.isTransient(f.getModifiers()))</span>
-<span class="fc" id="L81">                .map(Object::toString)</span>
-<span class="pc bpc" id="L82" title="1 of 2 branches missed.">                .filter(n -&gt; !BASE_TRANSIENT_FIELD_NAMES.contains(n))</span>
-<span class="fc bfc" id="L83" title="All 2 branches covered.">                .filter(n -&gt; !n.contains(&quot;$jacocoData&quot;)) // Discard instrumented fields from jacoco</span>
-<span class="fc" id="L84">                .collect(toSet());</span>
+            final Set&lt;String&gt; newTransientFields = Stream.of(getClass().getDeclaredFields())
+<span class="nc" id="L80">                .filter(f -&gt; Modifier.isTransient(f.getModifiers()))</span>
+                .map(Object::toString)
+<span class="nc bnc" id="L82" title="All 2 branches missed.">                .filter(n -&gt; !BASE_TRANSIENT_FIELD_NAMES.contains(n))</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">                .filter(n -&gt; !n.contains(&quot;$jacocoData&quot;)) // Discard instrumented fields from jacoco</span>
+                .collect(toSet());
 
-<span class="pc bpc" id="L86" title="1 of 4 branches missed.">            if (!newTransientFields.isEmpty() &amp;&amp; transientFieldHandler() == TransientFieldHandler.empty()) {</span>
-<span class="nc" id="L87">                throw new IllegalStateException(&quot;The class &quot; + getClass().getName() + &quot; declares transitive field(s) &quot; + newTransientFields + &quot; but does not override transientFieldHandler()&quot;);</span>
+            if (!newTransientFields.isEmpty() &amp;&amp; transientFieldHandler() == TransientFieldHandler.empty()) {
+                throw new IllegalStateException(&quot;The class &quot; + getClass().getName() + &quot; declares transitive field(s) &quot; + newTransientFields + &quot; but does not override transientFieldHandler()&quot;);
             }
         }
 <span class="fc" id="L90">    }</span>
