@@ -11,66 +11,78 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-<span class="fc" id="L14">enum AddressToBlockNumberUtil {;</span>
+<span class="pc bpc" id="L14" title="1 of 2 branches missed.">enum AddressToBlockNumberUtil {</span>
+    ;
 
     public static final String ADDRESS_TO_BLOCK_NUMBER_MAP_NAME = &quot;addressToBlockNumberMap&quot;;
 
     static void copy(LongLongMap source, @NotNull Consumer&lt;LongLongMap&gt; setter) {
-<span class="nc bnc" id="L19" title="All 2 branches missed.">        if (source == null) {</span>
-<span class="nc" id="L20">            setter.accept(null);</span>
+<span class="nc bnc" id="L20" title="All 2 branches missed.">        if (source == null) {</span>
+<span class="nc" id="L21">            setter.accept(null);</span>
         } else {
-<span class="nc" id="L22">            final LongLongMap map = LongLongMap.withExpectedSize(source.size());</span>
-<span class="nc" id="L23">            map.putAll(source);</span>
-<span class="nc" id="L24">            setter.accept(map);</span>
+<span class="nc" id="L23">            final LongLongMap map = LongLongMap.withExpectedSize(source.size());</span>
+<span class="nc" id="L24">            map.putAll(source);</span>
+<span class="nc" id="L25">            setter.accept(map);</span>
         }
-<span class="nc" id="L26">    }</span>
+<span class="nc" id="L27">    }</span>
 
     static void writeMap(@NotNull WireOut wire, @NotNull String name, LongLongMap map) {
-<span class="pc bpc" id="L29" title="1 of 4 branches missed.">        if (map == null || map.size() == 0) {</span>
-<span class="fc" id="L30">            return;</span>
+<span class="pc bpc" id="L30" title="1 of 4 branches missed.">        if (map == null || map.size() == 0) {</span>
+<span class="fc" id="L31">            return;</span>
         }
-<span class="fc" id="L32">        wire.write(name).marshallable(out -&gt; {</span>
-<span class="fc" id="L33">            long[] keys = map.keySet().toLongArray();</span>
-<span class="fc bfc" id="L34" title="All 2 branches covered.">            for (int i = 0; i &lt; keys.length; i++) keys[i] -= Long.MIN_VALUE;</span>
-<span class="fc" id="L35">            Arrays.sort(keys);</span>
-<span class="fc bfc" id="L36" title="All 2 branches covered.">            for (int i = 0; i &lt; keys.length; i++) keys[i] += Long.MIN_VALUE;</span>
-<span class="fc bfc" id="L37" title="All 2 branches covered.">            for (long key : keys) {</span>
-<span class="fc" id="L38">                out.write(DecentredUtil.toAddressString(key)).int64(map.get(key));</span>
+<span class="fc" id="L33">        wire.write(name).marshallable(out -&gt; {</span>
+<span class="fc" id="L34">            long[] keys = map.keySet().toLongArray();</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">            for (int i = 0; i &lt; keys.length; i++) keys[i] -= Long.MIN_VALUE;</span>
+<span class="fc" id="L36">            Arrays.sort(keys);</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">            for (int i = 0; i &lt; keys.length; i++) keys[i] += Long.MIN_VALUE;</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">            for (long key : keys) {</span>
+<span class="fc" id="L39">                out.write(DecentredUtil.toAddressString(key)).int64(map.get(key));</span>
             }
-<span class="fc" id="L40">        });</span>
-<span class="fc" id="L41">    }</span>
+<span class="fc" id="L41">        });</span>
+<span class="fc" id="L42">    }</span>
 
     static void readMap(@NotNull WireIn wire, @NotNull String name, @NotNull LongLongMap map) {
-<span class="fc" id="L44">        map.clear();</span>
-<span class="fc" id="L45">        wire.read(name).marshallable(in -&gt; {</span>
-<span class="fc bfc" id="L46" title="All 2 branches covered.">            while (in.hasMore()) {</span>
-<span class="fc" id="L47">                final String key = in.readEvent(String.class);</span>
-<span class="pc bpc" id="L48" title="2 of 4 branches missed.">                if (key == null || key.length() == 0)</span>
-<span class="nc" id="L49">                    return;</span>
-<span class="fc" id="L50">                final long addr = DecentredUtil.parseAddress(key);</span>
-<span class="fc" id="L51">                final long value = in.getValueIn().int64();</span>
-<span class="fc" id="L52">                map.justPut(addr, value);</span>
-<span class="fc" id="L53">            }</span>
-<span class="fc" id="L54">        });</span>
-<span class="fc" id="L55">    }</span>
+<span class="fc" id="L45">        map.clear();</span>
+<span class="fc" id="L46">        wire.read(name).marshallable(in -&gt; {</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">            while (in.hasMore()) {</span>
+<span class="fc" id="L48">                final String key = in.readEvent(String.class);</span>
+<span class="pc bpc" id="L49" title="2 of 4 branches missed.">                if (key == null || key.length() == 0)</span>
+<span class="nc" id="L50">                    return;</span>
+<span class="fc" id="L51">                final long addr = DecentredUtil.parseAddress(key);</span>
+<span class="fc" id="L52">                final long value = in.getValueIn().int64();</span>
+<span class="fc" id="L53">                map.justPut(addr, value);</span>
+<span class="fc" id="L54">            }</span>
+<span class="fc" id="L55">        });</span>
+<span class="fc" id="L56">    }</span>
 
     static void writeMap(@NotNull BytesOut bytes, @NotNull String name, LongLongMap map) {
-<span class="pc bpc" id="L58" title="1 of 4 branches missed.">        if (map == null || map.size() == 0) {</span>
-<span class="fc" id="L59">            bytes.writeStopBit(0);</span>
+<span class="fc" id="L59">        bytes.writeLong(0x0102030405060708L);</span>
+<span class="pc bpc" id="L60" title="1 of 4 branches missed.">        if (map == null || map.size() == 0) {</span>
+<span class="fc" id="L61">            bytes.writeStopBit(0);</span>
         } else {
-<span class="fc" id="L61">            bytes.writeStopBit(map.size());</span>
-<span class="fc" id="L62">            map.forEach((address, blockNumber) -&gt; bytes.writeLong(address).writeLong(blockNumber));</span>
+<span class="fc" id="L63">            bytes.writeStopBit(map.size());</span>
+<span class="fc" id="L64">            map.forEach((address, blockNumber) -&gt; bytes.writeLong(address).writeLong(blockNumber));</span>
         }
-<span class="fc" id="L64">    }</span>
+<span class="fc" id="L66">    }</span>
 
     static void readMap(@NotNull BytesIn bytes, @NotNull String name, @NotNull Consumer&lt;LongLongMap&gt; setter) {
-<span class="fc" id="L67">        final int entries = (int) bytes.readStopBit();</span>
-<span class="fc" id="L68">        final LongLongMap map = LongLongMap.withExpectedSize(entries);</span>
-<span class="fc bfc" id="L69" title="All 2 branches covered.">        for (int i = 0; i &lt; entries; i++) {</span>
-<span class="fc" id="L70">            map.justPut(bytes.readLong(), bytes.readLong());</span>
+<span class="pc bpc" id="L69" title="2 of 4 branches missed.">        assert bytes.readPosition() &gt; 80;</span>
+<span class="fc" id="L70">        long magic = bytes.readLong();</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">        if (magic != 0x0102030405060708L)</span>
+<span class="nc" id="L72">            throw new IllegalStateException();</span>
+<span class="fc" id="L73">        long entries0 = bytes.readStopBit();</span>
+<span class="pc bpc" id="L74" title="2 of 4 branches missed.">        if (entries0 &lt; 0 || entries0 &gt; 128)</span>
+<span class="nc" id="L75">            throw new IllegalStateException(&quot;entries: &quot; + entries0);</span>
+<span class="fc" id="L76">        final int entries = (int) entries0;</span>
+<span class="pc bpc" id="L77" title="2 of 4 branches missed.">        if (bytes.readRemaining() &lt; entries * 16 || bytes.readRemaining() &gt; entries * 18)</span>
+<span class="nc" id="L78">            throw new IllegalStateException(&quot;entries: &quot; + entries + &quot;, remaining: &quot; + bytes.readRemaining());</span>
+
+<span class="fc" id="L80">        final LongLongMap map = LongLongMap.withExpectedSize(entries);</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        for (int i = 0; i &lt; entries; i++) {</span>
+<span class="fc" id="L82">            map.justPut(bytes.readLong(), bytes.readLong());</span>
         }
-<span class="fc" id="L72">        setter.accept(map);</span>
-<span class="fc" id="L73">    }</span>
+<span class="fc" id="L84">        setter.accept(map);</span>
+<span class="fc" id="L85">    }</span>
 
 
 }
