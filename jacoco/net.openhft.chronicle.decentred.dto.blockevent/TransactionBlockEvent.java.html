@@ -118,77 +118,79 @@ public final class TransactionBlockEvent&lt;T&gt; extends VanillaSignedMessage&l
      * &lt;p&gt;
      *  If all transactions are replayed, the method returns {@code true},
      *  otherwise it returns {@code false}
+     *
+     * @return if this message's transaction queue is empty (of un-replayed transactions)
      */
     public boolean isEmpty() {
-<span class="pc bpc" id="L123" title="1 of 2 branches missed.">        return transactions.readRemaining() == 0;</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">        return transactions.readRemaining() == 0;</span>
     }
 
     @Override
     public long chainAddress() {
-<span class="fc" id="L128">        return chainAddress;</span>
+<span class="fc" id="L130">        return chainAddress;</span>
     }
 
     @Override
     public TransactionBlockEvent&lt;T&gt; chainAddress(long chainAddress) {
-<span class="fc" id="L133">        assertNotSigned();</span>
-<span class="fc" id="L134">        this.chainAddress = chainAddress;</span>
-<span class="fc" id="L135">        return this;</span>
+<span class="fc" id="L135">        assertNotSigned();</span>
+<span class="fc" id="L136">        this.chainAddress = chainAddress;</span>
+<span class="fc" id="L137">        return this;</span>
     }
 
 
     // Handling of transient fields
 
-<span class="fc" id="L141">    private final transient TransientFieldHandler&lt;TransactionBlockEvent&lt;T&gt;&gt; transientFieldHandler = new CustomTransientFieldHandler();</span>
+<span class="fc" id="L143">    private final transient TransientFieldHandler&lt;TransactionBlockEvent&lt;T&gt;&gt; transientFieldHandler = new CustomTransientFieldHandler();</span>
 
     @Override
     public TransientFieldHandler&lt;TransactionBlockEvent&lt;T&gt;&gt; transientFieldHandler() {
-<span class="fc" id="L145">        return transientFieldHandler;</span>
+<span class="fc" id="L147">        return transientFieldHandler;</span>
     }
 
 
-<span class="fc" id="L149">    private final class CustomTransientFieldHandler implements TransientFieldHandler&lt;TransactionBlockEvent&lt;T&gt;&gt; {</span>
+<span class="fc" id="L151">    private final class CustomTransientFieldHandler implements TransientFieldHandler&lt;TransactionBlockEvent&lt;T&gt;&gt; {</span>
 
         @Override
         public void reset(TransactionBlockEvent&lt;T&gt; original) {
-<span class="fc" id="L153">            original.dtoParser = null;</span>
-<span class="fc" id="L154">            original.transactions.clear();</span>
-<span class="fc" id="L155">        }</span>
+<span class="fc" id="L155">            original.dtoParser = null;</span>
+<span class="fc" id="L156">            original.transactions.clear();</span>
+<span class="fc" id="L157">        }</span>
 
         @Override
         public void copyNonMarshalled(@NotNull TransactionBlockEvent&lt;T&gt; original, @NotNull TransactionBlockEvent&lt;T&gt; target) {
-<span class="fc" id="L159">            target.dtoParser(original.dtoParser());</span>
-<span class="fc" id="L160">        }</span>
+<span class="fc" id="L161">            target.dtoParser(original.dtoParser());</span>
+<span class="fc" id="L162">        }</span>
 
         @Override
         public void writeMarshallable(@NotNull TransactionBlockEvent&lt;T&gt; original, @NotNull WireOut wire) {
-<span class="fc" id="L164">                wire.write(&quot;transactions&quot;).sequence(out -&gt;</span>
-<span class="fc" id="L165">                    original.replay(b -&gt; out.object(original.dtoParser.parseOne(b)))</span>
+<span class="fc" id="L166">                wire.write(&quot;transactions&quot;).sequence(out -&gt;</span>
+<span class="fc" id="L167">                    original.replay(b -&gt; out.object(original.dtoParser.parseOne(b)))</span>
                 );
-<span class="fc" id="L167">        }</span>
+<span class="fc" id="L169">        }</span>
 
         @Override
         public void readMarshallable(@NotNull TransactionBlockEvent&lt;T&gt; original, @NotNull WireIn wire) {
-<span class="nc" id="L171">            wire.read(&quot;transactions&quot;).sequence(original, (tbe, in) -&gt; {</span>
-<span class="nc bnc" id="L172" title="All 2 branches missed.">                while (in.hasNextSequenceItem()) {</span>
-<span class="nc" id="L173">                    final WireIn wireIn = in.wireIn();</span>
-<span class="nc" id="L174">                    final SignedMessage m = in.typedMarshallable();</span>
-<span class="nc bnc" id="L175" title="All 2 branches missed.">                    if (m instanceof AbstractBytesMarshallable) {</span>
-<span class="nc" id="L176">                        ((AbstractBytesMarshallable) m).readMarshallable(wireIn);</span>
+<span class="nc" id="L173">            wire.read(&quot;transactions&quot;).sequence(original, (tbe, in) -&gt; {</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">                while (in.hasNextSequenceItem()) {</span>
+<span class="nc" id="L175">                    final WireIn wireIn = in.wireIn();</span>
+<span class="nc" id="L176">                    final SignedMessage m = in.typedMarshallable();</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">                    if (m instanceof AbstractBytesMarshallable) {</span>
+<span class="nc" id="L178">                        ((AbstractBytesMarshallable) m).readMarshallable(wireIn);</span>
                     }
-<span class="nc" id="L178">                    original.addTransaction(m);</span>
-<span class="nc" id="L179">                }</span>
-<span class="nc" id="L180">            });</span>
-<span class="nc" id="L181">        }</span>
+<span class="nc" id="L180">                    original.addTransaction(m);</span>
+<span class="nc" id="L181">                }</span>
+<span class="nc" id="L182">            });</span>
+<span class="nc" id="L183">        }</span>
 
         @Override
         public void writeMarshallableInternal(@NotNull TransactionBlockEvent&lt;T&gt; original, @NotNull BytesOut bytes) {
-<span class="fc" id="L185">            bytes.write(original.transactions);</span>
-<span class="fc" id="L186">        }</span>
+<span class="fc" id="L187">            bytes.write(original.transactions);</span>
+<span class="fc" id="L188">        }</span>
 
         @Override
         public void readMarshallable(@NotNull TransactionBlockEvent&lt;T&gt; original, @NotNull BytesIn bytes) {
-<span class="fc" id="L190">            original.transactions.write(bytes);</span>
-<span class="fc" id="L191">        }</span>
+<span class="fc" id="L192">            original.transactions.write(bytes);</span>
+<span class="fc" id="L193">        }</span>
     }
 
 

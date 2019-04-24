@@ -28,6 +28,8 @@ public interface VoteTaker extends HasTcpMessageListener {
      * {@code blockNumber}
      *
      * @param blockNumber to use
+     *
+     * @return if at least one block event was replayed, false otherwise
      */
     boolean sendEndOfRoundBlock(long blockNumber);
 
@@ -38,7 +40,7 @@ public interface VoteTaker extends HasTcpMessageListener {
                             @NotNull BlockReplayer replayer,
                             @NotNull BytesStore secretKey,
                             @NotNull DtoRegistry dtoRegistry) {
-<span class="fc" id="L41">        return new VanillaVoteTaker(address, chainAddress, clusterAddresses, replayer, secretKey, dtoRegistry);</span>
+<span class="fc" id="L43">        return new VanillaVoteTaker(address, chainAddress, clusterAddresses, replayer, secretKey, dtoRegistry);</span>
     }
 
 }
