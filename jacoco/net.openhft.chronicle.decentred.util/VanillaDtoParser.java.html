@@ -9,81 +9,74 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import static java.util.Objects.requireNonNull;
-
 final class VanillaDtoParser&lt;T&gt; implements DtoParser&lt;T&gt; {
     private final Class&lt;T&gt; clazz;
 
     private final IntObjMap&lt;DtoParselet&gt; parseletMap;
     private final Map&lt;Class, Method&gt; classConsumerMap;
 
-<span class="fc" id="L20">    VanillaDtoParser(@NotNull Class&lt;T&gt; clazz, @NotNull IntObjMap&lt;DtoParselet&gt; parseletMap, @NotNull Map&lt;Class, Method&gt; classConsumerMap) {</span>
-<span class="fc" id="L21">        this.clazz = clazz;</span>
-<span class="fc" id="L22">        this.parseletMap = parseletMap;</span>
-<span class="fc" id="L23">        this.classConsumerMap = classConsumerMap;</span>
+<span class="fc" id="L18">    VanillaDtoParser(@NotNull Class&lt;T&gt; clazz, @NotNull IntObjMap&lt;DtoParselet&gt; parseletMap, @NotNull Map&lt;Class, Method&gt; classConsumerMap) {</span>
+<span class="fc" id="L19">        this.clazz = clazz;</span>
+<span class="fc" id="L20">        this.parseletMap = parseletMap;</span>
+<span class="fc" id="L21">        this.classConsumerMap = classConsumerMap;</span>
         /*this.parseletMap = IntObjMap.withExpectedSize(DtoParselet.class, parseletMap.size() * 2);
         parseletMap.forEach((i, dp) -&gt; this.parseletMap.justPut(i, new DtoParselet(dp)));
         this.classConsumerMap = new HashMap&lt;&gt;(classConsumerMap);*/
-<span class="fc" id="L27">    }</span>
+<span class="fc" id="L25">    }</span>
 
     @Override
     public void parseOne(@NotNull BytesIn bytes, @NotNull T listener) {
-<span class="fc" id="L31">        requireNonNull(bytes);</span>
-<span class="fc" id="L32">        requireNonNull(listener);</span>
-<span class="fc" id="L33">        long start = bytes.readPosition();</span>
-<span class="fc" id="L34">        final int protocolMessageType = bytes.readInt(start + VanillaSignedMessage.MESSAGE_TYPE);</span>
-<span class="fc" id="L35">        final DtoParselet parselet = parseletMap.get(protocolMessageType);</span>
+<span class="fc" id="L29">        final long start = bytes.readPosition();</span>
+<span class="fc" id="L30">        final int protocolMessageType = bytes.readInt(start + VanillaSignedMessage.MESSAGE_TYPE);</span>
+<span class="fc" id="L31">        final DtoParselet parselet = parseletMap.get(protocolMessageType);</span>
         // System.out.println(&quot;Incoming message for protocol &quot; + (protocolMessageType &gt;&gt;&gt; 16) + &quot; messageType &quot; + Integer.toHexString(protocolMessageType &amp; 0xFFFF));
-<span class="pc bpc" id="L37" title="1 of 2 branches missed.">        if (bytes.readPosition() &gt;= bytes.readLimit()) {</span>
-<span class="nc" id="L38">            throw new IllegalStateException();</span>
+<span class="pc bpc" id="L33" title="1 of 2 branches missed.">        if (bytes.readPosition() &gt;= bytes.readLimit()) {</span>
+<span class="nc" id="L34">            throw new IllegalStateException();</span>
         }
-<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (parselet == null) {</span>
-<span class="nc" id="L41">            warnNotFound(protocolMessageType);</span>
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        if (parselet == null) {</span>
+<span class="nc" id="L37">            warnNotFound(protocolMessageType);</span>
         } else {
-<span class="fc" id="L43">            parselet.parse(bytes, listener);</span>
+<span class="fc" id="L39">            parselet.parse(bytes, listener);</span>
         }
-<span class="fc" id="L45">    }</span>
+<span class="fc" id="L41">    }</span>
 
     @Override
     public SignedMessage parseOne(@NotNull BytesIn bytes) {
-<span class="fc" id="L49">        requireNonNull(bytes);</span>
-<span class="fc" id="L50">        final int protocolMessageType = bytes.readInt(bytes.readPosition() + VanillaSignedMessage.MESSAGE_TYPE);</span>
-<span class="fc" id="L51">        final DtoParselet parselet = parseletMap.get(protocolMessageType);</span>
-<span class="fc" id="L52">        System.out.println(&quot;Parsed message for protocol &quot; + (protocolMessageType &gt;&gt;&gt; 16) + &quot; messageType &quot; + Integer.toHexString(protocolMessageType &amp; 0xFFFF));</span>
-<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        if (parselet == null) {</span>
-<span class="nc" id="L54">            warnNotFound(protocolMessageType);</span>
-<span class="nc" id="L55">            return null;</span>
+<span class="fc" id="L45">        final int protocolMessageType = bytes.readInt(bytes.readPosition() + VanillaSignedMessage.MESSAGE_TYPE);</span>
+<span class="fc" id="L46">        final DtoParselet parselet = parseletMap.get(protocolMessageType);</span>
+        // System.out.println(&quot;Parsed message for protocol &quot; + (protocolMessageType &gt;&gt;&gt; 16) + &quot; messageType &quot; + Integer.toHexString(protocolMessageType &amp; 0xFFFF));
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        if (parselet == null) {</span>
+<span class="nc" id="L49">            warnNotFound(protocolMessageType);</span>
+<span class="nc" id="L50">            return null;</span>
         } else {
-<span class="fc" id="L57">            return (SignedMessage) parselet.parse(bytes);</span>
+<span class="fc" id="L52">            return (SignedMessage) parselet.parse(bytes);</span>
         }
     }
 
     @Override
     public void onMessage(@NotNull T component, @NotNull Object message) {
-<span class="nc" id="L63">        requireNonNull(component);</span>
-<span class="nc" id="L64">        requireNonNull(message);</span>
-<span class="nc" id="L65">        Method consumer = classConsumerMap.get(message.getClass());</span>
-<span class="nc bnc" id="L66" title="All 2 branches missed.">        if (consumer == null) {</span>
-<span class="nc" id="L67">            Jvm.warn().on(getClass(), &quot;Unable to find a consumer for &quot; + message.getClass());</span>
+<span class="nc" id="L58">        final Method consumer = classConsumerMap.get(message.getClass());</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        if (consumer == null) {</span>
+<span class="nc" id="L60">            Jvm.warn().on(getClass(), &quot;Unable to find a consumer for &quot; + message.getClass());</span>
         } else {
             try {
-<span class="nc" id="L70">                consumer.invoke(component, message);</span>
-<span class="nc" id="L71">            } catch (ReflectiveOperationException e) {</span>
-<span class="nc" id="L72">                Jvm.warn().on(getClass(), &quot;Unable to invoke &quot; + consumer + &quot; &quot; + message, e);</span>
-<span class="nc" id="L73">            }</span>
+<span class="nc" id="L63">                consumer.invoke(component, message);</span>
+<span class="nc" id="L64">            } catch (ReflectiveOperationException e) {</span>
+<span class="nc" id="L65">                Jvm.warn().on(getClass(), &quot;Unable to invoke &quot; + consumer + &quot; &quot; + message, e);</span>
+<span class="nc" id="L66">            }</span>
         }
-<span class="nc" id="L75">    }</span>
+<span class="nc" id="L68">    }</span>
 
     @Override
     public Class&lt;T&gt; superInterface() {
-<span class="nc" id="L79">        return clazz;</span>
+<span class="nc" id="L72">        return clazz;</span>
     }
 
     private void warnNotFound(int protocolMessageType) {
-<span class="nc" id="L83">        final int protocol = (protocolMessageType &gt;&gt;&gt; 16);</span>
-<span class="nc" id="L84">        final int messageType =  (protocolMessageType &amp; 0xFFFF);</span>
-<span class="nc" id="L85">        Jvm.warn().on(getClass(), String.format(&quot;Unable to find a parselet for protocol %d messageType %d (0x%04x)&quot;, protocol, messageType, messageType));</span>
-<span class="nc" id="L86">    }</span>
+<span class="nc" id="L76">        final int protocol = (protocolMessageType &gt;&gt;&gt; 16);</span>
+<span class="nc" id="L77">        final int messageType =  (protocolMessageType &amp; 0xFFFF);</span>
+<span class="nc" id="L78">        Jvm.warn().on(getClass(), String.format(&quot;Unable to find a parselet for protocol %d messageType %d (0x%04x)&quot;, protocol, messageType, messageType));</span>
+<span class="nc" id="L79">    }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>
