@@ -158,8 +158,8 @@ public class RPCServer&lt;U extends T, T&gt; implements DecentredServer&lt;U&gt;
         }
 
 <span class="pc bpc" id="L160" title="1 of 2 branches missed.">        if (tcpConnection == null) {</span>
-<span class="nc" id="L161">            String addressString = DecentredUtil.toAddressString(toAddress);</span>
-<span class="nc" id="L162">            System.out.println(address + &quot; - No connection to address &quot; + addressString + &quot; to send &quot; + message);</span>
+/*            String addressString = DecentredUtil.toAddressString(toAddress);
+            System.out.println(address + &quot; - No connection to address &quot; + addressString + &quot; to send &quot; + message);*/
 <span class="nc" id="L163">            return;</span>
         }
 

@@ -14,14 +14,14 @@ class DtoParselet&lt;T&gt; {
     private final int midValue;
     private final VanillaSignedMessage vsm;
 
-<span class="fc" id="L17">    public DtoParselet(Method method, int protocol, int midValue) {</span>
-<span class="fc" id="L18">        this.method = Objects.requireNonNull(method);</span>
+<span class="fc" id="L17">    public DtoParselet(@NotNull Method method, int protocol, int midValue) {</span>
+<span class="fc" id="L18">        this.method = method;</span>
 <span class="fc" id="L19">        this.protocol = protocol;</span>
 <span class="fc" id="L20">        this.midValue = midValue;</span>
 <span class="fc" id="L21">        this.vsm = createVSM(method, protocol, midValue);</span>
 <span class="fc" id="L22">    }</span>
 
-<span class="fc" id="L24">    public DtoParselet(DtoParselet parselet) {</span>
+<span class="fc" id="L24">    public DtoParselet(@NotNull DtoParselet parselet) {</span>
 <span class="fc" id="L25">        this.method = parselet.method;</span>
 <span class="fc" id="L26">        this.protocol = parselet.protocol;</span>
 <span class="fc" id="L27">        this.midValue = parselet.midValue;</span>
@@ -35,8 +35,8 @@ class DtoParselet&lt;T&gt; {
     @NotNull
     private static VanillaSignedMessage createVSM(Method method, int protocol, int messageType) {
         @SuppressWarnings(&quot;unchecked&quot;)
-<span class="fc" id="L38">        Class&lt;VanillaSignedMessage&gt; type = (Class) method.getParameterTypes()[0];</span>
-<span class="fc" id="L39">        VanillaSignedMessage vsm = ObjectUtils.newInstance(type);</span>
+<span class="fc" id="L38">        final Class&lt;VanillaSignedMessage&gt; type = (Class) method.getParameterTypes()[0];</span>
+<span class="fc" id="L39">        final VanillaSignedMessage vsm = ObjectUtils.newInstance(type);</span>
 <span class="fc" id="L40">        return vsm.protocol(protocol).messageType(messageType);</span>
     }
 
