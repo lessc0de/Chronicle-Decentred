@@ -81,7 +81,7 @@ final class KolobokeLongObjMap&lt;V&gt;  extends LongObjMap&lt;V&gt; {
 
     int index(long key) {
         long free;
-<span class="pc bpc" id="L84" title="1 of 2 branches missed.">        if (key != (free = freeValue)) {</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">        if (key != (free = freeValue)) {</span>
 <span class="fc" id="L85">            long[] keys = set;</span>
             int capacityMask;
             int index;
@@ -102,7 +102,7 @@ final class KolobokeLongObjMap&lt;V&gt;  extends LongObjMap&lt;V&gt; {
                 }
             }
         } else {
-<span class="nc" id="L105">            return -1;</span>
+<span class="fc" id="L105">            return -1;</span>
         }
     }
 
@@ -134,34 +134,34 @@ final class KolobokeLongObjMap&lt;V&gt;  extends LongObjMap&lt;V&gt; {
     }
 
     private long findNewFreeOrRemoved() {
-<span class="nc" id="L137">        long free = KolobokeLongObjMap.this.freeValue;</span>
-<span class="nc" id="L138">        Random random = ThreadLocalRandom.current();</span>
+<span class="fc" id="L137">        long free = KolobokeLongObjMap.this.freeValue;</span>
+<span class="fc" id="L138">        Random random = ThreadLocalRandom.current();</span>
         long newFree;
         {
             do {
-<span class="nc" id="L142">                newFree = ((long) (random.nextLong()));</span>
-<span class="nc bnc" id="L143" title="All 4 branches missed.">            } while ((newFree == free) || ((index(newFree)) &gt;= 0) );</span>
+<span class="fc" id="L142">                newFree = ((long) (random.nextLong()));</span>
+<span class="pc bpc" id="L143" title="2 of 4 branches missed.">            } while ((newFree == free) || ((index(newFree)) &gt;= 0) );</span>
         }
-<span class="nc" id="L145">        return newFree;</span>
+<span class="fc" id="L145">        return newFree;</span>
     }
 
     long changeFree() {
-<span class="nc" id="L149">        int mc = modCount();</span>
-<span class="nc" id="L150">        long newFree = findNewFreeOrRemoved();</span>
-<span class="nc" id="L151">        incrementModCount();</span>
-<span class="nc" id="L152">        mc++;</span>
-<span class="nc" id="L153">        LongArrays.replaceAll(set, freeValue, newFree);</span>
-<span class="nc" id="L154">        KolobokeLongObjMap.this.freeValue = newFree;</span>
-<span class="nc bnc" id="L155" title="All 2 branches missed.">        if (mc != (modCount()))</span>
+<span class="fc" id="L149">        int mc = modCount();</span>
+<span class="fc" id="L150">        long newFree = findNewFreeOrRemoved();</span>
+<span class="fc" id="L151">        incrementModCount();</span>
+<span class="fc" id="L152">        mc++;</span>
+<span class="fc" id="L153">        LongArrays.replaceAll(set, freeValue, newFree);</span>
+<span class="fc" id="L154">        KolobokeLongObjMap.this.freeValue = newFree;</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        if (mc != (modCount()))</span>
 <span class="nc" id="L156">            throw new ConcurrentModificationException();</span>
         
-<span class="nc" id="L158">        return newFree;</span>
+<span class="fc" id="L158">        return newFree;</span>
     }
 
     int insert(long key, V value) {
         long free;
-<span class="pc bpc" id="L163" title="1 of 2 branches missed.">        if (key == (free = freeValue)) {</span>
-<span class="nc" id="L164">            free = changeFree();</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">        if (key == (free = freeValue)) {</span>
+<span class="fc" id="L164">            free = changeFree();</span>
         } 
 <span class="fc" id="L166">        long[] keys = set;</span>
         int capacityMask;
