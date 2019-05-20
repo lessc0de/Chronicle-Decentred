@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.LongStream;
 
 <span class="pc bpc" id="L30" title="1 of 2 branches missed.">public class VanillaBlockEngine&lt;T&gt; implements BlockEngine, Closeable {</span>
-    public static final int STEP_PAUSE_MILLIS = 25;
+    public static final int STEP_PAUSE_MILLIS = 1; // 25
 
     private final long address;
     private final long chainAddress;
@@ -81,7 +81,7 @@ import java.util.stream.LongStream;
 <span class="fc" id="L81">    }</span>
 
     @Override
-    public void start(MessageToListener tcpMessageListener) {
+    public void start(@NotNull MessageToListener tcpMessageListener) {
 <span class="fc" id="L85">        tcpMessageListener(tcpMessageListener);</span>
 <span class="fc" id="L86">        votingSes.submit(this::runVoter);</span>
 
@@ -91,7 +91,7 @@ import java.util.stream.LongStream;
 <span class="fc" id="L91">    }</span>
 
     @Override
-    public void tcpMessageListener(MessageToListener tcpMessageListener) {
+    public void tcpMessageListener(@NotNull MessageToListener tcpMessageListener) {
 <span class="fc" id="L95">        this.tcpMessageListener = tcpMessageListener;</span>
 <span class="fc" id="L96">        voter.tcpMessageListener(tcpMessageListener);</span>
 <span class="fc" id="L97">        voteTaker.tcpMessageListener(tcpMessageListener);</span>
@@ -99,53 +99,53 @@ import java.util.stream.LongStream;
 <span class="fc" id="L99">    }</span>
 
     @Override
-    public void transactionBlockEvent(TransactionBlockEvent transactionBlockEvent) {
+    public void transactionBlockEvent(@NotNull TransactionBlockEvent transactionBlockEvent) {
 <span class="fc" id="L103">        blockReplayer.transactionBlockEvent(transactionBlockEvent);</span>
 <span class="fc" id="L104">        gossiper.transactionBlockEvent(transactionBlockEvent);</span>
 <span class="fc" id="L105">    }</span>
 
     @Override
-    public void transactionBlockGossipEvent(TransactionBlockGossipEvent transactionBlockGossipEvent) {
+    public void transactionBlockGossipEvent(@NotNull TransactionBlockGossipEvent transactionBlockGossipEvent) {
 <span class="nc" id="L109">        voter.transactionBlockGossipEvent(transactionBlockGossipEvent);</span>
 <span class="nc" id="L110">    }</span>
 
     @Override
-    public void transactionBlockVoteEvent(TransactionBlockVoteEvent transactionBlockVoteEvent) {
+    public void transactionBlockVoteEvent(@NotNull TransactionBlockVoteEvent transactionBlockVoteEvent) {
 <span class="nc" id="L114">        voteTaker.transactionBlockVoteEvent(transactionBlockVoteEvent);</span>
 <span class="nc" id="L115">    }</span>
 
     @Override
-    public void endOfRoundBlockEvent(EndOfRoundBlockEvent endOfRoundBlockEvent) {
+    public void endOfRoundBlockEvent(@NotNull EndOfRoundBlockEvent endOfRoundBlockEvent) {
 <span class="nc" id="L119">        blockReplayer.endOfRoundBlockEvent(endOfRoundBlockEvent);</span>
 <span class="nc" id="L120">    }</span>
 
     @Override
-    public void createChainRequest(CreateChainRequest createChainRequest) {
+    public void createChainRequest(@NotNull CreateChainRequest createChainRequest) {
 <span class="nc" id="L124">        chainer.onMessage(createChainRequest);</span>
 <span class="nc" id="L125">    }</span>
 
     @Override
-    public void assignDelegatesRequest(AssignDelegatesRequest assignDelegatesRequest) {
+    public void assignDelegatesRequest(@NotNull AssignDelegatesRequest assignDelegatesRequest) {
 <span class="nc" id="L129">        throw new UnsupportedOperationException();</span>
     }
 
     @Override
-    public void createTokenRequest(CreateTokenRequest createTokenRequest) {
+    public void createTokenRequest(@NotNull CreateTokenRequest createTokenRequest) {
 <span class="nc" id="L134">        chainer.onMessage(createTokenRequest);</span>
 <span class="nc" id="L135">    }</span>
 
     @Override
-    public void createAddressRequest(CreateAddressRequest createAddressRequest) {
+    public void createAddressRequest(@NotNull CreateAddressRequest createAddressRequest) {
 <span class="nc" id="L139">        throw new UnsupportedOperationException();</span>
     }
 
     @Override
-    public void verificationEvent(VerificationEvent verificationEvent) {
+    public void verificationEvent(@NotNull VerificationEvent verificationEvent) {
 <span class="nc" id="L144">        throw new UnsupportedOperationException();</span>
     }
 
     @Override
-    public void invalidationEvent(InvalidationEvent invalidationEvent) {
+    public void invalidationEvent(@NotNull InvalidationEvent invalidationEvent) {
 <span class="nc" id="L149">        throw new UnsupportedOperationException();</span>
     }
 
