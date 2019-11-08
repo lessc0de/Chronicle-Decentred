@@ -49,7 +49,7 @@ OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,TCPServer
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPServerConnection,18,60,2,2,3,20,3,5,1,5
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPServer,16,101,4,2,5,26,4,4,1,4
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,TCPClientListener,0,2,0,0,0,2,0,2,0,2
-OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPClient,48,184,8,12,7,50,7,9,0,6
+OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPClient,42,190,6,14,5,52,6,10,0,6
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaGossiper,23,152,7,11,3,35,7,8,0,6
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,VanillaVerifyIP,22,65,1,3,6,15,2,5,1,4
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.server,RunningMessageToListener,11,0,0,0,2,0,2,0,2,0
