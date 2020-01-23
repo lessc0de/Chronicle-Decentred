@@ -370,19 +370,22 @@ public abstract class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;
 
     @Override
     public final &lt;M extends Marshallable&gt; M copyTo(@NotNull M m) {
-<span class="fc" id="L373">        assertSameClassAsThis(m);</span>
-<span class="fc" id="L374">        assertSigned();</span>
-        @SuppressWarnings(&quot;unchecked&quot;)
-<span class="fc" id="L376">        final T other = (T) m;</span>
-        // This volatile property gets magically copied
-<span class="fc bfc" id="L378" title="All 2 branches covered.">        if (this instanceof HasDtoParser) {</span>
-<span class="fc" id="L379">            ((HasDtoParser)m).dtoParser(((HasDtoParser)this).dtoParser());</span>
+<span class="fc bfc" id="L373" title="All 2 branches covered.">        if (internalBytes.isEmpty()) {</span>
+<span class="nc" id="L374">            super.copyTo(m);</span>
+<span class="nc" id="L375">            return (M) this;</span>
         }
-<span class="fc" id="L381">        final Bytes internalBytesView = internalBytes.bytesForRead();</span>
-<span class="fc" id="L382">        internalBytesView.readPosition(0);</span>
-<span class="fc" id="L383">        other.readMarshallable(internalBytesView);</span>
-<span class="fc" id="L384">        other.transientFieldHandler().copyNonMarshalled((T) this, other);</span>
-<span class="fc" id="L385">        return m;</span>
+<span class="fc" id="L377">        assertSameClassAsThis(m);</span>
+        //assertSigned();
+<span class="fc" id="L379">        @SuppressWarnings(&quot;unchecked&quot;) final T other = (T) m;</span>
+        // This volatile property gets magically copied
+<span class="fc bfc" id="L381" title="All 2 branches covered.">        if (this instanceof HasDtoParser) {</span>
+<span class="fc" id="L382">            ((HasDtoParser) m).dtoParser(((HasDtoParser) this).dtoParser());</span>
+        }
+<span class="fc" id="L384">        final Bytes internalBytesView = internalBytes.bytesForRead();</span>
+<span class="fc" id="L385">        internalBytesView.readPosition(0);</span>
+<span class="fc" id="L386">        other.readMarshallable(internalBytesView);</span>
+<span class="fc" id="L387">        other.transientFieldHandler().copyNonMarshalled((T) this, other);</span>
+<span class="fc" id="L388">        return m;</span>
     }
 
     @NotNull
@@ -391,19 +394,19 @@ public abstract class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;
         try {
             @SuppressWarnings(&quot;unchecked&quot;)
             // Create a new instance of the same type as this
-<span class="fc" id="L394">            final T copy = (T) getClass().newInstance();</span>
+<span class="fc" id="L397">            final T copy = (T) getClass().newInstance();</span>
             // Perform a shallow copyNonMarshalled
-<span class="fc" id="L396">            copyTo(copy);</span>
+<span class="fc" id="L399">            copyTo(copy);</span>
             // Dereference shallow items
             //transientFieldHandler().deepCopy(self(), copyNonMarshalled);
             @SuppressWarnings(&quot;unchecked&quot;)
-<span class="fc" id="L400">            final U result = (U) copy;</span>
-<span class="fc" id="L401">            return result;</span>
+<span class="fc" id="L403">            final U result = (U) copy;</span>
+<span class="fc" id="L404">            return result;</span>
 
-<span class="nc" id="L403">        } catch (ReflectiveOperationException e) {</span>
-<span class="nc" id="L404">            Jvm.rethrow(e);</span>
+<span class="nc" id="L406">        } catch (ReflectiveOperationException e) {</span>
+<span class="nc" id="L407">            Jvm.rethrow(e);</span>
         }
-<span class="nc" id="L406">        throw new IllegalStateException(&quot;We should never end up here&quot;);</span>
+<span class="nc" id="L409">        throw new IllegalStateException(&quot;We should never end up here&quot;);</span>
     }
 
     /// Overloaded hash, toString etc.
@@ -420,30 +423,30 @@ public abstract class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;
      * @throws NullPointerException     if the provided object is null
      */
     private final void assertSameClassAsThis(Object that) {
-<span class="fc bfc" id="L423" title="All 2 branches covered.">        if (!this.getClass().equals(that.getClass())) {</span>
-<span class="fc" id="L424">            throw new IllegalArgumentException(&quot;Class &quot; + that.getClass().getName() + &quot; is not of class &quot; + this.getClass().getName());</span>
+<span class="fc bfc" id="L426" title="All 2 branches covered.">        if (!this.getClass().equals(that.getClass())) {</span>
+<span class="fc" id="L427">            throw new IllegalArgumentException(&quot;Class &quot; + that.getClass().getName() + &quot; is not of class &quot; + this.getClass().getName());</span>
         }
-<span class="fc" id="L426">    }</span>
+<span class="fc" id="L429">    }</span>
 
     protected final void assertSigned() {
-<span class="fc bfc" id="L429" title="All 2 branches covered.">        if (!signed()) {</span>
-<span class="fc" id="L430">            throw new IllegalStateException(</span>
-<span class="fc" id="L431">                String.format(&quot;The message of type %s, protocol %d, messageType %d has not been signed.&quot;, getClass().getSimpleName(), protocol(), messageType())</span>
+<span class="fc bfc" id="L432" title="All 2 branches covered.">        if (!signed()) {</span>
+<span class="fc" id="L433">            throw new IllegalStateException(</span>
+<span class="fc" id="L434">                String.format(&quot;The message of type %s, protocol %d, messageType %d has not been signed.&quot;, getClass().getSimpleName(), protocol(), messageType())</span>
             );
         }
-<span class="fc" id="L434">    }</span>
+<span class="fc" id="L437">    }</span>
 
     protected final void assertNotSigned() {
-<span class="fc bfc" id="L437" title="All 2 branches covered.">        if (signed()) {</span>
-<span class="fc" id="L438">            throw new IllegalStateException(</span>
-<span class="fc" id="L439">                String.format(&quot;The message of type %s, protocol %d, messageType %d has already been signed.&quot;, getClass().getSimpleName(), protocol(), messageType())</span>
+<span class="fc bfc" id="L440" title="All 2 branches covered.">        if (signed()) {</span>
+<span class="fc" id="L441">            throw new IllegalStateException(</span>
+<span class="fc" id="L442">                String.format(&quot;The message of type %s, protocol %d, messageType %d has already been signed.&quot;, getClass().getSimpleName(), protocol(), messageType())</span>
             );
         }
-<span class="fc" id="L442">    }</span>
+<span class="fc" id="L445">    }</span>
 
     @SuppressWarnings(&quot;unchecked&quot;)
     T self() {
-<span class="fc" id="L446">        return (T) this;</span>
+<span class="fc" id="L449">        return (T) this;</span>
     }
 
 }
