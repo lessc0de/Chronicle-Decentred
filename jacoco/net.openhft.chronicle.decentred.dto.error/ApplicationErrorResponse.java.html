@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApplicationErrorResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenHFT/Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.dto.error</a> &gt; <span class="el_source">ApplicationErrorResponse.java</span></div><h1>ApplicationErrorResponse.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.dto.error;
 
+import net.openhft.chronicle.bytes.Bytes;
 import net.openhft.chronicle.bytes.BytesIn;
 import net.openhft.chronicle.bytes.BytesOut;
 import net.openhft.chronicle.decentred.dto.base.TransientFieldHandler;
@@ -10,7 +11,7 @@ import net.openhft.chronicle.wire.WireIn;
 import net.openhft.chronicle.wire.WireOut;
 import org.jetbrains.annotations.NotNull;
 
-<span class="fc" id="L13">public final class ApplicationErrorResponse extends VanillaSignedMessage&lt;ApplicationErrorResponse&gt; implements</span>
+<span class="fc" id="L14">public final class ApplicationErrorResponse extends VanillaSignedMessage&lt;ApplicationErrorResponse&gt; implements</span>
     HasDtoParser&lt;ApplicationErrorResponse, Object&gt; {
 
     private String reason;
@@ -18,57 +19,57 @@ import org.jetbrains.annotations.NotNull;
     private transient DtoParser dtoParser;
 
     public String reason() {
-<span class="fc" id="L21">        return reason;</span>
+<span class="fc" id="L22">        return reason;</span>
     }
 
     public ApplicationErrorResponse reason(String reason) {
-<span class="nc" id="L25">        assertNotSigned();</span>
-<span class="nc" id="L26">        this.reason = reason;</span>
-<span class="nc" id="L27">        return this;</span>
+<span class="nc" id="L26">        assertNotSigned();</span>
+<span class="nc" id="L27">        this.reason = reason;</span>
+<span class="nc" id="L28">        return this;</span>
     }
 
     public ApplicationErrorResponse init(VanillaSignedMessage origMessage, String reason) {
-<span class="fc" id="L31">        assertNotSigned();</span>
-<span class="fc" id="L32">        this.origMessage = origMessage;</span>
-<span class="fc" id="L33">        this.reason = reason;</span>
-<span class="fc" id="L34">        return this;</span>
+<span class="fc" id="L32">        assertNotSigned();</span>
+<span class="fc" id="L33">        this.origMessage = origMessage;</span>
+<span class="fc" id="L34">        this.reason = reason;</span>
+<span class="fc" id="L35">        return this;</span>
     }
 
     public VanillaSignedMessage origMessage() {
-<span class="fc" id="L38">        return origMessage;</span>
+<span class="fc" id="L39">        return origMessage;</span>
     }
 
 
     public DtoParser dtoParser() {
-<span class="fc" id="L43">        return dtoParser;</span>
+<span class="fc" id="L44">        return dtoParser;</span>
     }
 
     public ApplicationErrorResponse dtoParser(DtoParser dtoParser) {
-<span class="fc" id="L47">        this.dtoParser = dtoParser;</span>
-<span class="fc" id="L48">        return this;</span>
+<span class="fc" id="L48">        this.dtoParser = dtoParser;</span>
+<span class="fc" id="L49">        return this;</span>
     }
 
     // Handling of transient fields
 
-<span class="fc" id="L53">    private static final TransientFieldHandler&lt;ApplicationErrorResponse&gt; TRANSIENT_FIELD_HANDLER = new CustomTransientFieldHandler();</span>
+<span class="fc" id="L54">    private static final TransientFieldHandler&lt;ApplicationErrorResponse&gt; TRANSIENT_FIELD_HANDLER = new CustomTransientFieldHandler();</span>
 
     @Override
     public TransientFieldHandler&lt;ApplicationErrorResponse&gt; transientFieldHandler() {
-<span class="fc" id="L57">        return TRANSIENT_FIELD_HANDLER;</span>
+<span class="fc" id="L58">        return TRANSIENT_FIELD_HANDLER;</span>
     }
 
     private static final class CustomTransientFieldHandler implements TransientFieldHandler&lt;ApplicationErrorResponse&gt; {
 
         @Override
         public void reset(ApplicationErrorResponse original) {
-<span class="fc" id="L64">            original.origMessage = null;</span>
-<span class="fc" id="L65">            original.dtoParser = null;</span>
-<span class="fc" id="L66">        }</span>
+<span class="fc" id="L65">            original.origMessage = null;</span>
+<span class="fc" id="L66">            original.dtoParser = null;</span>
+<span class="fc" id="L67">        }</span>
 
         @Override
         public void copyNonMarshalled(@NotNull ApplicationErrorResponse original, @NotNull ApplicationErrorResponse target) {
-<span class="fc" id="L70">            target.dtoParser(original.dtoParser());</span>
-<span class="fc" id="L71">        }</span>
+<span class="fc" id="L71">            target.dtoParser(original.dtoParser());</span>
+<span class="fc" id="L72">        }</span>
 
         /*        @Override
         public void copyNonMarshalled(@NotNull ApplicationErrorResponse original, @NotNull ApplicationErrorResponse target) {
@@ -83,23 +84,28 @@ import org.jetbrains.annotations.NotNull;
 
         @Override
         public void writeMarshallableInternal(ApplicationErrorResponse original, @NotNull BytesOut bytes) {
-<span class="fc" id="L86">            original.origMessage.writeMarshallable(bytes);</span>
-<span class="fc" id="L87">        }</span>
+<span class="fc" id="L87">            original.origMessage.writeMarshallable(bytes);</span>
+<span class="fc" id="L88">        }</span>
 
         @Override
         public void readMarshallable(ApplicationErrorResponse original, WireIn wire) {
-<span class="nc" id="L91">            original.origMessage = wire.read(&quot;origMessage&quot;).object(VanillaSignedMessage.class);</span>
-<span class="nc" id="L92">        }</span>
+<span class="nc" id="L92">            original.origMessage = wire.read(&quot;origMessage&quot;).object(VanillaSignedMessage.class);</span>
+<span class="nc" id="L93">        }</span>
 
         @Override
         public void writeMarshallable(@NotNull ApplicationErrorResponse original, @NotNull WireOut wire) {
-<span class="fc" id="L96">            wire.write(&quot;origMessage&quot;).object(VanillaSignedMessage.class, original.origMessage);</span>
-<span class="fc" id="L97">        }</span>
+<span class="fc" id="L97">            wire.write(&quot;origMessage&quot;).object(VanillaSignedMessage.class, original.origMessage);</span>
+<span class="fc" id="L98">        }</span>
 
         @Override
         public void readMarshallable(@NotNull ApplicationErrorResponse original, @NotNull BytesIn bytes) {
-<span class="fc" id="L101">            original.origMessage = (VanillaSignedMessage) original.dtoParser.parseOne(bytes);</span>
-<span class="fc" id="L102">        }</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">            if (original.dtoParser == null) {</span>
+<span class="fc" id="L103">                System.err.println(&quot;Unable to parse &quot; + ((Bytes) bytes).toHexString());</span>
+<span class="fc" id="L104">                original.origMessage = null;</span>
+            } else {
+<span class="fc" id="L106">                original.origMessage = (VanillaSignedMessage) original.dtoParser.parseOne(bytes);</span>
+            }
+<span class="fc" id="L108">        }</span>
     }
 
 
