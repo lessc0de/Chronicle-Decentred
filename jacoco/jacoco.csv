@@ -72,7 +72,7 @@ OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.dto.address,Invalida
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.internal.server,MultiMessageToListener,64,0,0,0,13,0,5,0,5,0
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.internal.server,VanillaVoteTaker,15,130,6,10,1,31,6,8,0,6
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.internal.server,SingleMessageToListener.new VanillaSignedMessage() {...},6,0,0,0,1,0,1,0,1,0
-OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.internal.server,VanillaBlockEngine,78,312,8,14,28,59,19,12,11,9
+OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.internal.server,VanillaBlockEngine,78,312,7,15,28,59,18,13,11,9
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.internal.server,VanillaTransactionProcessor,29,26,0,0,8,11,8,6,8,6
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.internal.server,QueuingChainer,0,69,0,2,0,18,0,4,0,3
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.internal.server,SingleMessageToListener,203,0,14,0,52,0,14,0,7,0
