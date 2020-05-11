@@ -79,8 +79,8 @@ public class VanillaTCPClient extends AbstractTCPConnection {
 <span class="fc" id="L79">    }</span>
 
     private void openChannel() {
-<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        if (++nextChannel &gt;= socketAddresses.size())</span>
-<span class="nc" id="L83">            nextChannel = 0;</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        if (++nextChannel &gt;= socketAddresses.size())</span>
+<span class="fc" id="L83">            nextChannel = 0;</span>
 <span class="fc" id="L84">        InetSocketAddress socketAddress = socketAddresses.get(nextChannel);</span>
         try {
 <span class="fc" id="L86">            channel(SocketChannel.open(socketAddress));</span>
@@ -90,15 +90,15 @@ public class VanillaTCPClient extends AbstractTCPConnection {
 <span class="fc" id="L90">            System.out.println(&quot;Connected to &quot; + socketAddress);</span>
 <span class="fc" id="L91">            failed = 0;</span>
 
-<span class="nc" id="L93">        } catch (IOException ioe) {</span>
-<span class="nc" id="L94">            failed++;</span>
-<span class="nc bnc" id="L95" title="All 2 branches missed.">            if (failed &gt; socketAddresses.size()) {</span>
+<span class="fc" id="L93">        } catch (IOException ioe) {</span>
+<span class="fc" id="L94">            failed++;</span>
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">            if (failed &gt; socketAddresses.size()) {</span>
 <span class="nc" id="L96">                System.err.println(&quot;Failed to connect to &quot; + socketAddress + &quot; trying again. &quot; + ioe);</span>
             }
-<span class="nc" id="L98">            long delay = Math.min(1000, 100 * failed / socketAddresses.size());</span>
-<span class="nc bnc" id="L99" title="All 2 branches missed.">            if (delay &gt; 0)</span>
-<span class="nc" id="L100">                Jvm.pause(delay);</span>
-<span class="nc" id="L101">            channel(null);</span>
+<span class="fc" id="L98">            long delay = Math.min(1000, 100 * failed / socketAddresses.size());</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">            if (delay &gt; 0)</span>
+<span class="fc" id="L100">                Jvm.pause(delay);</span>
+<span class="fc" id="L101">            channel(null);</span>
 <span class="fc" id="L102">        }</span>
 <span class="fc" id="L103">    }</span>
 }
