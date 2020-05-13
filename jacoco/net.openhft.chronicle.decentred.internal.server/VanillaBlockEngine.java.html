@@ -176,7 +176,7 @@ import java.util.stream.LongStream;
 <span class="fc" id="L176">                long delay = nextSendUS - SystemTimeProvider.INSTANCE.currentTimeMicros();</span>
 //                four.sample(System.nanoTime() - start);
 
-<span class="fc bfc" id="L179" title="All 2 branches covered.">                if (delay &gt; 999)</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">                if (delay &gt; 999)</span>
 <span class="fc" id="L180">                    Thread.sleep(delay / 1000);</span>
 //                if (delay &gt; 10) // minimum delay
 //                    LockSupport.parkNanos(delay * 1000);
