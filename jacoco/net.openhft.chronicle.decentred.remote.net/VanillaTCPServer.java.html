@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VanillaTCPServer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenHFT/Chronicle-Decentred</a> &gt; <a href="index.source.html" class="el_package">net.openhft.chronicle.decentred.remote.net</a> &gt; <span class="el_source">VanillaTCPServer.java</span></div><h1>VanillaTCPServer.java</h1><pre class="source lang-java linenums">package net.openhft.chronicle.decentred.remote.net;
 
+import net.openhft.chronicle.core.io.AbstractCloseable;
 import net.openhft.chronicle.core.io.Closeable;
 import net.openhft.chronicle.threads.NamedThreadFactory;
 
@@ -13,57 +14,57 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class VanillaTCPServer implements TCPServer {
+public class VanillaTCPServer extends AbstractCloseable implements TCPServer {
     private final ServerSocketChannel serverChannel;
     private final ExecutorService pool;
-<span class="fc" id="L19">    private final List&lt;TCPConnection&gt; connections = Collections.synchronizedList(new ArrayList&lt;&gt;());</span>
+<span class="fc" id="L20">    private final List&lt;TCPConnection&gt; connections = Collections.synchronizedList(new ArrayList&lt;&gt;());</span>
     private final TCPServerConnectionListener connectionListener;
-<span class="fc" id="L21">    private volatile boolean running = true;</span>
+<span class="fc" id="L22">    private volatile boolean running = true;</span>
 
-<span class="fc" id="L23">    public VanillaTCPServer(String name, int port, TCPServerConnectionListener connectionListener) throws IOException {</span>
-<span class="fc" id="L24">        this.connectionListener = connectionListener;</span>
-<span class="fc" id="L25">        this.serverChannel = ServerSocketChannel.open();</span>
-<span class="fc" id="L26">        serverChannel.bind(new InetSocketAddress(port));</span>
-<span class="fc" id="L27">        pool = Executors.newCachedThreadPool(new NamedThreadFactory(name, false, Thread.MIN_PRIORITY));</span>
-<span class="fc" id="L28">        pool.submit(this::run);</span>
-<span class="fc" id="L29">    }</span>
+<span class="fc" id="L24">    public VanillaTCPServer(String name, int port, TCPServerConnectionListener connectionListener) throws IOException {</span>
+<span class="fc" id="L25">        this.connectionListener = connectionListener;</span>
+<span class="fc" id="L26">        this.serverChannel = ServerSocketChannel.open();</span>
+<span class="fc" id="L27">        serverChannel.bind(new InetSocketAddress(port));</span>
+<span class="fc" id="L28">        pool = Executors.newCachedThreadPool(new NamedThreadFactory(name, false, Thread.MIN_PRIORITY));</span>
+<span class="fc" id="L29">        pool.submit(this::run);</span>
+<span class="fc" id="L30">    }</span>
 
     @Override
     public int getPort() {
-<span class="nc bnc" id="L33" title="All 2 branches missed.">        if (serverChannel == null) {</span>
-<span class="nc" id="L34">            throw new IllegalStateException(&quot;Not yet bound&quot;);</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">        if (serverChannel == null) {</span>
+<span class="nc" id="L35">            throw new IllegalStateException(&quot;Not yet bound&quot;);</span>
         }
-<span class="nc" id="L36">        return serverChannel.socket().getLocalPort();</span>
+<span class="nc" id="L37">        return serverChannel.socket().getLocalPort();</span>
     }
 
     private void run() {
         try {
-<span class="pc bpc" id="L41" title="1 of 2 branches missed.">            while (running) {</span>
-<span class="fc" id="L42">                SocketChannel accept = serverChannel.accept();</span>
-<span class="fc" id="L43">                TCPConnection connection = connectionListener.createConnection(this, accept);</span>
-<span class="fc" id="L44">                System.out.println(&quot;server connection = &quot; + connection);</span>
-<span class="fc" id="L45">                connections.add(connection);</span>
-<span class="fc" id="L46">                pool.submit(((Runnable) connection));</span>
-<span class="fc" id="L47">            }</span>
-<span class="fc" id="L48">        } catch (Throwable t) {</span>
-<span class="pc bpc" id="L49" title="1 of 2 branches missed.">            if (running)</span>
-<span class="nc" id="L50">                t.printStackTrace();</span>
-<span class="fc" id="L51">            close();</span>
-<span class="nc" id="L52">        }</span>
-<span class="fc" id="L53">    }</span>
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">            while (running) {</span>
+<span class="fc" id="L43">                SocketChannel accept = serverChannel.accept();</span>
+<span class="fc" id="L44">                TCPConnection connection = connectionListener.createConnection(this, accept);</span>
+<span class="fc" id="L45">                System.out.println(&quot;server connection = &quot; + connection);</span>
+<span class="fc" id="L46">                connections.add(connection);</span>
+<span class="fc" id="L47">                pool.submit(((Runnable) connection));</span>
+<span class="fc" id="L48">            }</span>
+<span class="fc" id="L49">        } catch (Throwable t) {</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">            if (running)</span>
+<span class="nc" id="L51">                t.printStackTrace();</span>
+<span class="fc" id="L52">            close();</span>
+<span class="nc" id="L53">        }</span>
+<span class="fc" id="L54">    }</span>
 
     @Override
-    public void close() {
-<span class="fc" id="L57">        running = false;</span>
-<span class="fc" id="L58">        pool.shutdown();</span>
+    protected void performClose() {
+<span class="fc" id="L58">        running = false;</span>
+<span class="fc" id="L59">        pool.shutdown();</span>
 
-<span class="fc" id="L60">        Closeable.closeQuietly(connections);</span>
-<span class="fc" id="L61">        Closeable.closeQuietly(serverChannel);</span>
-<span class="fc" id="L62">    }</span>
+<span class="fc" id="L61">        Closeable.closeQuietly(connections);</span>
+<span class="fc" id="L62">        Closeable.closeQuietly(serverChannel);</span>
+<span class="fc" id="L63">    }</span>
 
     @Override
     public TCPServerConnectionListener connectionListener() {
-<span class="fc" id="L66">        return connectionListener;</span>
+<span class="fc" id="L67">        return connectionListener;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

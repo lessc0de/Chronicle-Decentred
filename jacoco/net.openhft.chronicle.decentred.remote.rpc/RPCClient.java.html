@@ -2,6 +2,7 @@
 
 import net.openhft.chronicle.bytes.Bytes;
 import net.openhft.chronicle.bytes.BytesStore;
+import net.openhft.chronicle.core.io.AbstractCloseable;
 import net.openhft.chronicle.core.io.Closeable;
 import net.openhft.chronicle.core.io.IORuntimeException;
 import net.openhft.chronicle.core.time.TimeProvider;
@@ -27,15 +28,15 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 
-public class RPCClient&lt;U extends T, T&gt; implements Closeable, TCPConnection, MessageRouter&lt;U&gt; {
+public class RPCClient&lt;U extends T, T&gt; extends AbstractCloseable implements TCPConnection, MessageRouter&lt;U&gt; {
     private final VanillaTCPClient tcpClient;
     private final T listener;
     private final BytesStore secretKey;
     private final DtoRegistry&lt;U&gt; registry;
     private final DtoParser&lt;T&gt; parser;
     private final U proxy;
-<span class="fc" id="L37">    private boolean internal = false;</span>
-<span class="fc" id="L38">    private TimeProvider timeProvider = UniqueMicroTimeProvider.INSTANCE;</span>
+<span class="fc" id="L38">    private boolean internal = false;</span>
+<span class="fc" id="L39">    private TimeProvider timeProvider = UniqueMicroTimeProvider.INSTANCE;</span>
 
     public RPCClient(String name,
                      String socketHost,
@@ -44,104 +45,104 @@ public class RPCClient&lt;U extends T, T&gt; implements Closeable, TCPConnection
                      DtoRegistry&lt;U&gt; registry,
                      T listener,
                      Class&lt;T&gt; tClass) {
-<span class="fc" id="L47">        this(name, Collections.singletonList(new InetSocketAddress(socketHost, socketPort)), secretKey, registry, listener, tClass);</span>
-<span class="fc" id="L48">    }</span>
+<span class="fc" id="L48">        this(name, Collections.singletonList(new InetSocketAddress(socketHost, socketPort)), secretKey, registry, listener, tClass);</span>
+<span class="fc" id="L49">    }</span>
 
     public RPCClient(String name,
                      List&lt;InetSocketAddress&gt; socketAddresses,
                      BytesStore secretKey,
                      DtoRegistry&lt;U&gt; registry,
                      T listener,
-<span class="fc" id="L55">                     Class&lt;T&gt; tClass) {</span>
-<span class="fc" id="L56">        this.secretKey = secretKey;</span>
-<span class="fc" id="L57">        this.parser = registry.get(tClass);</span>
-<span class="fc" id="L58">        this.registry = registry;</span>
-<span class="pc bpc" id="L59" title="1 of 2 branches missed.">        InvocationHandler handler = new AbstractMethodWriterInvocationHandler() {</span>
+<span class="fc" id="L56">                     Class&lt;T&gt; tClass) {</span>
+<span class="fc" id="L57">        this.secretKey = secretKey;</span>
+<span class="fc" id="L58">        this.parser = registry.get(tClass);</span>
+<span class="fc" id="L59">        this.registry = registry;</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">        InvocationHandler handler = new AbstractMethodWriterInvocationHandler() {</span>
             @Override
             protected void handleInvoke(Method method, Object[] args) {
-<span class="pc bpc" id="L62" title="2 of 4 branches missed.">                assert args.length == 1;</span>
-<span class="fc" id="L63">                VanillaSignedMessage vsm = (VanillaSignedMessage) args[0];</span>
-<span class="fc" id="L64">                write(vsm);</span>
-<span class="fc" id="L65">            }</span>
+<span class="pc bpc" id="L63" title="2 of 4 branches missed.">                assert args.length == 1;</span>
+<span class="fc" id="L64">                VanillaSignedMessage vsm = (VanillaSignedMessage) args[0];</span>
+<span class="fc" id="L65">                write(vsm);</span>
+<span class="fc" id="L66">            }</span>
         };
-<span class="fc" id="L67">        Class&lt;U&gt; uClass = registry.superInterface();</span>
+<span class="fc" id="L68">        Class&lt;U&gt; uClass = registry.superInterface();</span>
         //noinspection unchecked
-<span class="fc" id="L69">        proxy = (U) Proxy.newProxyInstance(uClass.getClassLoader(),</span>
+<span class="fc" id="L70">        proxy = (U) Proxy.newProxyInstance(uClass.getClassLoader(),</span>
                 new Class[]{uClass, SystemMessageListener.class},
                 handler);
-<span class="fc" id="L72">        this.listener = listener;</span>
-<span class="fc" id="L73">        this.tcpClient = new VanillaTCPClient(name, socketAddresses, new ClientListener());</span>
-<span class="fc" id="L74">    }</span>
+<span class="fc" id="L73">        this.listener = listener;</span>
+<span class="fc" id="L74">        this.tcpClient = new VanillaTCPClient(name, socketAddresses, new ClientListener());</span>
+<span class="fc" id="L75">    }</span>
 
     @Override
     public U to(long address) {
-<span class="fc" id="L78">        return proxy;</span>
+<span class="fc" id="L79">        return proxy;</span>
     }
 
     public void write(VanillaSignedMessage message) {
         try {
-<span class="fc bfc" id="L83" title="All 2 branches covered.">            if (message.protocol() == 0) {</span>
-<span class="fc" id="L84">                int pmt = registry.protocolMessageTypeFor(message.getClass());</span>
-<span class="fc" id="L85">                message.protocol(pmt &gt;&gt;&gt; 16);</span>
-<span class="fc" id="L86">                message.messageType(pmt &amp; DecentredUtil.MASK_16);</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">            if (message.protocol() == 0) {</span>
+<span class="fc" id="L85">                int pmt = registry.protocolMessageTypeFor(message.getClass());</span>
+<span class="fc" id="L86">                message.protocol(pmt &gt;&gt;&gt; 16);</span>
+<span class="fc" id="L87">                message.messageType(pmt &amp; DecentredUtil.MASK_16);</span>
             }
-<span class="pc bpc" id="L88" title="1 of 2 branches missed.">            if (!message.signed()) {</span>
-<span class="fc" id="L89">                message.sign(secretKey, timeProvider);</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">            if (!message.signed()) {</span>
+<span class="fc" id="L90">                message.sign(secretKey, timeProvider);</span>
             }
-<span class="fc" id="L91">            tcpClient.write(message.byteBuffer());</span>
+<span class="fc" id="L92">            tcpClient.write(message.byteBuffer());</span>
 
-<span class="nc" id="L93">        } catch (IOException e) {</span>
-<span class="nc" id="L94">            throw new IORuntimeException(e);</span>
-<span class="fc" id="L95">        }</span>
-<span class="fc" id="L96">    }</span>
+<span class="nc" id="L94">        } catch (IOException e) {</span>
+<span class="nc" id="L95">            throw new IORuntimeException(e);</span>
+<span class="fc" id="L96">        }</span>
+<span class="fc" id="L97">    }</span>
 
     @Override
     public void write(BytesStore&lt;?, ByteBuffer&gt; bytes) throws IOException {
-<span class="nc" id="L100">        tcpClient.write(bytes);</span>
-<span class="nc" id="L101">    }</span>
+<span class="nc" id="L101">        tcpClient.write(bytes);</span>
+<span class="nc" id="L102">    }</span>
 
     @Override
     public void write(ByteBuffer buffer) throws IOException {
-<span class="nc" id="L105">        tcpClient.write(buffer);</span>
-<span class="nc" id="L106">    }</span>
+<span class="nc" id="L106">        tcpClient.write(buffer);</span>
+<span class="nc" id="L107">    }</span>
 
     @Override
-    public void close() {
-<span class="fc" id="L110">        tcpClient.close();</span>
-<span class="fc" id="L111">    }</span>
+    protected void performClose() {
+<span class="fc" id="L111">        tcpClient.close();</span>
+<span class="fc" id="L112">    }</span>
 
     public boolean internal() {
-<span class="nc" id="L114">        return internal;</span>
+<span class="nc" id="L115">        return internal;</span>
     }
 
     public RPCClient&lt;U, T&gt; internal(boolean internal) {
-<span class="nc" id="L118">        this.internal = internal;</span>
-<span class="nc" id="L119">        return this;</span>
+<span class="nc" id="L119">        this.internal = internal;</span>
+<span class="nc" id="L120">        return this;</span>
     }
 
     public TimeProvider timeProvider() {
-<span class="nc" id="L123">        return timeProvider;</span>
+<span class="nc" id="L124">        return timeProvider;</span>
     }
 
     public RPCClient&lt;U, T&gt; timeProvider(TimeProvider timeProvider) {
-<span class="fc" id="L127">        this.timeProvider = timeProvider;</span>
-<span class="fc" id="L128">        return this;</span>
+<span class="fc" id="L128">        this.timeProvider = timeProvider;</span>
+<span class="fc" id="L129">        return this;</span>
     }
 
-<span class="fc" id="L131">    class ClientListener implements TCPClientListener {</span>
+<span class="fc" id="L132">    class ClientListener implements TCPClientListener {</span>
 
         @Override
         public void onMessage(TCPConnection client, Bytes bytes) throws IOException {
-<span class="fc" id="L135">            bytes.readSkip(-4);</span>
+<span class="fc" id="L136">            bytes.readSkip(-4);</span>
             try {
-<span class="fc" id="L137">                parser.parseOne(bytes, listener);</span>
+<span class="fc" id="L138">                parser.parseOne(bytes, listener);</span>
 
-<span class="nc" id="L139">            } catch (IORuntimeException iore) {</span>
-<span class="nc bnc" id="L140" title="All 2 branches missed.">                if (iore.getCause() instanceof IOException)</span>
-<span class="nc" id="L141">                    throw (IOException) iore.getCause();</span>
-<span class="nc" id="L142">                throw iore;</span>
-<span class="fc" id="L143">            }</span>
-<span class="fc" id="L144">        }</span>
+<span class="nc" id="L140">            } catch (IORuntimeException iore) {</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">                if (iore.getCause() instanceof IOException)</span>
+<span class="nc" id="L142">                    throw (IOException) iore.getCause();</span>
+<span class="nc" id="L143">                throw iore;</span>
+<span class="fc" id="L144">            }</span>
+<span class="fc" id="L145">        }</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>
