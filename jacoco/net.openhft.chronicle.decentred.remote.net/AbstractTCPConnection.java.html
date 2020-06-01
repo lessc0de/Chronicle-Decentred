@@ -34,7 +34,7 @@ import java.nio.channels.SocketChannel;
     }
 
     public AbstractTCPConnection channel(SocketChannel channel) {
-<span class="fc bfc" id="L37" title="All 2 branches covered.">        iSocketChannel = channel == null ? null : ISocketChannel.wrap(channel);</span>
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">        iSocketChannel = channel == null ? null : ISocketChannel.wrap(channel);</span>
 <span class="fc" id="L38">        this.channel = channel;</span>
 <span class="fc" id="L39">        return this;</span>
     }
