@@ -60,138 +60,153 @@ public class VanillaGateway extends AbstractCloseable implements Gateway {
     }
 
     @Override
-    public void start(DecentredServer decentredServer) {
-<span class="fc" id="L64">        this.decentredServer = decentredServer;</span>
-<span class="fc" id="L65">        main.start(decentredServer);</span>
-<span class="fc" id="L66">        local.start(decentredServer);</span>
-<span class="fc" id="L67">    }</span>
+<span class="fc" id="L63">    public void start(DecentredServer decentredServer) { throwExceptionIfClosed();</span>
 
-    public void tcpMessageListener(DecentredServer decentredServer) {
-<span class="nc" id="L70">        this.decentredServer = decentredServer;</span>
-<span class="nc" id="L71">        main.tcpMessageListener(decentredServer);</span>
-<span class="nc" id="L72">        local.tcpMessageListener(decentredServer);</span>
-<span class="nc" id="L73">    }</span>
+<span class="fc" id="L65"> this.decentredServer = decentredServer;</span>
+<span class="fc" id="L66">        main.start(decentredServer);</span>
+<span class="fc" id="L67">        local.start(decentredServer);</span>
+<span class="fc" id="L68">    }</span>
+
+<span class="nc" id="L70">    public void tcpMessageListener(DecentredServer decentredServer) { throwExceptionIfClosed();</span>
+
+<span class="nc" id="L72"> this.decentredServer = decentredServer;</span>
+<span class="nc" id="L73">        main.tcpMessageListener(decentredServer);</span>
+<span class="nc" id="L74">        local.tcpMessageListener(decentredServer);</span>
+<span class="nc" id="L75">    }</span>
 
     @UsedViaReflection
-    public void processOneBlock() {
-<span class="nc" id="L77">        main.processOneBlock();</span>
-<span class="nc" id="L78">        local.processOneBlock();</span>
-<span class="nc" id="L79">    }</span>
+<span class="nc" id="L78">    public void processOneBlock() { throwExceptionIfClosed();</span>
+
+<span class="nc" id="L80"> main.processOneBlock();</span>
+<span class="nc" id="L81">        local.processOneBlock();</span>
+<span class="nc" id="L82">    }</span>
 
     @Override
-    public void createAddressRequest(CreateAddressRequest createAddressRequest) {
-<span class="fc" id="L83">        BytesStore publicKey = createAddressRequest.publicKey();</span>
-<span class="fc" id="L84">        long address = DecentredUtil.toAddress(publicKey);</span>
-<span class="fc" id="L85">        decentredServer.register(address, publicKey);</span>
-<span class="fc" id="L86">        decentredServer.subscribe(address);</span>
-<span class="fc" id="L87">        main.onMessage(createAddressRequest);</span>
-<span class="fc" id="L88">    }</span>
+<span class="fc" id="L85">    public void createAddressRequest(CreateAddressRequest createAddressRequest) { throwExceptionIfClosed();</span>
+
+<span class="fc" id="L87"> BytesStore publicKey = createAddressRequest.publicKey();</span>
+<span class="fc" id="L88">        long address = DecentredUtil.toAddress(publicKey);</span>
+<span class="fc" id="L89">        decentredServer.register(address, publicKey);</span>
+<span class="fc" id="L90">        decentredServer.subscribe(address);</span>
+<span class="fc" id="L91">        main.onMessage(createAddressRequest);</span>
+<span class="fc" id="L92">    }</span>
 
     @Override
-    public void createChainRequest(CreateChainRequest createChainRequest) {
-<span class="nc" id="L92">        main.createChainRequest(createChainRequest);</span>
-<span class="nc" id="L93">    }</span>
+<span class="nc" id="L95">    public void createChainRequest(CreateChainRequest createChainRequest) { throwExceptionIfClosed();</span>
 
-    @Override
-    public void assignDelegatesRequest(AssignDelegatesRequest assignDelegatesRequest) {
-<span class="nc" id="L97">        main.assignDelegatesRequest(assignDelegatesRequest);</span>
+<span class="nc" id="L97"> main.createChainRequest(createChainRequest);</span>
 <span class="nc" id="L98">    }</span>
 
     @Override
-    public void createTokenRequest(CreateTokenRequest createTokenRequest) {
-<span class="nc" id="L102">        main.createTokenRequest(createTokenRequest);</span>
-<span class="nc" id="L103">    }</span>
+<span class="nc" id="L101">    public void assignDelegatesRequest(AssignDelegatesRequest assignDelegatesRequest) { throwExceptionIfClosed();</span>
+
+<span class="nc" id="L103"> main.assignDelegatesRequest(assignDelegatesRequest);</span>
+<span class="nc" id="L104">    }</span>
 
     @Override
-    public void verificationEvent(VerificationEvent verificationEvent) {
-<span class="nc" id="L107">        verifyIP.verificationEvent(verificationEvent);</span>
-<span class="nc" id="L108">    }</span>
+<span class="nc" id="L107">    public void createTokenRequest(CreateTokenRequest createTokenRequest) { throwExceptionIfClosed();</span>
+
+<span class="nc" id="L109"> main.createTokenRequest(createTokenRequest);</span>
+<span class="nc" id="L110">    }</span>
 
     @Override
-    public void invalidationEvent(InvalidationEvent invalidationEvent) {
-<span class="nc" id="L112">        verifyIP.invalidationEvent(invalidationEvent);</span>
-<span class="nc" id="L113">    }</span>
+<span class="nc" id="L113">    public void verificationEvent(VerificationEvent verificationEvent) { throwExceptionIfClosed();</span>
+
+<span class="nc" id="L115"> verifyIP.verificationEvent(verificationEvent);</span>
+<span class="nc" id="L116">    }</span>
 
     @Override
-    public void transactionBlockEvent(TransactionBlockEvent transactionBlockEvent) {
-<span class="nc" id="L117">        long chainAddress = transactionBlockEvent.chainAddress();</span>
-<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (isMainChain(chainAddress))</span>
-<span class="nc" id="L119">            main.transactionBlockEvent(transactionBlockEvent);</span>
-<span class="nc bnc" id="L120" title="All 2 branches missed.">        else if (this.chainAddress == chainAddress)</span>
-<span class="nc" id="L121">            local.transactionBlockEvent(transactionBlockEvent);</span>
+<span class="nc" id="L119">    public void invalidationEvent(InvalidationEvent invalidationEvent) { throwExceptionIfClosed();</span>
+
+<span class="nc" id="L121"> verifyIP.invalidationEvent(invalidationEvent);</span>
+<span class="nc" id="L122">    }</span>
+
+    @Override
+<span class="nc" id="L125">    public void transactionBlockEvent(TransactionBlockEvent transactionBlockEvent) { throwExceptionIfClosed();</span>
+
+<span class="nc" id="L127"> long chainAddress = transactionBlockEvent.chainAddress();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        if (isMainChain(chainAddress))</span>
+<span class="nc" id="L129">            main.transactionBlockEvent(transactionBlockEvent);</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        else if (this.chainAddress == chainAddress)</span>
+<span class="nc" id="L131">            local.transactionBlockEvent(transactionBlockEvent);</span>
         else
-<span class="nc" id="L123">            logUnknownChainAddress(transactionBlockEvent, chainAddress);</span>
-<span class="nc" id="L124">    }</span>
+<span class="nc" id="L133">            logUnknownChainAddress(transactionBlockEvent, chainAddress);</span>
+<span class="nc" id="L134">    }</span>
 
     private boolean isMainChain(long chainAddress) {
-<span class="nc bnc" id="L127" title="All 2 branches missed.">        return chainAddress == MAIN_CHAIN;</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        return chainAddress == MAIN_CHAIN;</span>
     }
 
     @Override
-    public void transactionBlockGossipEvent(TransactionBlockGossipEvent transactionBlockGossipEvent) {
-<span class="nc" id="L132">        long chainAddress = transactionBlockGossipEvent.chainAddress();</span>
-<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (isMainChain(chainAddress))</span>
-<span class="nc" id="L134">            main.transactionBlockGossipEvent(transactionBlockGossipEvent);</span>
-<span class="nc bnc" id="L135" title="All 2 branches missed.">        else if (this.chainAddress == chainAddress)</span>
-<span class="nc" id="L136">            local.transactionBlockGossipEvent(transactionBlockGossipEvent);</span>
-        else
-<span class="nc" id="L138">            logUnknownChainAddress(transactionBlockGossipEvent, chainAddress);</span>
-<span class="nc" id="L139">    }</span>
+<span class="nc" id="L141">    public void transactionBlockGossipEvent(TransactionBlockGossipEvent transactionBlockGossipEvent) { throwExceptionIfClosed();</span>
 
-    @Override
-    public void transactionBlockVoteEvent(TransactionBlockVoteEvent transactionBlockVoteEvent) {
-<span class="nc" id="L143">        long chainAddress = transactionBlockVoteEvent.chainAddress();</span>
+<span class="nc" id="L143"> long chainAddress = transactionBlockGossipEvent.chainAddress();</span>
 <span class="nc bnc" id="L144" title="All 2 branches missed.">        if (isMainChain(chainAddress))</span>
-<span class="nc" id="L145">            main.transactionBlockVoteEvent(transactionBlockVoteEvent);</span>
+<span class="nc" id="L145">            main.transactionBlockGossipEvent(transactionBlockGossipEvent);</span>
 <span class="nc bnc" id="L146" title="All 2 branches missed.">        else if (this.chainAddress == chainAddress)</span>
-<span class="nc" id="L147">            local.transactionBlockVoteEvent(transactionBlockVoteEvent);</span>
+<span class="nc" id="L147">            local.transactionBlockGossipEvent(transactionBlockGossipEvent);</span>
         else
-<span class="nc" id="L149">            logUnknownChainAddress(transactionBlockVoteEvent, chainAddress);</span>
+<span class="nc" id="L149">            logUnknownChainAddress(transactionBlockGossipEvent, chainAddress);</span>
 <span class="nc" id="L150">    }</span>
 
     @Override
-    public void endOfRoundBlockEvent(EndOfRoundBlockEvent endOfRoundBlockEvent) {
-<span class="nc" id="L154">        long chainAddress = endOfRoundBlockEvent.chainAddress();</span>
-<span class="nc bnc" id="L155" title="All 2 branches missed.">        if (isMainChain(chainAddress))</span>
-<span class="nc" id="L156">            main.endOfRoundBlockEvent(endOfRoundBlockEvent);</span>
-<span class="nc bnc" id="L157" title="All 2 branches missed.">        else if (this.chainAddress == chainAddress)</span>
-<span class="nc" id="L158">            local.endOfRoundBlockEvent(endOfRoundBlockEvent);</span>
+<span class="nc" id="L153">    public void transactionBlockVoteEvent(TransactionBlockVoteEvent transactionBlockVoteEvent) { throwExceptionIfClosed();</span>
+
+<span class="nc" id="L155"> long chainAddress = transactionBlockVoteEvent.chainAddress();</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (isMainChain(chainAddress))</span>
+<span class="nc" id="L157">            main.transactionBlockVoteEvent(transactionBlockVoteEvent);</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">        else if (this.chainAddress == chainAddress)</span>
+<span class="nc" id="L159">            local.transactionBlockVoteEvent(transactionBlockVoteEvent);</span>
         else
-<span class="nc" id="L160">            logUnknownChainAddress(endOfRoundBlockEvent, chainAddress);</span>
-<span class="nc" id="L161">    }</span>
+<span class="nc" id="L161">            logUnknownChainAddress(transactionBlockVoteEvent, chainAddress);</span>
+<span class="nc" id="L162">    }</span>
+
+    @Override
+<span class="nc" id="L165">    public void endOfRoundBlockEvent(EndOfRoundBlockEvent endOfRoundBlockEvent) { throwExceptionIfClosed();</span>
+
+<span class="nc" id="L167"> long chainAddress = endOfRoundBlockEvent.chainAddress();</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">        if (isMainChain(chainAddress))</span>
+<span class="nc" id="L169">            main.endOfRoundBlockEvent(endOfRoundBlockEvent);</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">        else if (this.chainAddress == chainAddress)</span>
+<span class="nc" id="L171">            local.endOfRoundBlockEvent(endOfRoundBlockEvent);</span>
+        else
+<span class="nc" id="L173">            logUnknownChainAddress(endOfRoundBlockEvent, chainAddress);</span>
+<span class="nc" id="L174">    }</span>
 
     private void logUnknownChainAddress(VanillaSignedMessage message, long chainAddress) {
-<span class="nc" id="L164">            System.err.format(&quot;%s: Unknown chain address %s (raw %d) (known: %s and %s)%n&quot;,</span>
-<span class="nc" id="L165">            message.getClass().getSimpleName(),</span>
-<span class="nc" id="L166">            DecentredUtil.toAddressString(chainAddress),</span>
-<span class="nc" id="L167">            chainAddress,</span>
-<span class="nc" id="L168">            DecentredUtil.toAddressString(MAIN_CHAIN),</span>
-<span class="nc" id="L169">            DecentredUtil.toAddressString(this.chainAddress)</span>
+<span class="nc" id="L177">            System.err.format(&quot;%s: Unknown chain address %s (raw %d) (known: %s and %s)%n&quot;,</span>
+<span class="nc" id="L178">            message.getClass().getSimpleName(),</span>
+<span class="nc" id="L179">            DecentredUtil.toAddressString(chainAddress),</span>
+<span class="nc" id="L180">            chainAddress,</span>
+<span class="nc" id="L181">            DecentredUtil.toAddressString(MAIN_CHAIN),</span>
+<span class="nc" id="L182">            DecentredUtil.toAddressString(this.chainAddress)</span>
         );
-<span class="nc" id="L171">    }</span>
+<span class="nc" id="L184">    }</span>
 
-    public void createAddressEvent(CreateAddressEvent createAddressEvent) {
-        // received as a weekly event
-<span class="fc" id="L175">        checkTrusted(createAddressEvent);</span>
-<span class="fc" id="L176">        publicKeyRegistry.register(createAddressEvent.address(),</span>
-<span class="fc" id="L177">                createAddressEvent.publicKey());</span>
-<span class="fc" id="L178">    }</span>
+<span class="fc" id="L186">    public void createAddressEvent(CreateAddressEvent createAddressEvent) { throwExceptionIfClosed();</span>
+
+ // received as a weekly event
+<span class="fc" id="L189">        checkTrusted(createAddressEvent);</span>
+<span class="fc" id="L190">        publicKeyRegistry.register(createAddressEvent.address(),</span>
+<span class="fc" id="L191">                createAddressEvent.publicKey());</span>
+<span class="fc" id="L192">    }</span>
 
     private void checkTrusted(SignedMessage message) {
 
-<span class="fc" id="L182">    }</span>
+<span class="fc" id="L196">    }</span>
 
     @Override
     protected void performClose() {
 //        main.close();
 //        local.close();
-<span class="nc" id="L188">    }</span>
+<span class="nc" id="L202">    }</span>
 
     @Override
-    public void onConnection(TCPConnection connection) {
-<span class="nc" id="L192">        Gateway.super.onConnection(connection);</span>
-<span class="nc" id="L193">        verifyIP.onConnection(connection);</span>
-<span class="nc" id="L194">    }</span>
+<span class="nc" id="L205">    public void onConnection(TCPConnection connection) { throwExceptionIfClosed();</span>
+
+<span class="nc" id="L207"> Gateway.super.onConnection(connection);</span>
+<span class="nc" id="L208">        verifyIP.onConnection(connection);</span>
+<span class="nc" id="L209">    }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

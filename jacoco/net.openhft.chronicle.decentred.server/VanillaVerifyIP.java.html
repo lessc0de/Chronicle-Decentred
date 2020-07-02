@@ -25,13 +25,13 @@ public class VanillaVerifyIP implements Verifier, ConnectionStatusListener {
 
     @Override
     public void onConnection(TCPConnection connection) {
-<span class="fc" id="L28">        Verifier to = client.to(DEFAULT_CONNECTION);</span>
-<span class="fc bfc" id="L29" title="All 2 branches covered.">        for (List&lt;VerificationEvent&gt; verificationEventList : verifyMap.values()) {</span>
-<span class="pc bpc" id="L30" title="1 of 2 branches missed.">            for (VerificationEvent verificationEvent : verificationEventList) {</span>
+<span class="nc" id="L28">        Verifier to = client.to(DEFAULT_CONNECTION);</span>
+<span class="nc bnc" id="L29" title="All 2 branches missed.">        for (List&lt;VerificationEvent&gt; verificationEventList : verifyMap.values()) {</span>
+<span class="nc bnc" id="L30" title="All 2 branches missed.">            for (VerificationEvent verificationEvent : verificationEventList) {</span>
 <span class="nc" id="L31">                to.verificationEvent(verificationEvent);</span>
 <span class="nc" id="L32">            }</span>
-<span class="fc" id="L33">        }</span>
-<span class="fc" id="L34">    }</span>
+<span class="nc" id="L33">        }</span>
+<span class="nc" id="L34">    }</span>
 
     @Override
     public void verificationEvent(VerificationEvent verificationEvent) {

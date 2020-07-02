@@ -74,76 +74,75 @@ public abstract class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;
             .collect(Collectors.joining(&quot;\n&quot;)));
         System.exit(1);*/
 
-
-        if (ENFORCE_TRANSIENT_OVERRIDE_INVARIANT) {
+if (ENFORCE_TRANSIENT_OVERRIDE_INVARIANT) {
             final Set&lt;String&gt; newTransientFields = Stream.of(getClass().getDeclaredFields())
-<span class="nc" id="L80">                .filter(f -&gt; Modifier.isTransient(f.getModifiers()))</span>
+<span class="nc" id="L79">                .filter(f -&gt; Modifier.isTransient(f.getModifiers()))</span>
                 .map(Object::toString)
-<span class="nc bnc" id="L82" title="All 2 branches missed.">                .filter(n -&gt; !BASE_TRANSIENT_FIELD_NAMES.contains(n))</span>
-<span class="nc bnc" id="L83" title="All 2 branches missed.">                .filter(n -&gt; !n.contains(&quot;$jacocoData&quot;)) // Discard instrumented fields from jacoco</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">                .filter(n -&gt; !BASE_TRANSIENT_FIELD_NAMES.contains(n))</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">                .filter(n -&gt; !n.contains(&quot;$jacocoData&quot;)) // Discard instrumented fields from jacoco</span>
                 .collect(toSet());
 
             if (!newTransientFields.isEmpty() &amp;&amp; transientFieldHandler() == TransientFieldHandler.empty()) {
                 throw new IllegalStateException(&quot;The class &quot; + getClass().getName() + &quot; declares transitive field(s) &quot; + newTransientFields + &quot; but does not override transientFieldHandler()&quot;);
             }
         }
-<span class="fc" id="L90">    }</span>
+<span class="fc" id="L89">    }</span>
 
     @Override
     public TransientFieldHandler&lt;T&gt; transientFieldHandler() {
-<span class="fc" id="L94">        return TransientFieldHandler.empty();</span>
+<span class="fc" id="L93">        return TransientFieldHandler.empty();</span>
     }
 
     @Override
     public final void writeMarshallable(@NotNull WireOut wire) {
-<span class="fc" id="L99">        super.writeMarshallable(wire);</span>
-<span class="fc" id="L100">        transientFieldHandler().writeMarshallable(self(), wire);</span>
-<span class="fc" id="L101">    }</span>
+<span class="fc" id="L98">        super.writeMarshallable(wire);</span>
+<span class="fc" id="L99">        transientFieldHandler().writeMarshallable(self(), wire);</span>
+<span class="fc" id="L100">    }</span>
 
     @Override
     public final void readMarshallable(@NotNull WireIn wire) throws IORuntimeException {
         // reset() ????
-<span class="fc" id="L106">        signed = false; // How do we know the state of the signed property?</span>
-<span class="fc" id="L107">        super.readMarshallable(wire);</span>
-<span class="fc" id="L108">        transientFieldHandler().readMarshallable(self(), wire);</span>
-<span class="fc" id="L109">    }</span>
+<span class="fc" id="L105">        signed = false; // How do we know the state of the signed property?</span>
+<span class="fc" id="L106">        super.readMarshallable(wire);</span>
+<span class="fc" id="L107">        transientFieldHandler().readMarshallable(self(), wire);</span>
+<span class="fc" id="L108">    }</span>
 
     @Override
     public final void readMarshallable(BytesIn bytes) throws IORuntimeException {
-<span class="fc" id="L113">        internalBytes.clear();</span>
-<span class="fc" id="L114">        internalBytes.write(bytes);</span>
+<span class="fc" id="L112">        internalBytes.clear();</span>
+<span class="fc" id="L113">        internalBytes.write(bytes);</span>
         // use internalBytes from here since we copied everything.
         // Todo: In the future, we could just reference the incoming bytes, because it should be immutable
-<span class="fc" id="L117">        messageType = internalBytes.readUnsignedShort(MESSAGE_TYPE);</span>
-<span class="fc" id="L118">        protocol = internalBytes.readUnsignedShort(PROTOCOL);</span>
+<span class="fc" id="L116">        messageType = internalBytes.readUnsignedShort(MESSAGE_TYPE);</span>
+<span class="fc" id="L117">        protocol = internalBytes.readUnsignedShort(PROTOCOL);</span>
 
-<span class="fc" id="L120">        internalBytes.readSkip(MESSAGE_START);</span>
-<span class="fc" id="L121">        readMarshallableInternal(internalBytes);</span>
-<span class="fc" id="L122">        signed = true;</span>
-<span class="fc" id="L123">        internalBytes.readPosition(0);</span>
-<span class="fc" id="L124">    }</span>
+<span class="fc" id="L119">        internalBytes.readSkip(MESSAGE_START);</span>
+<span class="fc" id="L120">        readMarshallableInternal(internalBytes);</span>
+<span class="fc" id="L121">        signed = true;</span>
+<span class="fc" id="L122">        internalBytes.readPosition(0);</span>
+<span class="fc" id="L123">    }</span>
 
     protected void readMarshallableInternal(Bytes bytes) {
-<span class="fc" id="L127">        super.readMarshallable(bytes);</span>
-<span class="fc" id="L128">        transientFieldHandler().readMarshallable(self(), bytes);</span>
-<span class="fc" id="L129">    }</span>
+<span class="fc" id="L126">        super.readMarshallable(bytes);</span>
+<span class="fc" id="L127">        transientFieldHandler().readMarshallable(self(), bytes);</span>
+<span class="fc" id="L128">    }</span>
 
     /**
      * Resets all properties of this message to their default values. This sets
      * the message in the same state as if it was just created.
      */
     public final void reset() {
-<span class="fc" id="L136">        signed = false;</span>
-<span class="fc" id="L137">        messageType = 0;</span>
-<span class="fc" id="L138">        protocol = 0;</span>
+<span class="fc" id="L135">        signed = false;</span>
+<span class="fc" id="L136">        messageType = 0;</span>
+<span class="fc" id="L137">        protocol = 0;</span>
         // address = timestampUS = 0; set by super.reset();
-<span class="fc" id="L140">        super.reset();</span>
-<span class="fc" id="L141">        transientFieldHandler().reset(self());</span>
-<span class="fc" id="L142">    }</span>
+<span class="fc" id="L139">        super.reset();</span>
+<span class="fc" id="L140">        transientFieldHandler().reset(self());</span>
+<span class="fc" id="L141">    }</span>
 
     @Override
     public final boolean signed() {
-<span class="fc" id="L146">        return signed;</span>
+<span class="fc" id="L145">        return signed;</span>
     }
 
     /**
@@ -154,9 +153,9 @@ public abstract class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;
      */
     @Override
     public final void writeMarshallable(BytesOut bytes) {
-<span class="fc" id="L157">        assertSigned();</span>
-<span class="fc" id="L158">        bytes.write(internalBytes, 0, internalBytes.readLimit());</span>
-<span class="fc" id="L159">    }</span>
+<span class="fc" id="L156">        assertSigned();</span>
+<span class="fc" id="L157">        bytes.write(internalBytes, 0, internalBytes.readLimit());</span>
+<span class="fc" id="L158">    }</span>
 
     /**
      * Writes the content of the fields of this messages (non-transitive and non-transitive)
@@ -167,13 +166,13 @@ public abstract class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;
      * @param bytes to write to
      */
     protected void writeMarshallableInternal(BytesOut bytes) {
-<span class="fc" id="L170">        super.writeMarshallable(bytes);</span>
-<span class="fc" id="L171">        transientFieldHandler().writeMarshallableInternal(self(), bytes);</span>
-<span class="fc" id="L172">    }</span>
+<span class="fc" id="L169">        super.writeMarshallable(bytes);</span>
+<span class="fc" id="L170">        transientFieldHandler().writeMarshallableInternal(self(), bytes);</span>
+<span class="fc" id="L171">    }</span>
 
     @Override
     public final long address() {
-<span class="fc" id="L176">        return address;</span>
+<span class="fc" id="L175">        return address;</span>
     }
 
     /**
@@ -185,14 +184,14 @@ public abstract class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;
      * @throws IllegalStateException if the message was already signed
      */
     public final T address(long address) {
-<span class="fc" id="L188">        assertNotSigned();</span>
-<span class="fc" id="L189">        this.address = address;</span>
-<span class="fc" id="L190">        return self();</span>
+<span class="fc" id="L187">        assertNotSigned();</span>
+<span class="fc" id="L188">        this.address = address;</span>
+<span class="fc" id="L189">        return self();</span>
     }
 
     @Override
     public final long timestampUS() {
-<span class="fc" id="L195">        return timestampUS;</span>
+<span class="fc" id="L194">        return timestampUS;</span>
     }
 
     /**
@@ -204,29 +203,29 @@ public abstract class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;
      * @throws IllegalStateException if the message was already signed
      */
     public final T timestampUS(long timestampUS) {
-<span class="fc" id="L207">        assertNotSigned();</span>
-<span class="fc" id="L208">        this.timestampUS = timestampUS;</span>
-<span class="fc" id="L209">        return self();</span>
+<span class="fc" id="L206">        assertNotSigned();</span>
+<span class="fc" id="L207">        this.timestampUS = timestampUS;</span>
+<span class="fc" id="L208">        return self();</span>
     }
 
      // Signifies this message contains it's own public key.
     @Override
     public BytesStore publicKey() {
-<span class="fc" id="L215">        return NoBytesStore.noBytesStore();</span>
+<span class="fc" id="L214">        return NoBytesStore.noBytesStore();</span>
     }
 
     public boolean hasPublicKey() {
-<span class="fc" id="L219">        return false;</span>
+<span class="fc" id="L218">        return false;</span>
     }
 
     public T publicKey(@NotNull BytesStore key) {
-<span class="nc" id="L223">        throw new UnsupportedOperationException(&quot;This method is not supported for this message type. Only for &quot; + SelfSignedMessage.class.getSimpleName());</span>
+<span class="nc" id="L222">        throw new UnsupportedOperationException(&quot;This method is not supported for this message type. Only for &quot; + SelfSignedMessage.class.getSimpleName());</span>
     }
 
     @Override
     public final T sign(@NotNull BytesStore secretKey) {
-<span class="fc" id="L228">        UniqueMicroTimeProvider timeProvider = UniqueMicroTimeProvider.INSTANCE;</span>
-<span class="fc" id="L229">        return sign(secretKey, timeProvider);</span>
+<span class="fc" id="L227">        UniqueMicroTimeProvider timeProvider = UniqueMicroTimeProvider.INSTANCE;</span>
+<span class="fc" id="L228">        return sign(secretKey, timeProvider);</span>
     }
 
     /**
@@ -245,68 +244,68 @@ public abstract class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;
      *
      */
     public T sign(@NotNull BytesStore secretKey, @NotNull TimeProvider timeProvider) {
-<span class="fc" id="L248">        assertNotSigned();</span>
-<span class="pc bpc" id="L249" title="1 of 2 branches missed.">        if (protocol == 0) {</span>
-<span class="nc" id="L250">            throw new IllegalStateException(&quot;The protocol must be set before signing&quot;);</span>
+<span class="fc" id="L247">        assertNotSigned();</span>
+<span class="pc bpc" id="L248" title="1 of 2 branches missed.">        if (protocol == 0) {</span>
+<span class="nc" id="L249">            throw new IllegalStateException(&quot;The protocol must be set before signing&quot;);</span>
         }
-<span class="pc bpc" id="L252" title="1 of 2 branches missed.">        if (messageType == 0) {</span>
-<span class="nc" id="L253">            throw new IllegalStateException(&quot;The message type must be set before signing&quot;);</span>
+<span class="pc bpc" id="L251" title="1 of 2 branches missed.">        if (messageType == 0) {</span>
+<span class="nc" id="L252">            throw new IllegalStateException(&quot;The message type must be set before signing&quot;);</span>
         }
 
-<span class="fc bfc" id="L256" title="All 2 branches covered.">        if (hasPublicKey())</span>
-<span class="fc" id="L257">            publicKey(secretKey);</span>
+<span class="fc bfc" id="L255" title="All 2 branches covered.">        if (hasPublicKey())</span>
+<span class="fc" id="L256">            publicKey(secretKey);</span>
 
-<span class="fc" id="L259">        address = secretKey.readLong(secretKey.readRemaining() - Long.BYTES);</span>
-<span class="fc" id="L260">        timestampUS = timeProvider.currentTimeMicros();</span>
+<span class="fc" id="L258">        address = secretKey.readLong(secretKey.readRemaining() - Long.BYTES);</span>
+<span class="fc" id="L259">        timestampUS = timeProvider.currentTimeMicros();</span>
 
-<span class="fc" id="L262">        internalBytes.clear();</span>
-<span class="fc" id="L263">        internalBytes.writeInt(0); // Provisional length</span>
-<span class="fc" id="L264">        internalBytes.writeSkip(Ed25519.SIGNATURE_LENGTH);</span>
-<span class="fc" id="L265">        internalBytes.writeUnsignedShort(messageType);</span>
-<span class="fc" id="L266">        internalBytes.writeUnsignedShort(protocol);</span>
-<span class="fc" id="L267">        writeMarshallableInternal(internalBytes);</span>
-<span class="fc" id="L268">        long length = internalBytes.readRemaining();</span>
-<span class="fc" id="L269">        internalBytes.writeUnsignedInt(LENGTH, length);</span>
-<span class="fc" id="L270">        internalBytes.readPosition(SIGNATURE);</span>
-<span class="fc" id="L271">        Ed25519.sign(internalBytes, secretKey);</span>
-<span class="fc" id="L272">        signed = true;</span>
+<span class="fc" id="L261">        internalBytes.clear();</span>
+<span class="fc" id="L262">        internalBytes.writeInt(0); // Provisional length</span>
+<span class="fc" id="L263">        internalBytes.writeSkip(Ed25519.SIGNATURE_LENGTH);</span>
+<span class="fc" id="L264">        internalBytes.writeUnsignedShort(messageType);</span>
+<span class="fc" id="L265">        internalBytes.writeUnsignedShort(protocol);</span>
+<span class="fc" id="L266">        writeMarshallableInternal(internalBytes);</span>
+<span class="fc" id="L267">        long length = internalBytes.readRemaining();</span>
+<span class="fc" id="L268">        internalBytes.writeUnsignedInt(LENGTH, length);</span>
+<span class="fc" id="L269">        internalBytes.readPosition(SIGNATURE);</span>
+<span class="fc" id="L270">        Ed25519.sign(internalBytes, secretKey);</span>
+<span class="fc" id="L271">        signed = true;</span>
         //readPointer.set(tempBytes.addressForRead(0), length);
-<span class="fc" id="L274">        internalBytes.writeLimit(length);</span>
-<span class="fc" id="L275">        internalBytes.readPositionRemaining(0, length);</span>
-<span class="fc" id="L276">        return self();</span>
+<span class="fc" id="L273">        internalBytes.writeLimit(length);</span>
+<span class="fc" id="L274">        internalBytes.readPositionRemaining(0, length);</span>
+<span class="fc" id="L275">        return self();</span>
     }
 
     public final String toHexString() {
-<span class="fc" id="L280">        assertSigned();</span>
-<span class="fc" id="L281">        HexDumpBytes dump = new HexDumpBytes()</span>
-<span class="fc" id="L282">                .offsetFormat((o, b) -&gt; b.appendBase16(o, 4));</span>
-<span class="fc" id="L283">        dump.comment(&quot;length&quot;).writeUnsignedInt(internalBytes.readUnsignedInt(LENGTH));</span>
-<span class="fc" id="L284">        dump.comment(&quot;signature start&quot;).write(internalBytes, (long) SIGNATURE, Ed25519.SIGNATURE_LENGTH);</span>
-<span class="fc" id="L285">        dump.comment(&quot;signature end&quot;);</span>
-<span class="fc" id="L286">        dump.comment(&quot;messageType&quot;).writeUnsignedShort(messageType);</span>
-<span class="fc" id="L287">        dump.comment(&quot;protocol&quot;).writeUnsignedShort(protocol);</span>
-<span class="fc" id="L288">        writeMarshallableInternal(dump);</span>
-<span class="fc" id="L289">        String text = dump.toHexString();</span>
-<span class="fc" id="L290">        dump.release();</span>
-<span class="fc" id="L291">        return text;</span>
+<span class="fc" id="L279">        assertSigned();</span>
+<span class="fc" id="L280">        HexDumpBytes dump = new HexDumpBytes()</span>
+<span class="fc" id="L281">                .offsetFormat((o, b) -&gt; b.appendBase16(o, 4));</span>
+<span class="fc" id="L282">        dump.comment(&quot;length&quot;).writeUnsignedInt(internalBytes.readUnsignedInt(LENGTH));</span>
+<span class="fc" id="L283">        dump.comment(&quot;signature start&quot;).write(internalBytes, (long) SIGNATURE, Ed25519.SIGNATURE_LENGTH);</span>
+<span class="fc" id="L284">        dump.comment(&quot;signature end&quot;);</span>
+<span class="fc" id="L285">        dump.comment(&quot;messageType&quot;).writeUnsignedShort(messageType);</span>
+<span class="fc" id="L286">        dump.comment(&quot;protocol&quot;).writeUnsignedShort(protocol);</span>
+<span class="fc" id="L287">        writeMarshallableInternal(dump);</span>
+<span class="fc" id="L288">        String text = dump.toHexString();</span>
+<span class="fc" id="L289">        dump.releaseLast();</span>
+<span class="fc" id="L290">        return text;</span>
     }
 
     public final boolean verify(LongFunction&lt;BytesStore&gt; addressToPublicKey) {
-<span class="fc bfc" id="L295" title="All 2 branches covered.">        final BytesStore publicKey = hasPublicKey()</span>
-<span class="fc" id="L296">                ? publicKey()</span>
-<span class="fc" id="L297">                : addressToPublicKey.apply(address());</span>
-<span class="pc bpc" id="L298" title="2 of 4 branches missed.">        if (publicKey == null || publicKey.readRemaining() != Ed25519.PUBLIC_KEY_LENGTH) {</span>
-<span class="nc" id="L299">            return false;</span>
+<span class="fc bfc" id="L294" title="All 2 branches covered.">        final BytesStore publicKey = hasPublicKey()</span>
+<span class="fc" id="L295">                ? publicKey()</span>
+<span class="fc" id="L296">                : addressToPublicKey.apply(address());</span>
+<span class="pc bpc" id="L297" title="2 of 4 branches missed.">        if (publicKey == null || publicKey.readRemaining() != Ed25519.PUBLIC_KEY_LENGTH) {</span>
+<span class="nc" id="L298">            return false;</span>
         }
-<span class="fc" id="L301">        final Bytes verifyBytes = internalBytes.bytesForRead();</span>
-<span class="fc" id="L302">        verifyBytes.readPosition(SIGNATURE);</span>
-<span class="fc" id="L303">        verifyBytes.readLimit(verifyBytes.readLimit());</span>
-<span class="fc" id="L304">        return Ed25519.verify(verifyBytes, publicKey);</span>
+<span class="fc" id="L300">        final Bytes verifyBytes = internalBytes.bytesForRead();</span>
+<span class="fc" id="L301">        verifyBytes.readPosition(SIGNATURE);</span>
+<span class="fc" id="L302">        verifyBytes.readLimit(verifyBytes.readLimit());</span>
+<span class="fc" id="L303">        return Ed25519.verify(verifyBytes, publicKey);</span>
     }
 
     @Override
     public final int protocol() {
-<span class="fc" id="L309">        return protocol;</span>
+<span class="fc" id="L308">        return protocol;</span>
     }
 
     /**
@@ -319,14 +318,14 @@ public abstract class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;
      * @throws IllegalStateException if the messages has been signed
      */
     public final T protocol(int protocol) {
-<span class="fc" id="L322">        assertNotSigned();</span>
-<span class="fc" id="L323">        this.protocol = ShortUtil.requirePositiveUnsignedShort(protocol);</span>
-<span class="fc" id="L324">        return self();</span>
+<span class="fc" id="L321">        assertNotSigned();</span>
+<span class="fc" id="L322">        this.protocol = ShortUtil.requirePositiveUnsignedShort(protocol);</span>
+<span class="fc" id="L323">        return self();</span>
     }
 
     @Override
     public final int messageType() {
-<span class="fc" id="L329">        return messageType;</span>
+<span class="fc" id="L328">        return messageType;</span>
     }
 
     /**
@@ -338,8 +337,8 @@ public abstract class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;
      * in the range [1, 65536]
      */
     public final T messageType(int messageType) {
-<span class="fc" id="L341">        this.messageType = ShortUtil.requirePositiveUnsignedShort(messageType);</span>
-<span class="fc" id="L342">        return self();</span>
+<span class="fc" id="L340">        this.messageType = ShortUtil.requirePositiveUnsignedShort(messageType);</span>
+<span class="fc" id="L341">        return self();</span>
     }
 
     /**
@@ -354,38 +353,38 @@ public abstract class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;
      * @throws IllegalStateException if the message has not been signed.
      */
     public final ByteBuffer byteBuffer() {
-<span class="fc" id="L357">        assertSigned();</span>
+<span class="fc" id="L356">        assertSigned();</span>
 
-<span class="fc bfc" id="L359" title="All 2 branches covered.">        if (byteBuffer == null)</span>
-<span class="fc" id="L360">            byteBuffer = ByteBuffer.allocateDirect(0);</span>
+<span class="fc bfc" id="L358" title="All 2 branches covered.">        if (byteBuffer == null)</span>
+<span class="fc" id="L359">            byteBuffer = ByteBuffer.allocateDirect(0);</span>
         try {
-<span class="fc" id="L362">            BB_ADDRESS.setLong(byteBuffer, internalBytes.addressForRead(0));</span>
-<span class="fc" id="L363">            BB_CAPACITY.setInt(byteBuffer, Math.toIntExact(internalBytes.readRemaining()));</span>
-<span class="fc" id="L364">            byteBuffer.clear(); // position = 0, limit = capacity.</span>
-<span class="fc" id="L365">            return byteBuffer;</span>
-<span class="nc" id="L366">        } catch (IllegalAccessException e) {</span>
-<span class="nc" id="L367">            throw new AssertionError(e);</span>
+<span class="fc" id="L361">            BB_ADDRESS.setLong(byteBuffer, internalBytes.addressForRead(0));</span>
+<span class="fc" id="L362">            BB_CAPACITY.setInt(byteBuffer, Math.toIntExact(internalBytes.readRemaining()));</span>
+<span class="fc" id="L363">            byteBuffer.clear(); // position = 0, limit = capacity.</span>
+<span class="fc" id="L364">            return byteBuffer;</span>
+<span class="nc" id="L365">        } catch (IllegalAccessException e) {</span>
+<span class="nc" id="L366">            throw new AssertionError(e);</span>
         }
     }
 
     @Override
     public final &lt;M extends Marshallable&gt; M copyTo(@NotNull M m) {
-<span class="fc bfc" id="L373" title="All 2 branches covered.">        if (internalBytes.isEmpty()) {</span>
-<span class="nc" id="L374">            super.copyTo(m);</span>
-<span class="nc" id="L375">            return (M) this;</span>
+<span class="pc bpc" id="L372" title="1 of 2 branches missed.">        if (internalBytes.isEmpty()) {</span>
+<span class="nc" id="L373">            super.copyTo(m);</span>
+<span class="nc" id="L374">            return (M) this;</span>
         }
-<span class="fc" id="L377">        assertSameClassAsThis(m);</span>
+<span class="fc" id="L376">        assertSameClassAsThis(m);</span>
         //assertSigned();
-<span class="fc" id="L379">        @SuppressWarnings(&quot;unchecked&quot;) final T other = (T) m;</span>
+<span class="fc" id="L378">        @SuppressWarnings(&quot;unchecked&quot;) final T other = (T) m;</span>
         // This volatile property gets magically copied
-<span class="fc bfc" id="L381" title="All 2 branches covered.">        if (this instanceof HasDtoParser) {</span>
-<span class="fc" id="L382">            ((HasDtoParser) m).dtoParser(((HasDtoParser) this).dtoParser());</span>
+<span class="fc bfc" id="L380" title="All 2 branches covered.">        if (this instanceof HasDtoParser) {</span>
+<span class="fc" id="L381">            ((HasDtoParser) m).dtoParser(((HasDtoParser) this).dtoParser());</span>
         }
-<span class="fc" id="L384">        final Bytes internalBytesView = internalBytes.bytesForRead();</span>
-<span class="fc" id="L385">        internalBytesView.readPosition(0);</span>
-<span class="fc" id="L386">        other.readMarshallable(internalBytesView);</span>
-<span class="fc" id="L387">        other.transientFieldHandler().copyNonMarshalled((T) this, other);</span>
-<span class="fc" id="L388">        return m;</span>
+<span class="fc" id="L383">        final Bytes internalBytesView = internalBytes.bytesForRead();</span>
+<span class="fc" id="L384">        internalBytesView.readPosition(0);</span>
+<span class="fc" id="L385">        other.readMarshallable(internalBytesView);</span>
+<span class="fc" id="L386">        other.transientFieldHandler().copyNonMarshalled((T) this, other);</span>
+<span class="fc" id="L387">        return m;</span>
     }
 
     @NotNull
@@ -394,25 +393,24 @@ public abstract class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;
         try {
             @SuppressWarnings(&quot;unchecked&quot;)
             // Create a new instance of the same type as this
-<span class="fc" id="L397">            final T copy = (T) getClass().newInstance();</span>
+<span class="fc" id="L396">            final T copy = (T) getClass().newInstance();</span>
             // Perform a shallow copyNonMarshalled
-<span class="fc" id="L399">            copyTo(copy);</span>
+<span class="fc" id="L398">            copyTo(copy);</span>
             // Dereference shallow items
             //transientFieldHandler().deepCopy(self(), copyNonMarshalled);
             @SuppressWarnings(&quot;unchecked&quot;)
-<span class="fc" id="L403">            final U result = (U) copy;</span>
-<span class="fc" id="L404">            return result;</span>
+<span class="fc" id="L402">            final U result = (U) copy;</span>
+<span class="fc" id="L403">            return result;</span>
 
-<span class="nc" id="L406">        } catch (ReflectiveOperationException e) {</span>
-<span class="nc" id="L407">            Jvm.rethrow(e);</span>
+<span class="nc" id="L405">        } catch (ReflectiveOperationException e) {</span>
+<span class="nc" id="L406">            Jvm.rethrow(e);</span>
         }
-<span class="nc" id="L409">        throw new IllegalStateException(&quot;We should never end up here&quot;);</span>
+<span class="nc" id="L408">        throw new IllegalStateException(&quot;We should never end up here&quot;);</span>
     }
 
     /// Overloaded hash, toString etc.
 
-
-    /**
+/**
      * Asserts that the provided instance class is the same as this class and
      * that the provided instance is not null.
      *
@@ -423,30 +421,30 @@ public abstract class VanillaSignedMessage&lt;T extends VanillaSignedMessage&lt;
      * @throws NullPointerException     if the provided object is null
      */
     private final void assertSameClassAsThis(Object that) {
-<span class="fc bfc" id="L426" title="All 2 branches covered.">        if (!this.getClass().equals(that.getClass())) {</span>
-<span class="fc" id="L427">            throw new IllegalArgumentException(&quot;Class &quot; + that.getClass().getName() + &quot; is not of class &quot; + this.getClass().getName());</span>
+<span class="fc bfc" id="L424" title="All 2 branches covered.">        if (!this.getClass().equals(that.getClass())) {</span>
+<span class="fc" id="L425">            throw new IllegalArgumentException(&quot;Class &quot; + that.getClass().getName() + &quot; is not of class &quot; + this.getClass().getName());</span>
         }
-<span class="fc" id="L429">    }</span>
+<span class="fc" id="L427">    }</span>
 
     protected final void assertSigned() {
-<span class="fc bfc" id="L432" title="All 2 branches covered.">        if (!signed()) {</span>
-<span class="fc" id="L433">            throw new IllegalStateException(</span>
-<span class="fc" id="L434">                String.format(&quot;The message of type %s, protocol %d, messageType %d has not been signed.&quot;, getClass().getSimpleName(), protocol(), messageType())</span>
+<span class="fc bfc" id="L430" title="All 2 branches covered.">        if (!signed()) {</span>
+<span class="fc" id="L431">            throw new IllegalStateException(</span>
+<span class="fc" id="L432">                String.format(&quot;The message of type %s, protocol %d, messageType %d has not been signed.&quot;, getClass().getSimpleName(), protocol(), messageType())</span>
             );
         }
-<span class="fc" id="L437">    }</span>
+<span class="fc" id="L435">    }</span>
 
     protected final void assertNotSigned() {
-<span class="fc bfc" id="L440" title="All 2 branches covered.">        if (signed()) {</span>
-<span class="fc" id="L441">            throw new IllegalStateException(</span>
-<span class="fc" id="L442">                String.format(&quot;The message of type %s, protocol %d, messageType %d has already been signed.&quot;, getClass().getSimpleName(), protocol(), messageType())</span>
+<span class="fc bfc" id="L438" title="All 2 branches covered.">        if (signed()) {</span>
+<span class="fc" id="L439">            throw new IllegalStateException(</span>
+<span class="fc" id="L440">                String.format(&quot;The message of type %s, protocol %d, messageType %d has already been signed.&quot;, getClass().getSimpleName(), protocol(), messageType())</span>
             );
         }
-<span class="fc" id="L445">    }</span>
+<span class="fc" id="L443">    }</span>
 
     @SuppressWarnings(&quot;unchecked&quot;)
     T self() {
-<span class="fc" id="L449">        return (T) this;</span>
+<span class="fc" id="L447">        return (T) this;</span>
     }
 
 }

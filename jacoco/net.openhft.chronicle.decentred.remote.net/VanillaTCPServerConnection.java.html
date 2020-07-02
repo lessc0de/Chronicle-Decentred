@@ -28,39 +28,40 @@ public class VanillaTCPServerConnection extends AbstractTCPConnection implements
     }
 
     @Override
-    public void run() {
-        try {
-<span class="fc" id="L33">            tcpServer.connectionListener().onNewConnection(tcpServer, this);</span>
-<span class="fc" id="L34">            Bytes&lt;ByteBuffer&gt; readBytes = Bytes.elasticByteBuffer(MAX_MESSAGE_SIZE);</span>
+<span class="fc" id="L31">    public void run() { throwExceptionIfClosed();</span>
 
-<span class="pc bpc" id="L36" title="1 of 2 branches missed.">            while (running) {</span>
-<span class="fc" id="L37">                readChannel(readBytes);</span>
+ try {
+<span class="fc" id="L34">            tcpServer.connectionListener().onNewConnection(tcpServer, this);</span>
+<span class="fc" id="L35">            Bytes&lt;ByteBuffer&gt; readBytes = Bytes.elasticByteBuffer(MAX_MESSAGE_SIZE);</span>
+
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">            while (running) {</span>
+<span class="fc" id="L38">                readChannel(readBytes);</span>
             }
-<span class="fc" id="L39">        } catch (EOFException eof) {</span>
+<span class="fc" id="L40">        } catch (EOFException eof) {</span>
             // connection closed
-<span class="nc" id="L41">        } catch (Throwable t) {</span>
-<span class="nc" id="L42">            Jvm.pause(1);</span>
-<span class="nc bnc" id="L43" title="All 2 branches missed.">            if (running)</span>
-<span class="nc" id="L44">                t.printStackTrace();</span>
+<span class="nc" id="L42">        } catch (Throwable t) {</span>
+<span class="nc" id="L43">            Jvm.pause(1);</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">            if (running)</span>
+<span class="nc" id="L45">                t.printStackTrace();</span>
 
         } finally {
-<span class="fc" id="L47">            tcpServer.connectionListener().onClosedConnection(tcpServer, this);</span>
+<span class="fc" id="L48">            tcpServer.connectionListener().onClosedConnection(tcpServer, this);</span>
         }
-<span class="fc" id="L49">    }</span>
+<span class="fc" id="L50">    }</span>
 
     @Override
     protected void waitForReconnect() {
         // never reconnects
-<span class="fc" id="L54">    }</span>
+<span class="fc" id="L55">    }</span>
 
     @Override
     protected void onMessage(Bytes&lt;ByteBuffer&gt; bytes) throws IOException {
-<span class="fc" id="L58">        tcpServer.connectionListener().onMessage(tcpServer, this, bytes);</span>
-<span class="fc" id="L59">    }</span>
+<span class="fc" id="L59">        tcpServer.connectionListener().onMessage(tcpServer, this, bytes);</span>
+<span class="fc" id="L60">    }</span>
 
     @Override
     protected void close2() {
 
-<span class="fc" id="L64">    }</span>
+<span class="fc" id="L65">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

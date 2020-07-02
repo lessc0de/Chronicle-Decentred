@@ -95,30 +95,29 @@ public class VanillaBlockReplayer&lt;T&gt; implements BlockReplayer {
 <span class="fc" id="L95">                tbe.replay(postBlockChainProcessor);</span>
             }
 <span class="fc" id="L97">        }</span>
+<span class="fc" id="L98"> }</span>
 
-<span class="fc" id="L99">    }</span>
-
-<span class="fc" id="L101">    static class TransactionLog {</span>
+<span class="fc" id="L100">    static class TransactionLog {</span>
         // To be replaced by some other off-heap map
-<span class="fc" id="L103">        private final SortedMap&lt;Long, SignedMessage&gt; messages = new TreeMap&lt;&gt;();</span>
+<span class="fc" id="L102">        private final SortedMap&lt;Long, SignedMessage&gt; messages = new TreeMap&lt;&gt;();</span>
 
         public synchronized void add(SignedMessage msg) {
-<span class="fc bfc" id="L106" title="All 2 branches covered.">            if (msg instanceof TransactionBlockEvent) {</span>
-<span class="fc" id="L107">                messages.put(msg.timestampUS(), msg);</span>
-<span class="pc bpc" id="L108" title="1 of 2 branches missed.">            } else if (msg instanceof EndOfRoundBlockEvent) {</span>
-<span class="fc" id="L109">                messages.put(msg.timestampUS(), msg);</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">            if (msg instanceof TransactionBlockEvent) {</span>
+<span class="fc" id="L106">                messages.put(msg.timestampUS(), msg);</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">            } else if (msg instanceof EndOfRoundBlockEvent) {</span>
+<span class="fc" id="L108">                messages.put(msg.timestampUS(), msg);</span>
             } else {
-<span class="nc" id="L111">                Jvm.warn().on(getClass(), &quot;Unknown &quot; + msg.getClass());</span>
+<span class="nc" id="L110">                Jvm.warn().on(getClass(), &quot;Unknown &quot; + msg.getClass());</span>
             }
-<span class="fc" id="L113">        }</span>
+<span class="fc" id="L112">        }</span>
 
         public synchronized long getNewestTimestamp() {
-<span class="fc" id="L116">            return messages.lastKey();</span>
+<span class="fc" id="L115">            return messages.lastKey();</span>
         }
 
         public Iterable&lt;? extends SignedMessage&gt; get(long fromTs, long toTs) {
-<span class="fc" id="L120">            synchronized (this) {</span>
-<span class="fc" id="L121">                return messages.tailMap(fromTs).headMap(toTs).values();</span>
+<span class="fc" id="L119">            synchronized (this) {</span>
+<span class="fc" id="L120">                return messages.tailMap(fromTs).headMap(toTs).values();</span>
             }
         }
     }

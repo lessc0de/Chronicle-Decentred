@@ -30,41 +30,43 @@ public class VanillaTCPServer extends AbstractCloseable implements TCPServer {
 <span class="fc" id="L30">    }</span>
 
     @Override
-    public int getPort() {
-<span class="nc bnc" id="L34" title="All 2 branches missed.">        if (serverChannel == null) {</span>
-<span class="nc" id="L35">            throw new IllegalStateException(&quot;Not yet bound&quot;);</span>
+<span class="nc" id="L33">    public int getPort() { throwExceptionIfClosed();</span>
+
+<span class="nc bnc" id="L35" title="All 2 branches missed."> if (serverChannel == null) {</span>
+<span class="nc" id="L36">            throw new IllegalStateException(&quot;Not yet bound&quot;);</span>
         }
-<span class="nc" id="L37">        return serverChannel.socket().getLocalPort();</span>
+<span class="nc" id="L38">        return serverChannel.socket().getLocalPort();</span>
     }
 
     private void run() {
         try {
-<span class="pc bpc" id="L42" title="1 of 2 branches missed.">            while (running) {</span>
-<span class="fc" id="L43">                SocketChannel accept = serverChannel.accept();</span>
-<span class="fc" id="L44">                TCPConnection connection = connectionListener.createConnection(this, accept);</span>
-<span class="fc" id="L45">                System.out.println(&quot;server connection = &quot; + connection);</span>
-<span class="fc" id="L46">                connections.add(connection);</span>
-<span class="fc" id="L47">                pool.submit(((Runnable) connection));</span>
-<span class="fc" id="L48">            }</span>
-<span class="fc" id="L49">        } catch (Throwable t) {</span>
-<span class="pc bpc" id="L50" title="1 of 2 branches missed.">            if (running)</span>
-<span class="nc" id="L51">                t.printStackTrace();</span>
-<span class="fc" id="L52">            close();</span>
-<span class="nc" id="L53">        }</span>
-<span class="fc" id="L54">    }</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">            while (running) {</span>
+<span class="fc" id="L44">                SocketChannel accept = serverChannel.accept();</span>
+<span class="fc" id="L45">                TCPConnection connection = connectionListener.createConnection(this, accept);</span>
+<span class="fc" id="L46">                System.out.println(&quot;server connection = &quot; + connection);</span>
+<span class="fc" id="L47">                connections.add(connection);</span>
+<span class="fc" id="L48">                pool.submit(((Runnable) connection));</span>
+<span class="fc" id="L49">            }</span>
+<span class="fc" id="L50">        } catch (Throwable t) {</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">            if (running)</span>
+<span class="nc" id="L52">                t.printStackTrace();</span>
+<span class="fc" id="L53">            close();</span>
+<span class="nc" id="L54">        }</span>
+<span class="fc" id="L55">    }</span>
 
     @Override
     protected void performClose() {
-<span class="fc" id="L58">        running = false;</span>
-<span class="fc" id="L59">        pool.shutdown();</span>
+<span class="fc" id="L59">        running = false;</span>
+<span class="fc" id="L60">        pool.shutdown();</span>
 
-<span class="fc" id="L61">        Closeable.closeQuietly(connections);</span>
-<span class="fc" id="L62">        Closeable.closeQuietly(serverChannel);</span>
-<span class="fc" id="L63">    }</span>
+<span class="fc" id="L62">        Closeable.closeQuietly(connections);</span>
+<span class="fc" id="L63">        Closeable.closeQuietly(serverChannel);</span>
+<span class="fc" id="L64">    }</span>
 
     @Override
-    public TCPServerConnectionListener connectionListener() {
-<span class="fc" id="L67">        return connectionListener;</span>
+<span class="fc" id="L67">    public TCPServerConnectionListener connectionListener() { throwExceptionIfClosed();</span>
+
+<span class="fc" id="L69"> return connectionListener;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

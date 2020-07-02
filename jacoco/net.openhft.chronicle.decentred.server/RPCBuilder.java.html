@@ -91,96 +91,95 @@ import java.util.function.Function;
             timeProvider
         ));
 
-
-<span class="fc" id="L95">        RPCServer&lt;U, T&gt; server = new RPCServer&lt;&gt;(</span>
+<span class="fc" id="L94">RPCServer&lt;U, T&gt; server = new RPCServer&lt;&gt;(</span>
                 name,
                 port,
                 keyPair,
                 tClass,
                 dtoRegistry,
-<span class="fc" id="L101">                t -&gt; (T) gateway</span>
-<span class="fc" id="L102">        ).internal(internal);</span>
-<span class="fc" id="L103">        ((TransactionProcessor) mainTransactionProcessor).messageRouter(server);</span>
-<span class="fc" id="L104">        ((TransactionProcessor) localTransactionProcessor).messageRouter(server);</span>
-<span class="fc" id="L105">        gateway.start(server);</span>
+<span class="fc" id="L100">                t -&gt; (T) gateway</span>
+<span class="fc" id="L101">        ).internal(internal);</span>
+<span class="fc" id="L102">        ((TransactionProcessor) mainTransactionProcessor).messageRouter(server);</span>
+<span class="fc" id="L103">        ((TransactionProcessor) localTransactionProcessor).messageRouter(server);</span>
+<span class="fc" id="L104">        gateway.start(server);</span>
         // register the address - otherwise, verify will fail
-<span class="fc" id="L107">        gateway.createAddressEvent(</span>
+<span class="fc" id="L106">        gateway.createAddressEvent(</span>
                 new CreateAddressEvent()
-<span class="fc" id="L109">                        .createAddressRequest(new CreateAddressRequest()</span>
-<span class="fc" id="L110">                                .publicKey(keyPair.publicKey)));</span>
+<span class="fc" id="L108">                        .createAddressRequest(new CreateAddressRequest()</span>
+<span class="fc" id="L109">                                .publicKey(keyPair.publicKey)));</span>
 
-<span class="pc bpc" id="L112" title="1 of 2 branches missed.">        if (addressAdded)</span>
-<span class="nc" id="L113">            clusterAddresses.remove(serverAddress);</span>
-<span class="fc" id="L114">        return server;</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">        if (addressAdded)</span>
+<span class="nc" id="L112">            clusterAddresses.remove(serverAddress);</span>
+<span class="fc" id="L113">        return server;</span>
     }
 
     public RPCClient&lt;U, T&gt; createClient(String name, InetSocketAddress socketAddress, T allMessages) {
-<span class="nc" id="L118">        return new RPCClient&lt;&gt;(name, socketAddress.getHostName(), socketAddress.getPort(), keyPair.secretKey, dtoRegistry, allMessages, tClass)</span>
-<span class="nc" id="L119">            .internal(internal);</span>
+<span class="nc" id="L117">        return new RPCClient&lt;&gt;(name, socketAddress.getHostName(), socketAddress.getPort(), keyPair.secretKey, dtoRegistry, allMessages, tClass)</span>
+<span class="nc" id="L118">            .internal(internal);</span>
     }
 
     public RPCClient&lt;U, T&gt; createAccountClient(String name, Bytes secretKey, InetSocketAddress socketAddress, T allMessages) {
-<span class="nc" id="L123">        return new RPCClient&lt;&gt;(name, socketAddress.getHostName(), socketAddress.getPort(), secretKey, dtoRegistry, allMessages, tClass)</span>
-<span class="nc" id="L124">            .internal(true);</span>
+<span class="nc" id="L122">        return new RPCClient&lt;&gt;(name, socketAddress.getHostName(), socketAddress.getPort(), secretKey, dtoRegistry, allMessages, tClass)</span>
+<span class="nc" id="L123">            .internal(true);</span>
     }
 
     public RPCBuilder&lt;U, T&gt; addClusterAddress(long serverAddress) {
-<span class="fc" id="L128">        clusterAddresses.add(serverAddress);</span>
-<span class="fc" id="L129">        return this;</span>
+<span class="fc" id="L127">        clusterAddresses.add(serverAddress);</span>
+<span class="fc" id="L128">        return this;</span>
     }
 
     public KeyPair keyPair() {
-<span class="nc" id="L133">        return keyPair;</span>
+<span class="nc" id="L132">        return keyPair;</span>
     }
 
     public RPCBuilder&lt;U, T&gt; keyPair(KeyPair keyPair) {
-<span class="fc" id="L137">        this.keyPair = keyPair;</span>
-<span class="fc" id="L138">        return this;</span>
+<span class="fc" id="L136">        this.keyPair = keyPair;</span>
+<span class="fc" id="L137">        return this;</span>
     }
 
     public Set&lt;Long&gt; clusterAddresses() {
-<span class="nc" id="L142">        return clusterAddresses;</span>
+<span class="nc" id="L141">        return clusterAddresses;</span>
     }
 
     public RPCBuilder&lt;U, T&gt; clusterAddresses(Set&lt;Long&gt; clusterAddresses) {
-<span class="nc" id="L146">        this.clusterAddresses = clusterAddresses;</span>
-<span class="nc" id="L147">        return this;</span>
+<span class="nc" id="L145">        this.clusterAddresses = clusterAddresses;</span>
+<span class="nc" id="L146">        return this;</span>
     }
 
     public int mainBlockPeriodMS() {
-<span class="nc" id="L151">        return mainBlockPeriodMS;</span>
+<span class="nc" id="L150">        return mainBlockPeriodMS;</span>
     }
 
     public RPCBuilder&lt;U, T&gt; mainBlockPeriodMS(int mainBlockPeriodMS) {
-<span class="nc" id="L155">        this.mainBlockPeriodMS = mainBlockPeriodMS;</span>
-<span class="nc" id="L156">        return this;</span>
+<span class="nc" id="L154">        this.mainBlockPeriodMS = mainBlockPeriodMS;</span>
+<span class="nc" id="L155">        return this;</span>
     }
 
     public int localBlockPeriodMS() {
-<span class="nc" id="L160">        return localBlockPeriodMS;</span>
+<span class="nc" id="L159">        return localBlockPeriodMS;</span>
     }
 
     public RPCBuilder localBlockPeriodMS(int localBlockPeriodMS) {
-<span class="nc" id="L164">        this.localBlockPeriodMS = localBlockPeriodMS;</span>
-<span class="nc" id="L165">        return this;</span>
+<span class="nc" id="L163">        this.localBlockPeriodMS = localBlockPeriodMS;</span>
+<span class="nc" id="L164">        return this;</span>
     }
 
     public String region() {
-<span class="nc" id="L169">        return region;</span>
+<span class="nc" id="L168">        return region;</span>
     }
 
     public RPCBuilder&lt;U, T&gt; region(String region) {
-<span class="nc" id="L173">        this.region = region;</span>
-<span class="nc" id="L174">        return this;</span>
+<span class="nc" id="L172">        this.region = region;</span>
+<span class="nc" id="L173">        return this;</span>
     }
 
     public boolean internal() {
-<span class="nc" id="L178">        return internal;</span>
+<span class="nc" id="L177">        return internal;</span>
     }
 
     public RPCBuilder&lt;U, T&gt; internal(boolean internal) {
-<span class="nc" id="L182">        this.internal = internal;</span>
-<span class="nc" id="L183">        return this;</span>
+<span class="nc" id="L181">        this.internal = internal;</span>
+<span class="nc" id="L182">        return this;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

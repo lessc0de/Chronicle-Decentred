@@ -192,60 +192,59 @@ import java.util.stream.LongStream;
 */
 
 <span class="fc" id="L194">            }</span>
-
-<span class="nc" id="L196">        } catch (Throwable t) {</span>
-<span class="nc" id="L197">            t.printStackTrace();</span>
-<span class="nc" id="L198">        }</span>
-<span class="nc" id="L199">    }</span>
+<span class="nc" id="L195"> } catch (Throwable t) {</span>
+<span class="nc" id="L196">            t.printStackTrace();</span>
+<span class="nc" id="L197">        }</span>
+<span class="nc" id="L198">    }</span>
 
     private void doProcessOneBlock() throws InterruptedException {
-<span class="fc" id="L202">        final TransactionBlockEvent tbe = chainer.nextTransactionBlockEvent();</span>
+<span class="fc" id="L201">        final TransactionBlockEvent tbe = chainer.nextTransactionBlockEvent();</span>
 //                sample.sample(System.nanoTime() - start);
 //                start = System.nanoTime();
         // tg System.out.println(&quot;TBE &quot;+tbe);
-<span class="fc bfc" id="L206" title="All 2 branches covered.">        if (tbe != null) {</span>
-<span class="fc" id="L207">            tbe.address(address);</span>
-<span class="fc" id="L208">            tbe.sign(secretKey);</span>
-<span class="fc bfc" id="L209" title="All 2 branches covered.">            for (long clusterAddress : clusterAddresses) {</span>
-<span class="pc bpc" id="L210" title="1 of 2 branches missed.">                if (clusterAddress == address) {</span>
-<span class="fc" id="L211">                    transactionBlockEvent(tbe);</span>
+<span class="fc bfc" id="L205" title="All 2 branches covered.">        if (tbe != null) {</span>
+<span class="fc" id="L206">            tbe.address(address);</span>
+<span class="fc" id="L207">            tbe.sign(secretKey);</span>
+<span class="fc bfc" id="L208" title="All 2 branches covered.">            for (long clusterAddress : clusterAddresses) {</span>
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">                if (clusterAddress == address) {</span>
+<span class="fc" id="L210">                    transactionBlockEvent(tbe);</span>
                 } else {
-<span class="nc" id="L213">                    tcpMessageListener.onMessageTo(clusterAddress, tbe);</span>
+<span class="nc" id="L212">                    tcpMessageListener.onMessageTo(clusterAddress, tbe);</span>
                 }
             }
-<span class="fc" id="L216">            blockNumber++;</span>
+<span class="fc" id="L215">            blockNumber++;</span>
         }
 
 //                int subRound = Math.max(100_000, periodUS * 100);
 //                two.sample(System.nanoTime() - start);
-<span class="fc" id="L221">        Thread.sleep(STEP_PAUSE_MILLIS);</span>
+<span class="fc" id="L220">        Thread.sleep(STEP_PAUSE_MILLIS);</span>
 //                LockSupport.parkNanos(subRound);
-<span class="fc" id="L223">        gossiper.sendGossip(blockNumber);</span>
-<span class="fc" id="L224">        Thread.sleep(STEP_PAUSE_MILLIS);</span>
+<span class="fc" id="L222">        gossiper.sendGossip(blockNumber);</span>
+<span class="fc" id="L223">        Thread.sleep(STEP_PAUSE_MILLIS);</span>
 //                LockSupport.parkNanos(subRound);
 
 //                start = System.nanoTime();
-<span class="fc" id="L228">        voter.sendVote(blockNumber);</span>
+<span class="fc" id="L227">        voter.sendVote(blockNumber);</span>
 //                three.sample(System.nanoTime() - start);
 
-<span class="fc" id="L231">        Thread.sleep(STEP_PAUSE_MILLIS);</span>
+<span class="fc" id="L230">        Thread.sleep(STEP_PAUSE_MILLIS);</span>
 //                LockSupport.parkNanos(subRound);
 //                start = System.nanoTime();
         //System.out.println(address + &quot; &quot; + blockNumber);
-<span class="pc bpc" id="L235" title="1 of 2 branches missed.">        if (voteTaker.hasMajority()) {</span>
-<span class="fc bfc" id="L236" title="All 2 branches covered.">            if (voteTaker.sendEndOfRoundBlock(blockNumber))</span>
-<span class="fc" id="L237">                blockNumber++;</span>
+<span class="pc bpc" id="L234" title="1 of 2 branches missed.">        if (voteTaker.hasMajority()) {</span>
+<span class="fc bfc" id="L235" title="All 2 branches covered.">            if (voteTaker.sendEndOfRoundBlock(blockNumber))</span>
+<span class="fc" id="L236">                blockNumber++;</span>
         }
-<span class="fc" id="L239">    }</span>
+<span class="fc" id="L238">    }</span>
 
     @Override
     protected void performClose() {
-<span class="nc" id="L243">        votingSes.shutdownNow();</span>
-<span class="nc" id="L244">    }</span>
+<span class="nc" id="L242">        votingSes.shutdownNow();</span>
+<span class="nc" id="L243">    }</span>
 
     @Override
     public void onMessage(SignedMessage message) {
-<span class="fc" id="L248">        chainer.onMessage(message);</span>
-<span class="fc" id="L249">    }</span>
+<span class="fc" id="L247">        chainer.onMessage(message);</span>
+<span class="fc" id="L248">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

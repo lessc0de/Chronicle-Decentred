@@ -50,8 +50,7 @@
 <span class="fc" id="L50">        return value;</span>
     }
 
-
-    /**
+/**
      * Returns the value of the {@code int} argument;
      * throwing an exception if the value overflows a {@code short}.
      *
@@ -60,10 +59,10 @@
      * @throws ArithmeticException if the {@code argument} overflows a short
      */
     public static short toShortExact(int value) {
-<span class="fc bfc" id="L63" title="All 2 branches covered.">        if ((short) value != value) {</span>
-<span class="fc" id="L64">            throw new ArithmeticException(&quot;short overflow&quot;);</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        if ((short) value != value) {</span>
+<span class="fc" id="L63">            throw new ArithmeticException(&quot;short overflow&quot;);</span>
         }
-<span class="fc" id="L66">        return (short) value;</span>
+<span class="fc" id="L65">        return (short) value;</span>
     }
 
 }

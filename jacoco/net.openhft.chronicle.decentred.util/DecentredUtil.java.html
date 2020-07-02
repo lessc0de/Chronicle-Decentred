@@ -4,35 +4,32 @@ import net.openhft.chronicle.bytes.Bytes;
 import net.openhft.chronicle.bytes.BytesStore;
 import net.openhft.chronicle.salt.Ed25519;
 
-
-<span class="fc" id="L8">public enum DecentredUtil {</span>
+<span class="fc" id="L7">public enum DecentredUtil {</span>
     ;
     public static final long MASK_32 = 0x0000_0000_FFFF_FFFFL;
     public static final int MASK_16 = 0xFFFF;
 
     public static long parseAddress(CharSequence text) {
-<span class="fc" id="L14">        return LetterBase32.decode(text);</span>
+<span class="fc" id="L13">        return LetterBase32.decode(text);</span>
     }
 
-
-    public static long toAddress(BytesStore publicKey) {
-<span class="fc" id="L19">        return publicKey.readLong(publicKey.readLimit() - Long.BYTES);</span>
+public static long toAddress(BytesStore publicKey) {
+<span class="fc" id="L17">        return publicKey.readLong(publicKey.readLimit() - Long.BYTES);</span>
     }
 
-
-    public static String toAddressString(long address) {
-<span class="fc" id="L24">        StringBuilder sb = new StringBuilder(13);</span>
-<span class="fc" id="L25">        appendAddress(sb, address);</span>
-<span class="fc" id="L26">        return sb.toString();</span>
+public static String toAddressString(long address) {
+<span class="fc" id="L21">        StringBuilder sb = new StringBuilder(13);</span>
+<span class="fc" id="L22">        appendAddress(sb, address);</span>
+<span class="fc" id="L23">        return sb.toString();</span>
     }
 
     public static void appendAddress(StringBuilder text, long value) {
-<span class="fc" id="L30">        base32(text, value);</span>
-<span class="fc" id="L31">    }</span>
+<span class="fc" id="L27">        base32(text, value);</span>
+<span class="fc" id="L28">    }</span>
 
     private static void base32(StringBuilder text, long value) {
-<span class="fc" id="L34">        LetterBase32.encode(text, value);</span>
-<span class="fc" id="L35">    }</span>
+<span class="fc" id="L31">        LetterBase32.encode(text, value);</span>
+<span class="fc" id="L32">    }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

@@ -14,7 +14,6 @@ import net.openhft.chronicle.wire.WireIn;
 import net.openhft.chronicle.wire.WireOut;
 import org.jetbrains.annotations.NotNull;
 
-
 import static net.openhft.chronicle.decentred.dto.blockevent.AddressToBlockNumberUtil.ADDRESS_TO_BLOCK_NUMBER_MAP_NAME;
 
 // Block number is N:th round in a week for the round.
@@ -22,7 +21,7 @@ import static net.openhft.chronicle.decentred.dto.blockevent.AddressToBlockNumbe
  * An TransactionBlockGossipEvent is a &lt;em&gt;chain event&lt;/em&gt; that ...
  *
  */
-<span class="fc" id="L25">public final class TransactionBlockGossipEvent extends VanillaSignedMessage&lt;TransactionBlockGossipEvent&gt; implements</span>
+<span class="fc" id="L24">public final class TransactionBlockGossipEvent extends VanillaSignedMessage&lt;TransactionBlockGossipEvent&gt; implements</span>
     HasChainAddress&lt;TransactionBlockGossipEvent&gt;,
     HasAddressToBlockNumberMap&lt;TransactionBlockGossipEvent&gt;
 {
@@ -32,73 +31,72 @@ import static net.openhft.chronicle.decentred.dto.blockevent.AddressToBlockNumbe
 
     @Override
     public long chainAddress() {
-<span class="fc" id="L35">        return chainAddress;</span>
+<span class="fc" id="L34">        return chainAddress;</span>
     }
 
     @Override
     public TransactionBlockGossipEvent chainAddress(long chainAddress) {
-<span class="fc" id="L40">        assertNotSigned();</span>
-<span class="fc" id="L41">        this.chainAddress = chainAddress;</span>
-<span class="fc" id="L42">        return this;</span>
+<span class="fc" id="L39">        assertNotSigned();</span>
+<span class="fc" id="L40">        this.chainAddress = chainAddress;</span>
+<span class="fc" id="L41">        return this;</span>
     }
 
     @Override
     public LongLongMap addressToBlockNumberMap() {
-<span class="fc bfc" id="L47" title="All 2 branches covered.">        if (signed()) {</span>
-<span class="pc bpc" id="L48" title="1 of 2 branches missed.">            if (addressToBlockNumberMap == null) {</span>
-<span class="nc" id="L49">                return new UnmodifiableLongLongMap(LongLongMap.withExpectedSize(0));</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        if (signed()) {</span>
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">            if (addressToBlockNumberMap == null) {</span>
+<span class="nc" id="L48">                return new UnmodifiableLongLongMap(LongLongMap.withExpectedSize(0));</span>
             }
-<span class="fc" id="L51">            return new UnmodifiableLongLongMap(addressToBlockNumberMap);</span>
+<span class="fc" id="L50">            return new UnmodifiableLongLongMap(addressToBlockNumberMap);</span>
         } else {
-<span class="fc bfc" id="L53" title="All 2 branches covered.">            if (addressToBlockNumberMap == null) {</span>
-<span class="fc" id="L54">                addressToBlockNumberMap = LongLongMap.withExpectedSize(16);</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">            if (addressToBlockNumberMap == null) {</span>
+<span class="fc" id="L53">                addressToBlockNumberMap = LongLongMap.withExpectedSize(16);</span>
             }
-<span class="fc" id="L56">            return addressToBlockNumberMap;</span>
+<span class="fc" id="L55">            return addressToBlockNumberMap;</span>
         }
     }
 
     // Handling of transient fields
 
-<span class="fc" id="L62">    private static final TransientFieldHandler&lt;TransactionBlockGossipEvent&gt; TRANSIENT_FIELD_HANDLER = new CustomTransientFieldHandler();</span>
+<span class="fc" id="L61">    private static final TransientFieldHandler&lt;TransactionBlockGossipEvent&gt; TRANSIENT_FIELD_HANDLER = new CustomTransientFieldHandler();</span>
 
     @Override
     public TransientFieldHandler&lt;TransactionBlockGossipEvent&gt; transientFieldHandler() {
-<span class="fc" id="L66">        return TRANSIENT_FIELD_HANDLER;</span>
+<span class="fc" id="L65">        return TRANSIENT_FIELD_HANDLER;</span>
     }
 
     private static final class CustomTransientFieldHandler implements TransientFieldHandler&lt;TransactionBlockGossipEvent&gt; {
 
         @Override
         public void reset(TransactionBlockGossipEvent original) {
-<span class="fc" id="L73">            original.addressToBlockNumberMap = null;</span>
-<span class="fc" id="L74">        }</span>
+<span class="fc" id="L72">            original.addressToBlockNumberMap = null;</span>
+<span class="fc" id="L73">        }</span>
 
         @Override
         public void copyNonMarshalled(@NotNull TransactionBlockGossipEvent original, @NotNull TransactionBlockGossipEvent target) {
             // All transient fields are marshalled
-<span class="fc" id="L79">        }</span>
+<span class="fc" id="L78">        }</span>
 
         @Override
         public void writeMarshallable(@NotNull TransactionBlockGossipEvent original, @NotNull WireOut wire) {
-<span class="fc" id="L83">            AddressToBlockNumberUtil.writeMap(wire, ADDRESS_TO_BLOCK_NUMBER_MAP_NAME, original.addressToBlockNumberMap);</span>
-<span class="fc" id="L84">        }</span>
+<span class="fc" id="L82">            AddressToBlockNumberUtil.writeMap(wire, ADDRESS_TO_BLOCK_NUMBER_MAP_NAME, original.addressToBlockNumberMap);</span>
+<span class="fc" id="L83">        }</span>
 
         @Override
         public void readMarshallable(TransactionBlockGossipEvent original, WireIn wire) {
-<span class="nc" id="L88">            AddressToBlockNumberUtil.readMap(wire, ADDRESS_TO_BLOCK_NUMBER_MAP_NAME, original.addressToBlockNumberMap());</span>
-<span class="nc" id="L89">        }</span>
+<span class="nc" id="L87">            AddressToBlockNumberUtil.readMap(wire, ADDRESS_TO_BLOCK_NUMBER_MAP_NAME, original.addressToBlockNumberMap());</span>
+<span class="nc" id="L88">        }</span>
 
         @Override
         public void writeMarshallableInternal(TransactionBlockGossipEvent original, BytesOut bytes) {
-<span class="fc" id="L93">            AddressToBlockNumberUtil.writeMap(bytes, ADDRESS_TO_BLOCK_NUMBER_MAP_NAME, original.addressToBlockNumberMap);</span>
-<span class="fc" id="L94">        }</span>
+<span class="fc" id="L92">            AddressToBlockNumberUtil.writeMap(bytes, ADDRESS_TO_BLOCK_NUMBER_MAP_NAME, original.addressToBlockNumberMap);</span>
+<span class="fc" id="L93">        }</span>
 
         @Override
         public void readMarshallable(@NotNull TransactionBlockGossipEvent original, @NotNull BytesIn bytes) {
-<span class="fc" id="L98">            AddressToBlockNumberUtil.readMap(bytes, ADDRESS_TO_BLOCK_NUMBER_MAP_NAME, m -&gt; original.addressToBlockNumberMap = m);</span>
-<span class="fc" id="L99">        }</span>
+<span class="fc" id="L97">            AddressToBlockNumberUtil.readMap(bytes, ADDRESS_TO_BLOCK_NUMBER_MAP_NAME, m -&gt; original.addressToBlockNumberMap = m);</span>
+<span class="fc" id="L98">        }</span>
     }
-
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>
