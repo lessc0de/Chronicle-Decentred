@@ -46,7 +46,7 @@ OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.util,KolobokeLongLon
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.dto,VerificationEvent,8,22,0,0,3,6,2,3,2,3
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,AbstractTCPConnection,174,192,27,19,31,48,22,13,3,9
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,TCPServerConnectionListener,0,8,0,0,0,3,0,3,0,3
-OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPServerConnection,26,54,3,1,7,17,3,5,1,5
+OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPServerConnection,20,60,2,2,4,20,3,5,1,5
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPServer,18,103,4,2,6,27,4,4,1,4
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,TCPClientListener,0,2,0,0,0,2,0,2,0,2
 OpenHFT/Chronicle-Decentred,net.openhft.chronicle.decentred.remote.net,VanillaTCPClient,42,190,6,14,5,52,6,10,0,6
