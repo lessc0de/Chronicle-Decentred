@@ -39,9 +39,9 @@ public class VanillaTCPServerConnection extends AbstractTCPConnection implements
             }
 <span class="fc" id="L40">        } catch (EOFException eof) {</span>
             // connection closed
-<span class="nc" id="L42">        } catch (Throwable t) {</span>
-<span class="nc" id="L43">            Jvm.pause(1);</span>
-<span class="nc bnc" id="L44" title="All 2 branches missed.">            if (running)</span>
+<span class="fc" id="L42">        } catch (Throwable t) {</span>
+<span class="fc" id="L43">            Jvm.pause(1);</span>
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">            if (running)</span>
 <span class="nc" id="L45">                t.printStackTrace();</span>
 
         } finally {
